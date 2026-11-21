@@ -12,7 +12,7 @@ bun install
 bun run api:dev             # API on http://localhost:8787
 bun run web:dev             # web app on http://localhost:4321 (second terminal)
 ```
-Or both at once: `bun run dev`. Check the setup: `curl http://localhost:8787/api/health`.
+Or both at once: `bun run dev`. Check the setup: `curl http://localhost:8787/api/v1/health`.
 
 Tests: `bun run test` (no network, no keys needed).
 
@@ -26,9 +26,11 @@ Tests: `bun run test` (no network, no keys needed).
 | `.agents/project-info` | the project wiki (design, decisions, prompts) |
 
 ## API
-`POST /api/check` with `{ "input": { "type": "text" | "url" | "image", "value": "…" }, "user_message"?: "…", "session_id"?: "…" }`. `image` takes a `data:` URL (JPG/PNG/WebP, max 5 MB). The response shape is described in `.agents/project-info/product/response-contract.md`.
+`POST /api/v1/check` with `{ "input": { "type": "text" | "url" | "image", "value": "…" }, "user_message"?: "…", "session_id"?: "…" }`. `image` takes a `data:` URL (JPG/PNG/WebP, max 5 MB). Every endpoint, header, env var and mock scenario: `.agents/project-info/architecture/api-reference.md`. The response shape: `.agents/project-info/product/response-contract.md`. Machine-readable: `GET /api/v1/schema`.
 
-`GET /api/health` shows which keys are configured (yes/no only). `DELETE /api/session/:id` deletes a session's logs.
+**Mock mode** (no keys needed): send `"mock": true` or a scenario name, start a text with `demo:<scenario>`, or run the server with `PRAWDOWID_MODE=mock`. Scenarios: `GET /api/v1/mock/scenarios`.
+
+`GET /api/v1/health` shows which keys are configured (yes/no only). `DELETE /api/v1/session/:id` deletes a session's logs.
 
 ## How a verdict is made
 The LLM only reads and labels. Code decides. Every quote must appear verbatim in the stored source, and citations are built from the source records, never written by the model. Missing keys, outages and limits are shown as system states, never as verdicts. Details: `.agents/project-info/architecture/verification-pipeline.md`.

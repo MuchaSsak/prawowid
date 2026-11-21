@@ -6,7 +6,7 @@ Legend: ✅ covered by design · ⚠️ risk or partly covered · ❌ gap, work 
 ## MVP (sec. 3), the gate
 | Requirement | Our design | Status |
 |---|---|---|
-| Text or URL input via a responsive web UI | web app → `POST /api/check` | ✅ (UI not designed yet) |
+| Text or URL input via a responsive web UI | web app → `POST /api/v1/check` | ✅ (UI not designed yet) |
 | A second channel or demo adapter (not Telegram or WeChat) | Discord HTTP Interactions, same core | ✅ |
 | Detect one or more claims | [prompts/claim-extraction.md](../prompts/claim-extraction.md) | ✅ |
 | A described set with ≥2 source types; show the materials used | official APIs + gov.pl/CERT/police/IMGW + ClaimReview + EUvsDisinfo; citations in every answer | ✅ |
@@ -28,7 +28,7 @@ Legend: ✅ covered by design · ⚠️ risk or partly covered · ❌ gap, work 
 | Corpus ≥100 docs, ≥10 domains, ≥2 types, auditable source list | ingestion plan ([api-endpoints-verified.md](../architecture/api-endpoints-verified.md)); source catalog page in the repo | ⚠️ needs building; domain count to verify after ingest |
 | Publication and retrieval timestamps; warn about archival material | `published_at`, `retrieved_at`; `archival_material` warning | ✅ |
 | Security: input validation, separated instructions, tool limits, secrets, rate limiting, event logging | all in the flow; `.env` + `.gitignore` | ✅ |
-| Privacy: minimisation, PII masking, retention, deletable session | masking before any LLM call, 30-day `pg_cron`, `DELETE /api/session/{id}` | ✅ |
+| Privacy: minimisation, PII masking, retention, deletable session | masking before any LLM call, 30-day `pg_cron`, `DELETE /api/v1/session/{id}` | ✅ |
 | Observability: latency, model use, retrieval errors, abstentions, cost per answer | `meta` + `check_events`, OpenRouter `usage.cost` | ✅ |
 | Accessibility: responsive, contrast, plain language | tone rules in the contract | ⚠️ UI and contrast still to be done and checked (WCAG AA) |
 | Same result across channels | same core, `temperature 0`, cache by normalised input, canonical Polish verdict label | ✅ |

@@ -12,7 +12,8 @@ The code layout, what each part does today, what was measured, and what is still
 | `packages/core/src/prompts/*.v1.ts` | prompts as code, versioned; wording mirrors [prompts/](../prompts/README.md) |
 | `packages/core/src/store/` | `CheckStore` / `CorpusStore` interfaces + in-memory mock |
 | `packages/core/src/config.ts` | models, routing, limits ([decision 003](../decisions/003-config-in-code.md)) |
-| `apps/api/main.ts` | Hono routes, CORS (`WEB_ORIGINS`), 8 MB body limit, 12 req/min per IP, DNS resolver for URL intake |
+| `apps/api/main.ts` | Hono routes under `/api/v1` ([api-reference](api-reference.md)), mock mode, CORS (`WEB_ORIGINS`), 8 MB body limit, 12 req/min per IP or per end user for keyed clients, DNS resolver for URL intake |
+| `packages/core/src/contract.ts`, `mock/fixtures.ts` | contract v1 as zod/JSON Schema; 18 synthetic mock scenarios ([decision 006](../decisions/006-api-contract-v1-and-mock.md)) |
 | `apps/web/` | Astro page: Tekst / Link / Obraz tabs, paste an image from the clipboard, renders verdicts vs system states differently, DOM `textContent` only (no `innerHTML`) |
 | `supabase/` | schemas → generated migrations workflow, baseline privileges migration, guards |
 
@@ -40,8 +41,11 @@ A required route that is unavailable (e.g. no Google key) gives the claim `sourc
 - URL intake of a gov.pl page ~0.6 s; a homepage correctly returns `needs_clarification`.
 - Assessment with mistral-small labelled an act's title line as "supports" and gave confident wrong verdicts; mistral-large did not, so it is the default (see [model-selection](model-selection.md)).
 
+## Reliability
+- Mistral Large on the EU endpoint sometimes returns 429. The client retries once after 1.5 s, then falls back to Small for that call (`fallbackModel`).
+
 ## Next steps
-1. Put the Google key in `.env` as `GOOGLE_FACT_CHECK_API_KEY` and confirm the Fact Check Tools API is enabled.
+1. Add the deployed API URL to [api-reference](api-reference.md) and point the web app at it (`PUBLIC_API_URL`), then set `WEB_ORIGINS` on the API.
 2. Numeric routes (GUS BDL, NBP, Eurostat) with code-side typed comparison (no LLM).
 3. Our own eval set (≥30 cases) and a metrics script, before tuning prompts further.
 4. Supabase: `private.check_logs` / `check_events` tables, then the corpus with hybrid search.
