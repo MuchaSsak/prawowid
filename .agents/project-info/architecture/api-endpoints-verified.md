@@ -26,6 +26,9 @@ Exact calls we can make, **each one tested by hand with curl on 2026-11-21** (st
 **Blocked or avoid:** Demagog (robots.txt disallows AI bots; use the Google Fact Check API metadata instead), EUR-Lex HTML (challenge), `gov.pl/web/gov/ostrzezenia` (JS-rendered), odyseusz.gov.pl travel advice (JS app; capture by hand). See [data-sources-research.md](data-sources-research.md).
 
 ## End-to-end flow: `POST /api/check`
+
+This endpoint sketch illustrates integration points. The [verification pipeline](verification-pipeline.md) owns claim states, evidence eligibility and verdict rules.
+
 ```
 Client (web / Discord adapter)
   POST /api/check { input: {type:"text"|"url"|"image", value}, channel, session_id }
@@ -33,7 +36,7 @@ Client (web / Discord adapter)
 2. Normalize input
    url   → SSRF-safe GET → Readability text + published_at (meta/JSON-LD/event-date)
            + collect images, <video> mp4, YouTube iframes (oEmbed for title/author)
-   image → vision model (OpenRouter) → OCR text + description
+   image → local OCR → text
    video → YouTube URL: /responses input_video (Google AI Studio) → transcript
            mp4: download (≤50 MB, ≤10 min) → base64 → /responses → transcript   [async]
 3. Guard: PII mask, injection scan (log to injection_events), wrap as untrusted
