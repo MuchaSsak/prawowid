@@ -8,7 +8,7 @@ The code layout, what each part does today, what was measured, and what is still
 | `packages/core/src/intake/` | `url.ts` (SSRF guards, DNS check via host hook, ≤3 revalidated redirects, robots.txt, tracking params stripped, Readability), `image.ts` (EXIF/XMP/IPTC and PNG text chunks stripped, vision call) |
 | `packages/core/src/guard/` | PII rules (e-mail, phone, PESEL with checksum, IBAN, cards with Luhn, ID card, street address, IP), injection patterns (pl/en), quote normalization |
 | `packages/core/src/connectors/` | `google-factcheck.ts`, `sejm-eli.ts`, `eurostat.ts`, `nbp.ts`, `gus.ts`, `corpus.ts` (mock, empty); `stats-catalog.ts` (16 indicators); `mod.ts` = the deployment profile |
-| `packages/core/src/sources/catalog.ts` | trusted-source allowlist with tiers ([decision 007](../decisions/007-trusted-source-allowlist.md)), served at `GET /api/v1/sources` |
+| `packages/core/src/sources/catalog.ts` | trusted-source allowlist with tiers ([decision 008](../decisions/008-trusted-source-allowlist.md)), served at `GET /api/v1/sources` |
 | `packages/core/src/pipeline/numeric.ts` | code-side number check for official data records |
 | `packages/core/src/pipeline/verdict.ts` | code-owned verdict rules ([pipeline §5](verification-pipeline.md#5-apply-verdict-rules)) |
 | `packages/core/src/prompts/*.v2.ts` | prompts as code, versioned (`claim-extraction@2`, `evidence-assessment@2`, media `@1`); wording mirrors [prompts/](../prompts/README.md) |
@@ -40,7 +40,7 @@ A text message that contains a link: the first link is also fetched through the 
 - Definitions differ between sources (Eurostat population 1 January vs GUS 31 December; HICP vs CPI; survey vs registered unemployment). Each record states its definition, and the assessment prompt labels a definition mismatch as context.
 
 ## Implemented interim choices (Idea, revisit with the eval)
-- **Only allowlisted publishers are evidence; one publisher = one origin; tier by credentials** ([decision 007](../decisions/007-trusted-source-allowlist.md)).
+- **Only allowlisted publishers are evidence; one publisher = one origin; tier by credentials** ([decision 008](../decisions/008-trusted-source-allowlist.md)).
 - **A fact-check counts as sufficient alone**, like an official source (as the prompt says). The pipeline draft wants its demonstrated evidence: still an open question.
 - **Support vs "misleading", both above the threshold, is a conflict** → `brak wystarczających dowodów` + `sources_conflict`.
 - **Inconsistent assessment guard** (pipeline §4): when the passage labels lead code to `confirmed` but the model's own proposed verdict is `false`/`misleading` (or the reverse), the claim abstains.
@@ -64,4 +64,4 @@ A text message that contains a link: the first link is also fetched through the 
 2. A route for MSZ's Odyseusz travel advisories (expected by the organizer samples) and the corpus (gov.pl, CERT, RCB communiqués).
 3. Ask the Sprawdzam To editors for consent to ingest; re-verify the IFCN status of OKO.press and Konkret24.
 4. Supabase: `private.check_logs` / `check_events` tables, then the corpus with hybrid search.
-5. The messaging-bot adapter over the same `runCheck`.
+5. Messaging bot: designed in [messaging-bot](messaging-bot.md) (Vercel Chat SDK, Vercel hosting), not implemented yet.

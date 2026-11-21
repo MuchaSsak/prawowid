@@ -135,7 +135,7 @@ The first pass focused on the organizer's link list and undervalued **structured
 **Idea (how to use them):** two retrieval modes. (1) The **indexed corpus** (fact-checks, EUvsDisinfo, gov.pl news, CERT): bulk-ingested, hybrid search. (2) **Live tools** (dane.gov.pl, BDL, NBP, Eurostat, Sejm, ELI): called at check time when a claim is numeric, legal or parliamentary. Each response is stored as a source record with `retrieved_at` and the exact value quoted. Live tools also count toward the ≥10 domains and the "primary source" type.
 
 ## Trusted-source catalog (allowlist), 2026-11-21
-Decision: [decisions/007](../decisions/007-trusted-source-allowlist.md). We never search the open web. A record becomes evidence only if its URL belongs to a publisher on the allowlist in `packages/core/src/sources/catalog.ts`; everything else (e.g. Snopes or unknown blogs returned by Google Fact Check) is dropped before the model sees it. The list is public at `GET /api/v1/sources` (the "open source catalog" bonus).
+Decision: [decisions/008](../decisions/008-trusted-source-allowlist.md). We never search the open web. A record becomes evidence only if its URL belongs to a publisher on the allowlist in `packages/core/src/sources/catalog.ts`; everything else (e.g. Snopes or unknown blogs returned by Google Fact Check) is dropped before the model sees it. The list is public at `GET /api/v1/sources` (the "open source catalog" bonus).
 
 ### Researched for the user's request (AP, Reuters, PAP, sprawdzamto.pl), checked live 2026-11-21
 | Source | robots.txt / terms | Public API | How we use it | Tier |

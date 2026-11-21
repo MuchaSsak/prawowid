@@ -1,4 +1,4 @@
-# 007: Evidence only from an allowlist of trusted publishers, tiered by credentials
+# 008: Evidence only from an allowlist of trusted publishers, tiered by credentials
 Date: 2026-11-21 · Status: decided (user asked for the list; tiers and origin rule are the agent's, revisit with the eval)
 
 Context: the user said we won't search the open web: only sources on an allowed list count, and AP, Reuters, PAP and sprawdzamto.pl should be added, using their APIs where they exist. Until now the Google Fact Check route accepted any publisher in Google's index (Snopes, blogs). Research of the four sources: [data-sources-research.md](../architecture/data-sources-research.md#trusted-source-catalog-allowlist-2026-11-21).

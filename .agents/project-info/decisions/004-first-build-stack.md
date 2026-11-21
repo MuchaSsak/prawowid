@@ -9,7 +9,7 @@ Decision:
 - **`apps/api`:** Deno + Hono, a thin adapter (`POST /api/check`, `GET /api/health`, `DELETE /api/session/:id`; versioned under `/api/v1` by [decision 006](006-api-contract-v1-and-mock.md)).
 - **`apps/web`:** Astro 7, a static page that calls the API. Astro 7 needs Node ≥ 22.23.4, so its scripts run on the Bun runtime (`bun --bun astro …`).
 - **Storage:** an in-memory mock behind `CheckStore` / `CorpusStore` interfaces shaped like the [decision 001](001-private-logs-schema.md) tables. Supabase replaces one file later.
-- **Second channel:** a messaging bot (WhatsApp or similar) replaces Discord as the planned second channel. It is a future adapter over the same core.
+- **Second channel:** a messaging bot (WhatsApp or similar) replaces Discord as the planned second channel. It is a future adapter over the same core. (Platforms and library chosen in [decision 007](007-messaging-bot-chat-sdk.md): Discord, WhatsApp and Messenger on the Vercel Chat SDK.)
 
 Rejected: putting the pipeline inside the API app (it would block moving off Deno Deploy and sharing it with the bot); starting with Supabase (the user wants the logic first).
 

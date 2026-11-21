@@ -7,7 +7,7 @@ Legend: ✅ covered by design · ⚠️ risk or partly covered · ❌ gap, work 
 | Requirement | Our design | Status |
 |---|---|---|
 | Text or URL input via a responsive web UI | web app → `POST /api/v1/check` | ✅ (UI not designed yet) |
-| A second channel or demo adapter (not Telegram or WeChat) | Discord HTTP Interactions, same core | ✅ |
+| A second channel or demo adapter (not Telegram or WeChat) | Bot on the Vercel Chat SDK: Discord (slash commands), WhatsApp, Messenger over the same API ([messaging-bot](../architecture/messaging-bot.md)); designed, not implemented | ⏳ |
 | Detect one or more claims | [prompts/claim-extraction.md](../prompts/claim-extraction.md) | ✅ |
 | A described set with ≥2 source types; show the materials used | official APIs + gov.pl/CERT/police/IMGW + ClaimReview + EUvsDisinfo; citations in every answer | ✅ |
 | Result + justification + strength + limitations | [product/response-contract.md](../product/response-contract.md) | ✅ |
@@ -25,7 +25,7 @@ Legend: ✅ covered by design · ⚠️ risk or partly covered · ❌ gap, work 
 | Notify a designated user on high-risk or repeated unanswered questions | `risk` field + similarity dedupe → `private.moderator_cases` + webhook to the moderator the admin sets | ⚠️ the admin setting (who the moderator is) still needs designing |
 | Prompt injection resistance | data boundary in every prompt, JSON-only models with no tools, `injection_signals` + regex scan, logged events | ✅ (needs ≥90% on our attack set) |
 | Channel handling separate from verification; model swappable without a rebuild | `packages/core` + adapters; model IDs in env | ✅ |
-| Corpus ≥100 docs, ≥10 domains, ≥2 types, auditable source list | ingestion plan ([api-endpoints-verified.md](../architecture/api-endpoints-verified.md)); the trusted-source catalog is public at `GET /api/v1/sources` ([decision 007](../decisions/007-trusted-source-allowlist.md)) | ⚠️ catalog built, corpus ingestion still needed; domain count to verify after ingest |
+| Corpus ≥100 docs, ≥10 domains, ≥2 types, auditable source list | ingestion plan ([api-endpoints-verified.md](../architecture/api-endpoints-verified.md)); the trusted-source catalog is public at `GET /api/v1/sources` ([decision 008](../decisions/008-trusted-source-allowlist.md)) | ⚠️ catalog built, corpus ingestion still needed; domain count to verify after ingest |
 | Publication and retrieval timestamps; warn about archival material | `published_at`, `retrieved_at`; `archival_material` warning | ✅ |
 | Security: input validation, separated instructions, tool limits, secrets, rate limiting, event logging | all in the flow; `.env` + `.gitignore` | ✅ |
 | Privacy: minimisation, PII masking, retention, deletable session | masking before any LLM call, 30-day `pg_cron`, `DELETE /api/v1/session/{id}` | ✅ |
