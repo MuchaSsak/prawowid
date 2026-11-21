@@ -1,6 +1,7 @@
 /** Unit tests for dates without a year and the reference date (pipeline §2). Synthetic data only. */
 import { assertEquals } from "jsr:@std/assert@^1";
 import { MemoryCorpusStore } from "../src/mod.ts";
+import { parsePeriod } from "../src/connectors/stats-catalog.ts";
 import {
   distinctiveSentences,
   findOriginalDate,
@@ -132,3 +133,15 @@ Deno.test("reference date: publication first; empty corpus or no match → submi
     { date: "2026-11-21", source: "submission" },
   );
 });
+
+Deno.test("'ostatnio' / 'niedawno' → the last 30 days before the reference date, read by parsePeriod as its end", () => {
+  const r = resolveTime("ostatnio", "past", ref("2026-11-21"));
+  assertEquals(r, { time: "2026-10-22/2026-11-21", filledYear: true, relative: "ostatnio" });
+  assertEquals(resolveTime("niedawno", "past", ref("2026-11-21")).time, "2026-10-22/2026-11-21");
+  assertEquals(parsePeriod(r.time), { year: 2026, month: 11, day: null });
+  assertEquals(
+    periodNote(r, ref("2026-11-21", "submission")),
+    "Tekst podaje czas względnie („ostatnio”); przyjęliśmy okres 22.10.2026–21.11.2026 na podstawie daty zgłoszenia (21.11.2026); jeśli tekst jest starszy, wynik może być inny.",
+  );
+});
+

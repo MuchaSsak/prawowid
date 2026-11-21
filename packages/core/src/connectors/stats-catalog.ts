@@ -80,6 +80,9 @@ export interface ClaimPeriod {
 
 export function parsePeriod(time: string | null | undefined): ClaimPeriod {
   const t = time ?? "";
+  // An ISO interval "start/end" (e.g. "ostatnio" → the last 30 days, pipeline/dates.ts): its end month.
+  const iv = t.match(/\b((?:19|20)\d{2})-(0[1-9]|1[0-2])-([0-2]\d|3[01])\/((?:19|20)\d{2})-(0[1-9]|1[0-2])-([0-2]\d|3[01])(?!\d)/);
+  if (iv) return { year: +iv[4], month: +iv[5], day: null };
   const d = t.match(/\b((?:19|20)\d{2})-(0[1-9]|1[0-2])-([0-2]\d|3[01])(?!\d)/);
   if (d) return { year: +d[1], month: +d[2], day: d[0] };
   // "2025-06" is a month; "2020-2024" is a range of years (the lookahead rejects "2020-20…").

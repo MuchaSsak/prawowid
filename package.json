@@ -26,6 +26,7 @@
     "supabase:deploy:edge": "node supabase/scripts/deploy-functions.mjs",
     "eval": "cd eval && deno task eval",
     "eval:quick": "cd eval && deno task eval:quick",
+    "eval:organizer": "cd eval && deno task eval:organizer",
     "eval:remote": "cd eval && deno task eval:remote"
   },
   "devDependencies": {

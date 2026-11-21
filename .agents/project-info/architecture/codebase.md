@@ -14,7 +14,7 @@ The code layout, what each part does today, what was measured, and what is still
 | `packages/core/src/pipeline/numeric.ts` | code-side number check for official data records |
 | `packages/core/src/pipeline/verdict.ts` | code-owned verdict rules ([pipeline §5](verification-pipeline.md#5-apply-verdict-rules)) |
 | `packages/core/src/pipeline/dates.ts` | reference date (publication → original in the corpus → submission), the year for dates written without one, dates with a year and relative words normalized to the ISO-like form parsePeriod reads ([pipeline §2](verification-pipeline.md#2-extract-and-classify-claims)) |
-| `packages/core/src/prompts/*.ts` | prompts as code, versioned (`claim-extraction@3`, `evidence-assessment@2`, media `@1`; claim-extraction v2 kept for log replay); wording mirrors [prompts/](../prompts/README.md) |
+| `packages/core/src/prompts/*.ts` | prompts as code, versioned (`claim-extraction@3`, `evidence-assessment@3`, media `@1`; claim-extraction v2 and evidence-assessment v2 kept for log replay); wording mirrors [prompts/](../prompts/README.md) |
 | `packages/core/src/store/` | `CheckStore` / `CorpusStore` interfaces + in-memory mock |
 | `packages/core/src/config.ts` | models, routing, limits ([decision 003](../decisions/003-config-in-code.md)) |
 | `apps/api/main.ts` | Hono routes under `/api/v1` ([api-reference](api-reference.md)), mock mode, CORS (`WEB_ORIGINS`), 8 MB body limit, 12 req/min per IP or per end user for keyed clients, DNS resolver for URL intake |

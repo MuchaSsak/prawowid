@@ -20,7 +20,7 @@ Example chatbot questions with model answers, one per scenario, that the organiz
 
 ## What it tells us
 1. **Demagog through the Google Fact Check index is the backbone of the jury's cases.** Most samples, including J ("indeks Google"), assume we find Demagog's ClaimReview. Our Google Fact Check route with the [trusted-source allowlist](../architecture/data-sources-research.md#trusted-source-catalog-allowlist-2026-11-21) is exactly that.
-2. **The answer style is short and direct:** "Nie." or "Tak.", who checked it, the rating, a link. Our `explanation` and citations already carry this; the web and bot renderers should lead with the verdict word.
+2. **The answer style is short and direct:** "Nie." or "Tak.", who checked it, the rating, a link. Done 2026-11-21 (user): code adds the leading word only when the answer is unambiguous, "To prawda."/"To nieprawda." for a pasted statement, and none for partly true (C) or abstention (the Italy strike); see [response-contract](../product/response-contract.md#tone-of-the-answer).
 3. **Abstentions must say what source would settle it** and that absence of results is not a refutation (D, H). Done 2026-11-21: the `missing` text and the abstention template say "Brak wyniku … nie oznacza, że to nieprawda."
 4. **Links inside chat messages must be read** (E, I: "Sprawdź też tę stronę: [URL]"). Done 2026-11-21: a text message's first link is fetched through the same guarded URL intake; injections on that page are logged with provenance `article`.
 5. **A visible date on a screenshot is not proof of publication** (F). Done 2026-11-21: added as a limitation whenever the image has a visible date.
@@ -28,3 +28,8 @@ Example chatbot questions with model answers, one per scenario, that the organiz
 7. **PAP dispatches appear as subjects** (A, F, I). PAP blocks automated access, so a dispatch can be cited only via a fact-checker's link to it, never fetched by us (see the catalog).
 8. **Matching a URL to a known check (I) needs title, topic and date to agree**; domain or topic alone is not enough. Our pipeline never gives a verdict from a domain; an explicit "same material?" matcher is not built yet.
 9. **Partly true is reported as such** (C). Done 2026-11-21: the assessment prompt maps "Częściowa prawda" and similar ratings to `misleading` with the reason, and the code shows both numbers through the citations.
+10. **Announced is not happened** (A, the Italy strike): the good answer confirms the announcement with its source and says it is unknown whether the strike took place. Done 2026-11-21 in [evidence-assessment@3](../prompts/evidence-assessment.md); "ostatnio" is now the last 30 days ([pipeline §2](../architecture/verification-pipeline.md#2-extract-and-classify-claims)).
+11. **An approximation is not a conflicting measurement** (C: "ok. 700 mln" vs 650 mln for 2023) and **availability now is not proof of the past** (A, PAP: the dispatch existing proves availability at check time). Both done 2026-11-21 in evidence-assessment@3.
+
+## Organizer-style benchmark
+`eval/organizer-cases.json` (`deno task eval:organizer`, user 2026-11-21): the samples above with style checks (X01-X08) and variants on other topics (R01-R18) built on real fact-checks found in the Google Fact Check index. Method and results: [evaluation/benchmark.md](../evaluation/benchmark.md#organizer-style-set-evalorganizer-casesjson). Not built yet: F (screenshot) and I (URL matching) variants.

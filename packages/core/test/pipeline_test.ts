@@ -656,3 +656,52 @@ Deno.test({ ...T, name: "a general accusation is a one-line opinion listed after
     s.restore();
   }
 } });
+
+// ── Leading word: Tak/Nie only when unambiguous (organizer samples; render.ts leadWord) ─────────
+const DEBT = "Dług publiczny Przykładowa wynosi 276 proc. PKB.";
+// A leading word is the word plus a full stop ("Nie."), not any text starting with "Nie" ("Nie znaleźliśmy…").
+const LEAD = /^(Tak|Nie|To prawda|To nieprawda)\./;
+
+async function leadFor(input: string, stance: string, proposed: string, plain: string) {
+  const s = stubFetch(
+    {
+      extraction: () => extraction([{ text: DEBT, span: "publiczny Przykładowa wynosi 276 proc. PKB" }]),
+      assessment: assess({ Demagog: { stance, needle: "Ocena" } }, proposed, { plain_answer: plain, explanation: "Nie. Według Demagoga to fałsz." }),
+    },
+    { googleFactCheck: () => factCheck("Demagog", stance === "supports" ? "Prawda" : "Fałsz", DEBT) },
+  );
+  try {
+    const r = await runCheck(text(input), deps());
+    valid(r);
+    return r.claims[0];
+  } finally {
+    s.restore();
+  }
+}
+
+Deno.test({ ...T, name: "lead: a question answered false → 'Nie.' added by code (the model's own 'Nie.' is not doubled)", async fn() {
+  const c = await leadFor("Czy dług publiczny Przykładowa wynosi 276 proc. PKB?", "refutes", "false", "no");
+  assertEquals(c.verdict, "false");
+  assertEquals(c.explanation, "Nie. Według Demagoga to fałsz.");
+} });
+
+Deno.test({ ...T, name: "lead: a pasted statement → 'To nieprawda.' / 'To prawda.' instead of Nie/Tak", async fn() {
+  const f = await leadFor(DEBT, "refutes", "false", "no");
+  assertEquals(f.explanation, "To nieprawda. Według Demagoga to fałsz.");
+  const t = await leadFor(DEBT, "supports", "confirmed", "yes");
+  assert(t.explanation.startsWith("To prawda. "));
+} });
+
+Deno.test({ ...T, name: "lead: partly true (misleading + neither) and abstention get no leading word", async fn() {
+  const m = await leadFor(`Czy ${DEBT}`, "misleading", "misleading", "neither");
+  assertEquals(m.verdict, "misleading");
+  assert(!LEAD.test(m.explanation), m.explanation);
+  const old = await leadFor(`Czy ${DEBT}`, "misleading", "misleading", "no");
+  assert(old.explanation.startsWith("Nie. "), "old material shown as current answers the question with Nie.");
+} });
+
+Deno.test({ ...T, name: "lead: no leading word when code and model disagree on the verdict", async fn() {
+  const c = await leadFor(`Czy ${DEBT}`, "refutes", "confirmed", "yes");
+  assert(!LEAD.test(c.explanation), c.explanation);
+} });
+
