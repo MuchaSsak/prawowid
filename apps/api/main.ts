@@ -15,6 +15,8 @@
  *   PRAWDOWID_MODE=live|mock                        mock = every check returns fixtures (default live)
  *   MOCK_DELAY_MS=600                               simulated latency in mock mode
  *   CLIENT_KEYS=bot:<secret>,...                    server-to-server clients (messaging bot)
+ *   MOCK_CLIENTS=bot,...                            these client names always get mock answers, even in live
+ *                                                   mode (holds the bot in mock until its spend caps exist)
  *   WEB_ORIGINS=https://…,…                         browser origins allowed by CORS
  */
 import { Hono } from "hono";
@@ -50,6 +52,9 @@ const CLIENT_KEYS = new Map(
     return [p.slice(i + 1), p.slice(0, i)] as [string, string];
   }),
 );
+
+/** Client names (from CLIENT_KEYS) held in mock mode while the web goes live (messaging-bot.md). */
+const MOCK_CLIENTS = new Set((Deno.env.get("MOCK_CLIENTS") ?? "").split(",").map((s) => s.trim()).filter(Boolean));
 
 async function resolveHost(hostname: string): Promise<string[]> {
   const [a, aaaa] = await Promise.allSettled([Deno.resolveDns(hostname, "A"), Deno.resolveDns(hostname, "AAAA")]);
@@ -115,18 +120,22 @@ app.get("/", (c) =>
     docs: "GET /api/v1/schema, GET /api/v1/sources, GET /api/v1/mock/scenarios, POST /api/v1/check",
   }));
 
-app.get("/api/v1/health", (c) =>
-  c.json({
+app.get("/api/v1/health", (c) => {
+  // A keyed client also learns its own effective mode (MOCK_CLIENTS can hold it in mock).
+  const client = CLIENT_KEYS.get(c.req.header("x-client-key") ?? "");
+  return c.json({
     ok: true,
     contract_version: CONTRACT_VERSION,
     mode: MODE,
+    ...(client ? { client_mode: MODE === "mock" || MOCK_CLIENTS.has(client) ? "mock" : "live" } : {}),
     configured: {
       openrouter: Boolean(config.secrets.openrouterApiKey),
       google_fact_check: Boolean(config.secrets.googleFactCheckApiKey),
     },
     models: config.models,
     storage: "memory (mock, lost on restart)",
-  }));
+  });
+});
 
 app.get("/api/v1/schema", (c) => c.json(contractJsonSchema()));
 
@@ -181,7 +190,8 @@ app.post(
     }
     const channel = body.channel ?? (client ? "messaging" : "web");
 
-    const wantsMock = MODE === "mock" || body.mock === true || (typeof body.mock === "string" && body.mock !== "");
+    const wantsMock = MODE === "mock" || (client !== undefined && MOCK_CLIENTS.has(client)) || body.mock === true ||
+      (typeof body.mock === "string" && body.mock !== "");
     if (wantsMock) {
       if (!body.input.value.trim()) {
         const r = rejected("Wklej tekst, link albo dodaj obraz.");

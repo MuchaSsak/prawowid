@@ -17,6 +17,7 @@ The code layout, what each part does today, what was measured, and what is still
 | `packages/core/src/config.ts` | models, routing, limits ([decision 003](../decisions/003-config-in-code.md)) |
 | `apps/api/main.ts` | Hono routes under `/api/v1` ([api-reference](api-reference.md)), mock mode, CORS (`WEB_ORIGINS`), 8 MB body limit, 12 req/min per IP or per end user for keyed clients, DNS resolver for URL intake |
 | `packages/core/src/contract.ts`, `mock/fixtures.ts` | contract v1 as zod/JSON Schema; 18 synthetic mock scenarios ([decision 006](../decisions/006-api-contract-v1-and-mock.md)) |
+| `apps/bot/` | messaging bot on the Vercel Chat SDK (Discord slash commands, WhatsApp, Messenger) plus a console channel, over the HTTP API; status in [messaging-bot](messaging-bot.md#implementation-status-2026-11-21) |
 | `apps/web/` | Astro page: Tekst / Link / Obraz tabs, paste an image from the clipboard, renders verdicts vs system states differently, DOM `textContent` only (no `innerHTML`) |
 | `supabase/` | schemas → generated migrations workflow, baseline privileges migration, guards |
 
@@ -65,4 +66,4 @@ A text message that contains a link: the first link is also fetched through the 
 2. A route for MSZ's Odyseusz travel advisories (expected by the organizer samples) and the corpus (gov.pl, CERT, RCB communiqués).
 3. Ask the Sprawdzam To editors for consent to ingest; re-verify the IFCN status of OKO.press and Konkret24.
 4. Supabase: `private.check_logs` / `check_events` tables, then the corpus with hybrid search.
-5. Messaging bot: designed in [messaging-bot](messaging-bot.md) (Vercel Chat SDK, Vercel hosting), not implemented yet.
+5. Messaging bot: M1 code in `apps/bot`; next is deploying it on Vercel with a Discord app, then M1b (Redis, deep health, consistency script). See [messaging-bot](messaging-bot.md#implementation-status-2026-11-21).

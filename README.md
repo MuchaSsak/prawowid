@@ -14,7 +14,11 @@ bun run web:dev             # web app on http://localhost:4321 (second terminal)
 ```
 Or both at once: `bun run dev`. Check the setup: `curl http://localhost:8787/api/v1/health`.
 
+### Messaging bot (console channel, no account needed)
+`bun run bot:console "tekst do sprawdzenia"` runs the bot's real conversation in the terminal against the deployed API (add `--as discord` or `--as whatsapp` to see that platform's reply). For synthetic demo answers start the API with `PRAWDOWID_MODE=mock bun run api:dev` and add `PRAWDOWID_API_URL=http://localhost:8787`. Discord, WhatsApp and Messenger setup: `apps/bot/README.md`.
+
 ## Tests and benchmark
+- `bun run bot:test`: the bot's tests (no network, no credits).
 - `bun run test`: 123 deterministic tests (model and source APIs stubbed, **no credits used**): the verification rules for scenarios A-J, the v1 contract, the source allowlist, the statistics routes and the number check, every API route.
 - `bun run eval:quick`: 6 live cases (~$0.005). `bun run eval`: the full 50-case reference set (~$0.05) with the task's metrics (macro-F1, citation coverage, abstention, robustness, latency, cost per 100, end-to-end, channel consistency). `bun run eval:remote`: the same against the deployed API.
 - Results: `eval/results/latest.md`; method and known gaps: `.agents/project-info/evaluation/benchmark.md`.
@@ -25,6 +29,7 @@ Or both at once: `bun run dev`. Check the setup: `curl http://localhost:8787/api
 | `packages/core` | the verification core, runtime-agnostic TypeScript: intake, PII masking, claim extraction, evidence routes, quote check, verdict rules |
 | `apps/api` | Deno + Hono HTTP API, a thin adapter over the core |
 | `apps/web` | Astro web app |
+| `apps/bot` | messaging bot (Discord, WhatsApp, Messenger) on the Vercel Chat SDK, over the HTTP API |
 | `supabase` | database workflow for later (`schemas/` → generated migrations), see its README |
 | `.agents/project-info` | the project wiki (design, decisions, prompts) |
 

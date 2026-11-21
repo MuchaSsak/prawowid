@@ -7,7 +7,7 @@ Legend: ✅ covered by design · ⚠️ risk or partly covered · ❌ gap, work 
 | Requirement | Our design | Status |
 |---|---|---|
 | Text or URL input via a responsive web UI | web app → `POST /api/v1/check` | ✅ (UI not designed yet) |
-| A second channel or demo adapter (not Telegram or WeChat) | Bot on the Vercel Chat SDK: Discord (slash commands), WhatsApp, Messenger over the same API ([messaging-bot](../architecture/messaging-bot.md)); designed, not implemented | ⏳ |
+| A second channel or demo adapter (not Telegram or WeChat) | Bot on the Vercel Chat SDK: Discord (slash commands), WhatsApp, Messenger over the same API ([messaging-bot](../architecture/messaging-bot.md)); M1 code and a console channel in `apps/bot`, tested offline, not deployed | ⏳ |
 | Detect one or more claims | [prompts/claim-extraction.md](../prompts/claim-extraction.md) | ✅ |
 | A described set with ≥2 source types; show the materials used | official APIs + gov.pl/CERT/police/IMGW + ClaimReview + EUvsDisinfo; citations in every answer | ✅ |
 | Result + justification + strength + limitations | [product/response-contract.md](../product/response-contract.md) | ✅ |

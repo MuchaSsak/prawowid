@@ -45,9 +45,9 @@ Format: `- [path](path): one-line summary`
 - [architecture/stack-research.md](architecture/stack-research.md): Deno Deploy (sunset Apr 2027), OpenRouter, Supabase, input handling, Discord, POST /api/check flow
 - [architecture/data-sources-research.md](architecture/data-sources-research.md): every source: access, license, priority, corpus plan; live official APIs; **trusted-source allowlist** research (AP, Reuters, PAP, Sprawdzam To)
 - [architecture/euvsdisinfo-mcp.md](architecture/euvsdisinfo-mcp.md): EUvsDisinfo MCP how-to and data shape
-- [architecture/messaging-bot.md](architecture/messaging-bot.md): **the bot channel**: Discord + WhatsApp + Messenger on the Vercel Chat SDK: Mermaid diagram, components, message flow, platforms, security and privacy, milestones and cut line, prototype findings (designed, not implemented)
+- [architecture/messaging-bot.md](architecture/messaging-bot.md): **the bot channel**: Discord + WhatsApp + Messenger on the Vercel Chat SDK: Mermaid diagram, components, message flow, platforms, security and privacy, milestones and cut line, implementation status (M1 code in apps/bot, not deployed), prototype findings
 - [architecture/messaging-bot-runbook.md](architecture/messaging-bot-runbook.md): bot setup checklists per platform, env vars, acceptance tests (A1-A11), demo-day steps, post-event shutdown
-- [architecture/api-reference.md](architecture/api-reference.md): **for channel builders**: every endpoint, header, request field, env var, mock scenario, Deno Deploy setup, versioning rules
+- [architecture/api-reference.md](architecture/api-reference.md): **for channel builders**: every endpoint, header, request field, env var (incl. `MOCK_CLIENTS`), mock scenario, Deno Deploy setup, versioning rules
 - [architecture/codebase.md](architecture/codebase.md): **what is built**: code layout, evidence routes (Google Fact Check, ELI, Eurostat, NBP, GUS), the number check, interim verdict choices, measured latency/cost, next steps
 - [architecture/technical-approach-research.md](architecture/technical-approach-research.md): pipeline best practice, models, retrieval, injection defense, eval harness, IFCN/EFCSN
 

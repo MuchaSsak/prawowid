@@ -1,5 +1,5 @@
 # Messaging bot runbook: setup, env vars, acceptance tests, demo day
-How to bring up the bot designed in [messaging-bot.md](messaging-bot.md) and keep it working through judging. Status: designed, not implemented. Timeline, gates and cut line: [messaging-bot.md § Milestones](messaging-bot.md#milestones-and-cut-line).
+How to bring up the bot designed in [messaging-bot.md](messaging-bot.md) and keep it working through judging. Status: M1 code written in `apps/bot`, not deployed ([implementation status](messaging-bot.md#implementation-status-2026-11-21)). Timeline, gates and cut line: [messaging-bot.md § Milestones](messaging-bot.md#milestones-and-cut-line).
 
 ## Env vars (Vercel project settings, production only)
 | Variable | Secret | Needed from | Purpose |
@@ -10,6 +10,8 @@ How to bring up the bot designed in [messaging-bot.md](messaging-bot.md) and kee
 | `REDIS_URL` | yes | M1b | set by the Upstash integration (dedupe, daily quota, outcome counters) |
 | `HEALTH_TOKEN` | yes | M1b | sent as `Authorization: Bearer …` to `/health?deep=1`; only the uptime monitor holds it |
 | `PRAWDOWID_WEB_URL` | no | M1 | the web app link in every reply's footer |
+| `BOT_PRIVACY_CONTACT` | no | M1 | the data controller and contact e-mail shown in `/pomoc` (blocks the invite gate until set) |
+| `DISCORD_GUILD_ID` | no | M1 | the demo server; used only by `bun run bot:discord:commands` |
 | `DISCORD_BOT_TOKEN`, `DISCORD_PUBLIC_KEY`, `DISCORD_APPLICATION_ID` | yes / no / no | M1 | Discord app (the adapter requires the token, and command registration uses it) |
 | `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN` | yes / yes / no / yes | M2 | WhatsApp Cloud API |
 | `FACEBOOK_APP_SECRET`, `FACEBOOK_PAGE_ACCESS_TOKEN`, `FACEBOOK_VERIFY_TOKEN` | yes | M3 | Messenger |
@@ -29,8 +31,9 @@ On the API (Deno Deploy): `CLIENT_KEYS=bot:<key>`, `PRAWDOWID_MODE` (the web's m
 1. Create the application in the Developer Portal. Copy the bot token, public key and application id.
 2. Deploy, then set the **Interactions Endpoint URL** to `https://<prod>/webhooks/discord`. Discord tests it with a PING and with a bad signature. Both must pass, or the portal won't save the URL.
 3. Install it on the demo server with `applications.commands` plus `bot` with permissions = 0. Leave the `@everyone` role with its default "View Channel" in the demo channel, or REST calls made as the bot can return 403.
-4. Register the commands **per server**, so they appear instantly:
+4. Register the commands **per server**, so they appear instantly (`bun run bot:discord:commands`):
    - `/sprawdz` with options `tresc` (string) and `obraz` (attachment), both optional; the bot requires at least one.
+   - `/demo` with a required `scenariusz` dropdown of the mock scenarios (only answers while the bot gets mock responses).
    - `/pomoc`.
    - `/usun-dane`.
 5. Make a public invite link. It goes into the README at the invite gate: M1 passes in mock mode and the privacy contact is filled in.
@@ -57,7 +60,7 @@ On the API (Deno Deploy): `CLIENT_KEYS=bot:<key>`, `PRAWDOWID_MODE` (the web's m
 - Alert when the hourly `technical_error` count in `/health?deep=1` exceeds 3.
 
 ## Acceptance tests
-Run against the production deployment with real accounts. Record the results in [messaging-bot.md](messaging-bot.md) when they pass, so the prototype notes become confirmed facts.
+Run against the production deployment with real accounts. Offline equivalents of A2, A3, A6, A7, A9, A10 and A11 already pass in `bun run bot:test`; they don't replace the production run. Record the results in [messaging-bot.md](messaging-bot.md) when they pass, so the prototype notes become confirmed facts.
 
 | # | Test | Pass bar |
 |---|---|---|

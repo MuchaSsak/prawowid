@@ -1,0 +1,28 @@
+{
+  "name": "@prawdowid/bot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch --env-file=../../.env src/local.ts",
+    "start": "bun src/local.ts",
+    "console": "bun --env-file=../../.env src/console.ts",
+    "check": "tsc --noEmit",
+    "test": "bun test",
+    "discord:commands": "bun --env-file=../../.env scripts/register-discord-commands.ts"
+  },
+  "dependencies": {
+    "@chat-adapter/discord": "4.44.0",
+    "@chat-adapter/messenger": "4.44.0",
+    "@chat-adapter/state-memory": "4.44.0",
+    "@chat-adapter/whatsapp": "4.44.0",
+    "@prawdowid/core": "workspace:*",
+    "@vercel/functions": "3.11.0",
+    "chat": "4.44.0",
+    "hono": "4.9.12"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.0",
+    "typescript": "5.9.3"
+  }
+}
