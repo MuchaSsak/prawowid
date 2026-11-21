@@ -55,8 +55,14 @@ export const sejmEli: Connector = {
       for (const a of value.items ?? []) {
         if (!a.address || seen.has(a.address)) continue;
         seen.add(a.address);
+        // Amending acts ("o zmianie ustawy …") are different acts from the one they amend; say so
+        // in the record, otherwise their dates get read as dates of the amended act.
+        const amends = /\bo zmianie\b/i.test(a.title ?? "");
         const text = [
           `Akt: ${a.title ?? ""}`,
+          amends
+            ? "Uwaga: to jest akt zmieniający inną ustawę. Jego daty dotyczą tylko tej nowelizacji, nie ustawy zmienianej."
+            : "",
           `Rodzaj: ${a.type ?? "nieznany"}. Publikacja: ${a.displayAddress ?? a.address}.`,
           `Status: ${a.status ?? "nieznany"}. Obowiązuje: ${IN_FORCE[a.inForce ?? "UNKNOWN"] ?? a.inForce}.`,
           a.announcementDate ? `Data aktu: ${a.announcementDate}.` : "",

@@ -58,7 +58,9 @@ export type WarningType =
   | "injection_detected"
   | "partial_analysis"
   | "assumed_period"
-  | "illegible_media";
+  | "illegible_media"
+  /** Mock mode: the response is synthetic demo data, not a check. */
+  | "demo_data";
 
 export interface Warning {
   type: WarningType;
@@ -118,12 +120,17 @@ export interface ClaimResult {
 export type InputType = "text" | "url" | "image";
 export type Channel = "web" | "api" | "messaging";
 
+/** Bumped only for breaking changes; v1 changes are additive (new optional fields, new enum values). */
+export const CONTRACT_VERSION = "1.0";
+
 export interface CheckRequest {
   input: { type: InputType; value: string };
   /** What the user typed themselves next to a URL or image (optional). */
   user_message?: string;
   session_id?: string;
   channel?: Channel;
+  /** Mock mode: true = scenario picked from the input, or a scenario name (see mock/fixtures.ts). */
+  mock?: boolean | string;
 }
 
 export interface SystemMessage {
@@ -132,6 +139,7 @@ export interface SystemMessage {
 }
 
 export interface CheckResponse {
+  contract_version: typeof CONTRACT_VERSION;
   check_id: string;
   status: RequestStatus;
   answer_language: "pl";
@@ -142,7 +150,14 @@ export interface CheckResponse {
   warnings: Warning[];
   limitations: string[];
   escalation: { state: "none" | "recommended"; reason: string | null };
-  input: { type: InputType; title: string | null; url: string | null; published_at: string | null };
+  input: {
+    type: InputType;
+    title: string | null;
+    url: string | null;
+    published_at: string | null;
+    /** For images: the vision model's neutral description (context only, never a claim or evidence). */
+    description: string | null;
+  };
   meta: {
     latency_ms: number;
     stages_ms: Record<string, number>;
@@ -150,5 +165,7 @@ export interface CheckResponse {
     prompt_versions: string[];
     cost_usd: number;
     cached: boolean;
+    /** "mock" = synthetic demo data; never shown as a real check. */
+    mode: "live" | "mock";
   };
 }

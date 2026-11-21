@@ -30,7 +30,7 @@ Exact calls we can make, **each one tested by hand with curl on 2026-11-21** (st
 This endpoint sketch illustrates integration points. The [verification pipeline](verification-pipeline.md) owns claim states, evidence eligibility and verdict rules.
 
 ```
-Client (web / Discord adapter)
+Client (web / messaging-bot adapter)
   POST /api/check { input: {type:"text"|"url"|"image", value}, channel, session_id }
 1. Validate + rate-limit (per IP / Discord user). Reject > size caps.
 2. Normalize input
@@ -39,7 +39,7 @@ Client (web / Discord adapter)
    image → vision model (OpenRouter) → OCR text + description
    video → YouTube URL: /responses input_video (Google AI Studio) → transcript
            mp4: download (≤50 MB, ≤10 min) → base64 → /responses → transcript   [async]
-3. Guard: PII mask, injection scan (log to injection_events), wrap as untrusted
+3. Guard: PII mask, injection scan (log injection_detected to check_events), wrap as untrusted
 4. LLM call #1 (cheap model, JSON schema): claims[] {text, class: fact|opinion|prediction|unclear,
    type: numeric|legal|parliamentary|event|narrative, time, place, entities, search_queries (base forms)}
 5. Retrieve per fact claim (in parallel)

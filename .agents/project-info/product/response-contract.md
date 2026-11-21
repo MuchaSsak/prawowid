@@ -70,4 +70,4 @@ Rule: a missing key, a hit limit or an outage **never** produces `insufficient_e
   "meta": { "latency_ms": 8400, "models": ["mistral-small-2603"], "prompt_versions": ["claim-extraction@1"], "cost_usd": 0.0014 }
 }
 ```
-Discord renders the same object in a short form (verdict, strength, up to 3 citations, and a link to the full web result), so both channels show the same verdict and evidence.
+The second channel (a messaging bot, WhatsApp or similar, [decision 004](../decisions/004-first-build-stack.md); Discord was the earlier plan) renders the same object in a short form (verdict, strength, up to 3 citations, and a link to the full web result), so both channels show the same verdict and evidence.

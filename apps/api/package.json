@@ -1,0 +1,10 @@
+{
+  "name": "@prawdowid/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "deno task dev",
+    "start": "deno task start",
+    "check": "deno task check"
+  }
+}

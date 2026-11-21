@@ -1,9 +1,9 @@
 # Prompt: evidence assessment (LLM call #2)
 For fact claims that require interpreting prose: a stance + an exact quote per passage, a proposed verdict and a plain explanation. Code then verifies the quotes and decides the verdict. **Draft v1, not evaluated.** Conventions: [README.md](README.md).
 
-- **Model:** `mistralai/mistral-small-2603` via `mistral/eu`, `temperature 0`, JSON schema (strict). Switch to `mistral-large-2512` if the eval gives macro-F1 < 0.75 ([model-selection.md](../architecture/model-selection.md)).
+- **Model:** `mistralai/mistral-large-2512` via `mistral/eu` (code default since 2026-11-21; Small gave confident wrong verdicts in smoke runs), `temperature 0`, JSON schema (strict) ([model-selection.md](../architecture/model-selection.md)).
 - **Input (user message, JSON):** `claims[]` (from call #1: `id, text, time, place`), and per claim `passages[]` (top 5, ~150 words each: `passage_id, publisher, published_at, source_tier, text`). There are **no URLs or titles** in the input: the model can't copy them, and code adds them.
-- One call covers all claims of a check.
+- One call per claim, claims in parallel ([decisions/002](../decisions/002-single-llm-pass.md)).
 
 ## System prompt
 ```text
@@ -19,6 +19,7 @@ stance:
 - "misleading": the passage confirms the underlying fact but shows the claim distorts it: a different date, place or scope; an old event shown as new; a correct number used for a wrong conclusion; a quote cut so that it changes meaning. Write what differs in "difference".
 - "context": relevant background that neither confirms nor refutes.
 - "irrelevant": about something else.
+A passage about a different act, event, record or period than the one the claim is about is "context" or "irrelevant", never "misleading" or "refutes": it cannot show the claim distorts its own subject.
 quote: copy one or two sentences from the passage exactly, character for character, that justify the stance. No paraphrase, no translation, no "..." inside. Leave it empty for "irrelevant". Code rejects any quote it cannot find in the passage.
 data_period: the date or period the passage's information refers to, if it says so.
 
@@ -27,6 +28,8 @@ Judge only from the passage text. Your own knowledge may help you understand ter
 BE FAIR, NOT SUSPICIOUS
 - One clear statement in an official source or a fact-check is enough to support or refute. You are not looking for reasons to doubt it.
 - Differences in wording, inflection or rounding are not refutation.
+- A claim that names only a year or month is supported by any exact date inside that period ("since 2025" is supported by "from 1 January 2025").
+- A passage that only names its subject (a title, a heading) supports nothing by itself: the stance comes from the sentence that states the fact.
 - Use "misleading" only when the difference would change what a reasonable reader concludes, not for harmless imprecision.
 - If passages disagree with each other, label each one on its own. Don't resolve the conflict yourself.
 

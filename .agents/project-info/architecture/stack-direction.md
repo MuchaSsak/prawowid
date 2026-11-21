@@ -1,5 +1,5 @@
 # Stack direction (from the team)
-What the team has said so far about technologies. **Nothing here is decided yet.** The final vision is coming from the user later. When it is decided, record it in `decisions/`.
+What the team has said about technologies. **Decided so far:** the first build (Bun/Turbo monorepo, Deno + Hono API, runtime-agnostic core, Astro web app, mock DB) in [decision 004](../decisions/004-first-build-stack.md), and the Supabase workflow in [decision 005](../decisions/005-supabase-schema-workflow.md). The rest below is still direction, not decision. What is built: [codebase.md](codebase.md).
 
 - **Repo:** a Turborepo monorepo holding everything about the project (apps + packages). (user, 2026-11-21)
 - **API:** **Deno Deploy** hosts the API that accepts the user's text, URL or image input. (user, 2026-11-21: "our deno deploy api")

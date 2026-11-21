@@ -1,0 +1,86 @@
+---
+import "../styles/global.css";
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
+---
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Prawdowid: bezpłatne sprawdzanie faktów ze źródłami." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Prawdowid · sprawdź, zanim udostępnisz</title>
+  </head>
+  <body data-api={apiUrl}>
+    <header class="top">
+      <div class="wrap">
+        <a class="brand" href="/"><span class="logo" aria-hidden="true">✓</span> Prawdowid</a>
+        <span class="badge">prototyp</span>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="intro">
+        <h1>Sprawdź, zanim udostępnisz</h1>
+        <p>
+          Wklej wypowiedź, link do artykułu albo zrzut ekranu. Wyodrębnimy twierdzenia o faktach, sprawdzimy je w
+          źródłach i pokażemy, co dokładnie mówią źródła.
+        </p>
+      </section>
+
+      <form id="check-form" class="card form" novalidate>
+        <div class="tabs" role="tablist" aria-label="Rodzaj treści">
+          <button type="button" role="tab" class="tab" data-type="text" aria-selected="true">Tekst</button>
+          <button type="button" role="tab" class="tab" data-type="url" aria-selected="false">Link</button>
+          <button type="button" role="tab" class="tab" data-type="image" aria-selected="false">Obraz</button>
+        </div>
+
+        <div class="panel" data-panel="text">
+          <label for="text-input" class="sr-only">Tekst do sprawdzenia</label>
+          <textarea id="text-input" rows="7" maxlength="50000"
+            placeholder="Np. „Od 2025 roku w Polsce obowiązuje nowa ustawa o ochronie ludności.”"></textarea>
+          <div class="hint"><span id="char-count">0</span> znaków</div>
+        </div>
+
+        <div class="panel" data-panel="url" hidden>
+          <label for="url-input">Link do artykułu lub komunikatu</label>
+          <input id="url-input" type="url" inputmode="url" placeholder="https://…" />
+          <p class="hint">Pobierzemy tylko publiczną stronę, z pominięciem parametrów śledzących.</p>
+        </div>
+
+        <div class="panel" data-panel="image" hidden>
+          <label class="drop" id="drop">
+            <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp" />
+            <span id="drop-label">Kliknij lub upuść zrzut ekranu (JPG, PNG, WebP, maks. 5 MB)</span>
+            <img id="preview" alt="Podgląd wybranego obrazu" hidden />
+          </label>
+          <p class="hint">Obraz trafia tylko do odczytu tekstu i nie jest zapisywany. Metadane (np. lokalizacja) usuwamy przed wysłaniem.</p>
+        </div>
+
+        <div class="panel-extra" id="note-wrap" hidden>
+          <label for="note-input">Co chcesz sprawdzić? <span class="muted">(opcjonalnie)</span></label>
+          <input id="note-input" type="text" maxlength="2000" placeholder="Np. „Czy to zdjęcie jest z tego roku?”" />
+        </div>
+
+        <div class="actions">
+          <button type="submit" id="submit" class="primary">Sprawdź</button>
+          <span id="progress" class="progress" aria-live="polite"></span>
+        </div>
+      </form>
+
+      <section id="result" aria-live="polite"></section>
+    </main>
+
+    <footer class="foot wrap">
+      <p>
+        Prawdowid nie ocenia opinii i nie zastępuje własnego osądu. Zawsze sprawdź cytowane źródła.
+        <button type="button" id="forget" class="link">Usuń dane mojej sesji</button>
+      </p>
+    </footer>
+
+    <script>
+      import { initApp } from "../lib/app.ts";
+      initApp();
+    </script>
+  </body>
+</html>

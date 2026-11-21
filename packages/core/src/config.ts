@@ -13,7 +13,9 @@ export type ModelStep = "claim_extraction" | "evidence_assessment" | "image_extr
 
 export const DEFAULT_MODELS: Record<ModelStep, string> = {
   claim_extraction: "mistralai/mistral-small-2603",
-  evidence_assessment: "mistralai/mistral-small-2603",
+  // Large, not Small: in smoke tests (2026-11-21) Small labelled a bare act title as "supports" and
+  // produced confident wrong verdicts; Large did not. See architecture/model-selection.md.
+  evidence_assessment: "mistralai/mistral-large-2512",
   image_extraction: "mistralai/mistral-small-2603",
 };
 

@@ -10,7 +10,7 @@ The system prompts our pipeline sends to models, plus the rules for writing and 
 There is **no third call** for the final answer. The answer is assembled in code from templates + the `explanation` field of call #2 (cost and consistency).
 
 ## How prompts are used in code
-- Files live in `packages/core/prompts/` as `<id>.v<N>.md`. Every check logs `prompt_id@version` + model, so a result is reproducible.
+- Files live in `packages/core/src/prompts/` as `<id>.v<N>.ts` (a function returning the prompt text; `.ts` so every runtime can import it). Every check logs `prompt_id@version` + model, so a result is reproducible.
 - **Structure of every system prompt:** role (1-2 lines) → data boundary → task → rules → output. Nothing else.
 - **Spotlighting:** user input and fetched content go only in the user message, as JSON (`{"user_message": …, "material": [{"provenance": "article", "text": …}]}`). Never interpolate them into the system prompt.
 - **Structured outputs:** JSON schema (`response_format: json_schema, strict`) + validation in code (zod). Invalid output → retry once → system state `technical_error` (never a guessed verdict).
@@ -34,9 +34,10 @@ There is **no third call** for the final answer. The answer is assembled in code
 - Over-skepticism instructions ("doubt everything"). They push the model toward abstaining on everything, which kills macro-F1 as surely as hallucination does.
 
 ## Changing a prompt
-1. Edit the file here (the draft) and in `packages/core/prompts/` (bump the version).
+1. Edit the file here (the draft) and in `packages/core/src/prompts/` (bump the version).
 2. Rerun the eval set (our own ≥30 cases, scenarios A-J). Record macro-F1, citation correctness, abstention and injection resistance in the change log below.
 3. Keep the change only if the metrics don't drop.
 
 ## Change log
+- code v1 (2026-11-21): first code versions in `packages/core/src/prompts/`. Claim extraction splits queries into `search_queries_pl` + `search_query_en`; evidence assessment gained the "different subject is never misleading", "year-only claims" and "a title alone supports nothing" rules after smoke runs. Not evaluated.
 - v1 (2026-11-21): first drafts. Not evaluated.

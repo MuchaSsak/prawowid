@@ -5,7 +5,7 @@ Which models to use per pipeline step: quality, reliability, cost and GDPR compl
 - **Only Mistral offers EU-tagged endpoints:** `mistral/eu` and `mistral/zdr` for mistral-small-2603, mistral-large-2512 and voxtral-small. `mistral-embed-2312` has only `mistral/zdr`.
 - **Claude Haiku 5.5** runs on Google Vertex (global), Claude on AWS, Azure (global), Anthropic and Bedrock. **Gemini** runs on Google AI Studio and Vertex (global). **GPT-5-mini** runs on OpenAI and Azure. **bge-m3** is hosted by Parasail and DeepInfra. None of these has an EU tag, so treat them as **non-EEA processing**.
 - **Provider routing options:** `provider: { data_collection: "deny", zdr: true, only: [...], require_parameters: true }`. **Full EU in-region routing (`eu.openrouter.ai`) is Business/Enterprise only.**
-- OpenRouter itself is a US intermediary, so it is a data processor in the chain. Whether pinning by endpoint tag works (`only: ["mistral/eu"]`) is an **Assumption**: test it with our key and check the `provider` field in the response.
+- OpenRouter itself is a US intermediary, so it is a data processor in the chain. Pinning by endpoint tag works: `only: ["mistral/eu"]` with `allow_fallbacks: false` was accepted and served by provider "Mistral" (tested with our key, 2026-11-21, [codebase](codebase.md)).
 - **Google Safety Retention (from 2026-10-18):** OpenRouter shows that Google models now require Safety Retention unless you opt out in the account privacy settings and workspace guardrails. This affects the Gemini video path. Opt out before using it. (user screenshot of the OpenRouter dashboard, 2026-11-21)
 - **Routing is set per step in code**, not account-wide: an account-wide Mistral-only or ZDR-only restriction would block Gemini video, bge-m3 embeddings and the fallback model. See [decision 003](../decisions/003-config-in-code.md).
 - All candidates below support `structured_outputs` (JSON schema). We validate it in code anyway.
@@ -28,7 +28,7 @@ Which models to use per pipeline step: quality, reliability, cost and GDPR compl
 | Step | Model | Why |
 |---|---|---|
 | 1. Claims + types + queries | **mistral-small-2603** via `mistral/eu` | EU, cheap, a structured task |
-| 2. Stance + exact quotes (the critical step) | **mistral-small-2603** first; switch to **mistral-large-2512** if the eval F1 < 0.75 | EU; Large costs only about 3× Small |
+| 2. Stance + exact quotes (the critical step) | **mistral-large-2512** (code default since 2026-11-21) | EU. In smoke runs Small labelled a bare act title as "supports" and produced confident wrong verdicts; Large did not. Revisit with the eval; Small stays available via `MODEL_EVIDENCE_ASSESSMENT` |
 | Embeddings | **bge-m3** (quality, cross-lingual PL↔EN/RU) on **masked, public** text only, or `mistral-embed` for a strictly EU-vendor path | the corpus is public data; user queries are PII-masked first |
 | Images (OCR) | **mistral-small-2603** (vision, EU) | keeps the image path in the EU; the OCR text is redacted before the next step |
 | Video / YouTube | **gemini-3.1-flash-lite** (optional bonus path) | the only practical video model; **disclose non-EEA processing**, and use it only for public videos |

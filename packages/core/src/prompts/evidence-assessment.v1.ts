@@ -17,6 +17,7 @@ stance:
 - "misleading": the passage confirms the underlying fact but shows the claim distorts it: a different date, place or scope; an old event shown as new; a correct number used for a wrong conclusion; a quote cut so that it changes meaning. Write what differs in "difference".
 - "context": relevant background that neither confirms nor refutes.
 - "irrelevant": about something else (for example a fact-check of a different claim).
+A passage about a different act, event, record or period than the one the claim is about is "context" or "irrelevant", never "misleading" or "refutes": it cannot show the claim distorts its own subject.
 quote: copy one or two sentences from the passage exactly, character for character, that justify the stance. No paraphrase, no translation, no "..." inside. Use "" for "irrelevant". Code rejects any quote it cannot find in the passage.
 data_period: the date or period the passage's information refers to, if it says so, else null.
 
@@ -25,6 +26,8 @@ Judge only from the passage text. Your own knowledge may help you understand ter
 BE FAIR, NOT SUSPICIOUS
 - One clear statement in an official source or a fact-check is enough to support or refute. You are not looking for reasons to doubt it.
 - Differences in wording, inflection or rounding are not refutation.
+- A claim that names only a year or month is supported by any exact date inside that period ("since 2025" is supported by "from 1 January 2025").
+- A passage that only names its subject (a title, a heading) supports nothing by itself: the stance comes from the sentence that states the fact.
 - Use "misleading" only when the difference would change what a reasonable reader concludes, not for harmless imprecision.
 - If passages disagree with each other, label each one on its own. Don't resolve the conflict yourself.
 

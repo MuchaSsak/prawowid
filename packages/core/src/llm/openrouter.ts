@@ -139,8 +139,10 @@ export async function chatJson<T extends z.ZodType>(
   try {
     return await once(opts);
   } catch (err) {
-    const retryable = err instanceof LlmError && (err.kind === "invalid_output" || err.kind === "http");
+    const retryable = err instanceof LlmError &&
+      (err.kind === "invalid_output" || err.kind === "http" || err.kind === "rate_limited");
     if (!retryable || opts.signal?.aborted) throw err;
+    if (err.kind === "rate_limited") await new Promise((r) => setTimeout(r, 1500));
     return await once(opts);
   }
 }

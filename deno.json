@@ -1,6 +1,24 @@
 {
-  "workspace": ["./apps/api", "./packages/core"],
+  "workspace": [
+    "./apps/api",
+    "./packages/core"
+  ],
   "nodeModulesDir": "none",
-  "fmt": { "lineWidth": 110 },
-  "exclude": ["apps/web", "example", "node_modules", "supabase"]
+  "fmt": {
+    "lineWidth": 110
+  },
+  "exclude": [
+    "apps/web",
+    "example",
+    "node_modules",
+    "supabase"
+  ],
+  "compilerOptions": {
+    "lib": [
+      "deno.ns",
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ]
+  }
 }
