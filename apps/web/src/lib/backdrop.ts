@@ -1,71 +1,15 @@
 /**
- * The living backdrop: the dark page around the hero panel on the input screen, redrawn by an OGL
+ * The living backdrop: the dark page around the hero panel on the input screen, redrawn by a WebGL
  * fragment shader as a faint blue haze that drifts slowly on its own (no pointer input). Low
  * contrast by design. Colors come from the CSS tokens (--page, --navy), so it follows the page theme.
  * In chat it stays behind the whole thread, a little fainter.
  * Cheap on phones: device-pixel-ratio capped at 1, ~30 fps, paused when the tab is hidden, one
  * static frame under prefers-reduced-motion, and the plain CSS gradient stays as the fallback.
+ * The drawing (src/lib/backdrop-gl.ts) runs in a worker on an OffscreenCanvas, so WebGL start-up
+ * never blocks the page; this file only reads the page (size, colors, motion) and sends it over.
+ * Browsers without OffscreenCanvas run the same renderer here on the main thread.
  */
-import { Mesh, Program, Renderer, Triangle } from "ogl";
-
-const vertex = /* glsl */ `
-attribute vec2 position;
-attribute vec2 uv;
-varying vec2 vUv;
-void main() { vUv = uv; gl_Position = vec4(position, 0.0, 1.0); }
-`;
-
-const fragment = /* glsl */ `
-precision highp float;
-uniform float uTime;
-uniform vec2 uRes;
-uniform vec3 uHi;
-uniform vec3 uLo;
-uniform vec3 uAccent;
-uniform float uAccentAmt;
-uniform float uWarp;
-varying vec2 vUv;
-
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float noise(vec2 p) {
-  vec2 i = floor(p), f = fract(p);
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
-}
-float fbm(vec2 p) {
-  float v = 0.0, a = 0.5;
-  mat2 r = mat2(0.8, 0.6, -0.6, 0.8);
-  for (int i = 0; i < 4; i++) { v += a * noise(p); p = r * p * 2.02; a *= 0.5; }
-  return v;
-}
-
-void main() {
-  float t = uTime * 0.09;
-  float aspect = uRes.x / max(uRes.y, 1.0);
-  vec2 p = vec2(vUv.x * aspect, vUv.y) * 1.6;
-
-  // Domain-warped flow field: two slow layers drifting in different directions.
-  vec2 q = vec2(fbm(p + vec2(0.0, t)), fbm(p + vec2(5.2, 1.3) - vec2(t * 0.7, 0.0)));
-  float flow = fbm(p + 1.7 * q + vec2(t * 0.4, -t * 0.25));
-
-  // The same radial gradient as the CSS fallback (120% x 80% ellipse at 50% 28%), its centre
-  // breathing a little and its edge warped by the flow.
-  vec2 c = vec2(0.5 + 0.04 * sin(t * 1.3), 0.72 + 0.03 * cos(t * 0.9));
-  float d = length((vUv - c) / vec2(1.2, 0.8));
-  d += (flow - 0.5) * uWarp;
-  vec3 col = mix(uHi, uLo, clamp(d / 0.62, 0.0, 1.0));
-
-  // A faint accent haze riding the flow.
-  float haze = smoothstep(0.3, 0.8, flow);
-  col = mix(col, uAccent, haze * uAccentAmt);
-
-  // Dither so the very low-contrast gradient never bands.
-  col += (hash(gl_FragCoord.xy + fract(uTime)) - 0.5) / 255.0;
-  gl_FragColor = vec4(col, 1.0);
-}
-`;
-
-type RGB = [number, number, number];
+import { createBackdropRenderer, type BackdropState, type RGB } from "./backdrop-gl.ts";
 
 function toRgb(ctx: CanvasRenderingContext2D, value: string, fallback: RGB): RGB {
   ctx.fillStyle = "#000";
@@ -76,95 +20,62 @@ function toRgb(ctx: CanvasRenderingContext2D, value: string, fallback: RGB): RGB
 }
 
 export function initBackdrop(host: HTMLElement): void {
-  let renderer: Renderer;
-  try {
-    renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio || 1, 1), alpha: false, antialias: false, powerPreference: "low-power" });
-  } catch {
-    return; // no WebGL: the CSS gradient stays
-  }
-  const gl = renderer.gl;
-  if (!gl) return;
-  const canvas = gl.canvas as HTMLCanvasElement;
+  const canvas = document.createElement("canvas");
   canvas.className = "backdrop";
   canvas.setAttribute("aria-hidden", "true");
-  host.prepend(canvas);
-
-  const program = new Program(gl, {
-    vertex,
-    fragment,
-    uniforms: {
-      uTime: { value: 0 },
-      uRes: { value: [1, 1] },
-      uHi: { value: [0, 0, 0] },
-      uLo: { value: [0, 0, 0] },
-      uAccent: { value: [0, 0, 0] },
-      uAccentAmt: { value: 0 },
-      uWarp: { value: 0 },
-    },
-  });
-  const mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
+  host.prepend(canvas); // transparent (opacity 0) until the first frame is drawn
 
   const probe = document.createElement("canvas").getContext("2d")!;
   // Fixed per page, not the OS setting: only the admin panel (data-theme="light") is light.
-  const dark = { matches: document.documentElement.dataset.theme !== "light" };
+  const dark = document.documentElement.dataset.theme !== "light";
   const still = matchMedia("(prefers-reduced-motion: reduce)");
+  const dpr = Math.min(window.devicePixelRatio || 1, 1);
 
-  const readColors = () => {
+  const read = (): BackdropState => {
+    const r = canvas.getBoundingClientRect();
     const css = getComputedStyle(document.documentElement);
     const chat = document.body.classList.contains("is-chat");
-    const u = program.uniforms;
     const page = toRgb(probe, css.getPropertyValue("--page"), [1, 1, 1]);
-    u.uHi.value = page;
-    u.uLo.value = page;
-    u.uAccent.value = toRgb(probe, css.getPropertyValue("--navy"), page);
-    // Dark: a faint blue haze drifting over the near-black page. Light: barely there.
-    u.uAccentAmt.value = dark.matches ? (chat ? 0.09 : 0.18) : (chat ? 0.03 : 0.06);
-    u.uWarp.value = 0;
+    return {
+      w: Math.max(1, Math.round(r.width)),
+      h: Math.max(1, Math.round(r.height)),
+      page,
+      accent: toRgb(probe, css.getPropertyValue("--navy"), page),
+      // Dark: a faint blue haze drifting over the near-black page. Light: barely there.
+      accentAmt: dark ? (chat ? 0.09 : 0.18) : (chat ? 0.03 : 0.06),
+      animate: !still.matches && !document.hidden,
+    };
   };
 
-  const resize = () => {
-    const r = canvas.getBoundingClientRect();
-    const w = Math.max(1, Math.round(r.width));
-    const hgt = Math.max(1, Math.round(r.height));
-    renderer.setSize(w, hgt);
-    // OGL writes pixel sizes inline; drop them so CSS (100% of the frame / viewport) stays in charge.
-    canvas.style.width = "";
-    canvas.style.height = "";
-    program.uniforms.uRes.value = [w, hgt];
+  const ready = () => requestAnimationFrame(() => canvas.classList.add("is-on"));
+  let alive = true;
+  const fail = () => {
+    alive = false;
+    canvas.remove(); // the CSS gradient stays
   };
 
-  const start = performance.now() - Math.random() * 60_000; // a different flow on each visit
-  let last = 0;
-  let raf = 0;
-  const draw = (now: number) => {
-    program.uniforms.uTime.value = (now - start) / 1000;
-    renderer.render({ scene: mesh });
-  };
-  const loop = (now: number) => {
-    raf = requestAnimationFrame(loop);
-    if (now - last < 33) return; // ~30 fps is plenty for motion this slow
-    last = now;
-    draw(now);
-  };
-  const run = () => {
-    cancelAnimationFrame(raf);
-    if (still.matches) draw(performance.now());
-    else raf = requestAnimationFrame(loop);
-  };
+  let send: (s: BackdropState) => void;
+  if ("transferControlToOffscreen" in canvas && typeof Worker === "function") {
+    try {
+      const offscreen = canvas.transferControlToOffscreen();
+      const worker = new Worker(new URL("./backdrop.worker.ts", import.meta.url), { type: "module" });
+      const stop = () => { worker.terminate(); fail(); };
+      worker.onmessage = (e: MessageEvent<string>) => (e.data === "ready" ? ready() : stop());
+      worker.onerror = stop;
+      worker.postMessage({ canvas: offscreen, dpr, state: read() }, [offscreen]);
+      send = (state) => worker.postMessage({ state });
+    } catch {
+      return fail();
+    }
+  } else {
+    const update = createBackdropRenderer(canvas, dpr, ready, fail);
+    update(read());
+    send = update;
+  }
 
-  const refresh = () => {
-    readColors();
-    resize();
-    draw(performance.now());
-  };
-
+  const refresh = () => alive && send(read());
   new ResizeObserver(refresh).observe(canvas);
   new MutationObserver(refresh).observe(document.body, { attributes: true, attributeFilter: ["class"] });
-  still.addEventListener("change", run);
-  document.addEventListener("visibilitychange", () => (document.hidden ? cancelAnimationFrame(raf) : run()));
-  canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); cancelAnimationFrame(raf); canvas.remove(); });
-
-  refresh();
-  run();
-  requestAnimationFrame(() => canvas.classList.add("is-on"));
+  still.addEventListener("change", refresh);
+  document.addEventListener("visibilitychange", refresh);
 }

@@ -190,6 +190,14 @@ a.doc-thumb:hover { opacity: .92; }
   .dash { grid-template-columns: 1fr; }
   .admin-head h1 { font-size: 2rem; }
 }
+@media (max-width: 412px) {
+  /* With the web fonts loaded the nav wraps under the brand at <= 412 px anyway, but only by ~2 px,
+     so while the fonts arrive one by one it wrapped and unwrapped (layout shift 0.35 in Lighthouse,
+     whose phone is 412 px wide). Breaking the row here makes it independent of the fonts. The foot is
+     empty at this width (its link is hidden below 520 px), so removing it changes nothing visible. */
+  .side nav { flex-basis: 100%; }
+  .side-foot { display: none; }
+}
 @media (max-width: 520px) {
   /* Phone lock screen: key field on its own row, the button full width under it. */
   .gate-card { padding: 22px 20px; }

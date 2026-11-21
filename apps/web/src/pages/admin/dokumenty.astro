@@ -1,11 +1,12 @@
 ---
-import "@fontsource-variable/newsreader/opsz.css";
 import "@fontsource-variable/inter-tight";
 import "../../styles/global.css";
 import "../../styles/admin.css";
 import { documents, embedUrl } from "../../lib/admin/documents.ts";
 
 const cards = documents.map((d) => ({ ...d, embed: embedUrl(d.url) }));
+// The previews keep Google's cookies on purpose: a `credentialless` iframe would clear Lighthouse's
+// third-party-cookie warning, but Google Sheets then shows a cookie-consent prompt instead of the sheet.
 ---
 <!doctype html>
 <html lang="pl" data-theme="light">

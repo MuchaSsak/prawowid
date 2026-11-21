@@ -11,7 +11,7 @@ Format: `- [path](path): one-line summary`
 ## rules/
 - [rules/README.md](rules/README.md): scope of the folder 
 - [rules/hard-constraints.md](rules/hard-constraints.md): 21 non-negotiable rules from the task and the organizers (no fabricated sources, verdicts vs system states, security, eval integrity, facts not opinions)
-- [rules/ui-conventions.md](rules/ui-conventions.md): user's UI style rules (no uppercase eyebrow labels above titles, less text)
+- [rules/ui-conventions.md](rules/ui-conventions.md): user's UI style rules (no uppercase eyebrow labels above titles, less text, supported widths 320 px to ultrawide)
 - [rules/cost-sheet.md](rules/cost-sheet.md): **keep the cost Google Sheet current with real numbers**: when to update (full eval runs, model/price, hosting/channel, limits, NBP rate), sources per input, keep it small, cell map
 
 ## hackathon/
@@ -52,6 +52,7 @@ Format: `- [path](path): one-line summary`
 - [architecture/api-reference.md](architecture/api-reference.md): **for channel builders**: every endpoint, header, request field, env var (incl. `MOCK_CLIENTS`), mock scenario, Deno Deploy setup, versioning rules
 - [architecture/extensibility.md](architecture/extensibility.md): **bonus: swappable channels, models and sources**: the seams (API, MODEL_<STEP>, `deps.connectors`, `deps.narrativeMatchers`), step-by-step recipes, the proving tests, swapping storage behind a route (vector DB via the plan), what is deliberately not swappable
 - [architecture/codebase.md](architecture/codebase.md): **what is built**: code layout, evidence routes (Google Fact Check, ELI, Eurostat, NBP, GUS), the number check, interim verdict choices, measured latency/cost, next steps
+- [architecture/web-performance.md](architecture/web-performance.md): Lighthouse scores before/after for every web page, what changed and why (inlined CSS, poster preload, video/grain after load, WebGL backdrop in a worker, pinned and Polish-subset fonts, CLS/LCP fixes, SEO files), deliberate ceilings, how to re-check
 - [architecture/technical-approach-research.md](architecture/technical-approach-research.md): pipeline best practice, models, retrieval, injection defense, eval harness, IFCN/EFCSN
 - [architecture/vector-db-integration-plan.md](architecture/vector-db-integration-plan.md): minimalny plan wpięcia istniejącego PostgreSQL + pgvector przez `CorpusStore`, plus lista braków (hosting, korpus 21 dok., adapter, polityka, eval)
 

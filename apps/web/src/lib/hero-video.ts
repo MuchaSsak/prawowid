@@ -20,10 +20,12 @@ export function initHeroVideo(video: HTMLVideoElement | null): void {
   document.addEventListener("visibilitychange", sync);
   // The film grain (.has-grain::before in global.css) is also added only after load: its SVG
   // turbulence is the most expensive thing to paint, so it stays out of the first paint.
+  // Playback starts in this task, the grain layer one frame later: together they forced a single
+  // long style + layout pass.
   const onLoad = () => {
     loaded = true;
-    video.parentElement?.classList.add("has-grain");
     sync();
+    requestAnimationFrame(() => video.parentElement?.classList.add("has-grain"));
   };
   if (loaded) onLoad();
   else addEventListener("load", onLoad, { once: true });
