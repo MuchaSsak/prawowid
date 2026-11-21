@@ -19,7 +19,7 @@ Or both at once: `bun run dev`. Check the setup: `curl http://localhost:8787/api
 
 ## Tests and benchmark
 - `bun run bot:test`: the bot's tests (no network, no credits).
-- `bun run test`: 150 deterministic tests (model and source APIs stubbed, **no credits used**): the verification rules for scenarios A-J, the v1 contract, the source allowlist, the statistics routes and the number check, video/audio input checks, every API route.
+- `bun run test`: 156 deterministic tests (model and source APIs stubbed, **no credits used**): the verification rules for scenarios A-J, the v1 contract, the source allowlist, the statistics routes and the number check, video/audio input checks, every API route.
 - `bun run eval:quick`: 6 live cases (~$0.005). `bun run eval`: the full 50-case reference set (~$0.05) with the task's metrics (macro-F1, citation coverage, abstention, robustness, latency, cost per 100, end-to-end, channel consistency). `bun run eval:remote`: the same against the deployed API.
 - Results: `eval/results/latest.md`; method and known gaps: `.agents/project-info/evaluation/benchmark.md`.
 

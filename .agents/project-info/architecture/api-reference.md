@@ -75,6 +75,7 @@ Pick a scenario (first match wins):
 |---|---|---|
 | `OPENROUTER_API_KEY` | live mode | LLM gateway |
 | `GOOGLE_FACT_CHECK_API_KEY` | live mode | required evidence route; without it claims return `source_unavailable` |
+| `EUVSDISINFO_TOKEN` | no | EUvsDisinfo known-incident context (`context_matches`); without it that route is `skipped` and nothing else changes |
 | `PRAWDOWID_MODE` | no | `mock` makes every check a mock (default `live`) |
 | `MOCK_DELAY_MS` | no | simulated mock latency (default 600) |
 | `CLIENT_KEYS` | no | `name:key,name2:key2` for server clients |

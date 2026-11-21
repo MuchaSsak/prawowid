@@ -39,12 +39,16 @@ import {
 } from "./render.ts";
 import { numericGuard } from "./numeric.ts";
 import { retrieve } from "./retrieve.ts";
+import { type ContextResult, findContextMatches, NARRATIVE_MATCHERS } from "../narratives/mod.ts";
+import type { KnownIncidentStore } from "../narratives/types.ts";
 import { decideVerdict } from "./verdict.ts";
 
 export interface CoreDeps {
   config: Config;
   store: CheckStore;
   corpus: CorpusStore;
+  /** Known-incident index (EUvsDisinfo cases). Optional: without it the live EUvsDisinfo search is used. */
+  incidents?: KnownIncidentStore;
   resolveHost?: ResolveHost;
   now?: () => Date;
 }
@@ -65,6 +69,16 @@ function llmMessage(err: unknown): string {
     }
   }
   return "Nieoczekiwany błąd.";
+}
+
+/** Known-incident context goes next to the result: its routes, one warning, the matches. Never into citations. */
+function addContext(x: ClaimResult, known: ContextResult): ClaimResult {
+  return {
+    ...x,
+    routes: [...x.routes, ...known.routes],
+    warnings: [...x.warnings, ...known.warnings],
+    ...(known.matches.length ? { context_matches: known.matches } : {}),
+  };
 }
 
 /** Confirmed vs false/misleading: the two readings cannot both be right. */
@@ -394,29 +408,37 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       claimed_value: c.claimed_value,
       currency: c.currency,
     };
-    const r = await retrieve(query, CONNECTORS, ctx);
+    // Evidence and known-incident context run side by side; context never feeds the verdict.
+    const [r, known] = await Promise.all([
+      retrieve(query, CONNECTORS, ctx),
+      findContextMatches(query, NARRATIVE_MATCHERS, { config: deps.config, signal: deadline.signal, incidents: deps.incidents }),
+    ]);
     base.routes = r.routes;
-    for (const route of r.routes) {
+    for (const route of [...r.routes, ...known.routes]) {
       if (["error", "timeout", "unavailable"].includes(route.status)) event("route_error", { claim: c.id, ...route });
     }
+    if (known.matches.length) {
+      event("context_match", { claim: c.id, matches: known.matches.map((m) => ({ route: m.route, url: m.url, score: m.score })) });
+    }
+    const withContext = (x: ClaimResult) => addContext(x, known);
     if (r.requiredFailure) {
       const state = r.requiredFailure.status === "unavailable" ? "source_unavailable" : "technical_error";
-      return { ...base, system_state: state, system_message: claimStateMessage(state, `${r.requiredFailure.label}: ${r.requiredFailure.detail ?? r.requiredFailure.status}`) };
+      return withContext({ ...base, system_state: state, system_message: claimStateMessage(state, `${r.requiredFailure.label}: ${r.requiredFailure.detail ?? r.requiredFailure.status}`) });
     }
     const optionalRouteMissing = r.routes.some((x) => !x.required && x.status !== "hits" && x.status !== "no_hits");
 
     if (r.records.length === 0) {
-      return {
+      return withContext({
         ...base,
         verdict: "insufficient_evidence",
         verdict_label: VERDICT_LABEL_PL.insufficient_evidence,
         strength: { level: "low", reasons: ["brak pasujących źródeł"] },
         explanation: templateExplanation("insufficient_evidence", []),
         missing: "W przeszukanych źródłach nie ma informacji o tym twierdzeniu. Brak wyniku nie oznacza, że to nieprawda.",
-      };
+      });
     }
     if (deadline.signal.aborted) {
-      return { ...base, system_state: "not_processed", system_message: claimStateMessage("not_processed") };
+      return withContext({ ...base, system_state: "not_processed", system_message: claimStateMessage("not_processed") });
     }
 
     let assessed;
@@ -434,9 +456,9 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     } catch (err) {
       event("llm_error", { stage: "assess", claim: c.id, message: (err as Error).message.slice(0, 300) });
       if (deadline.signal.aborted) {
-        return { ...base, system_state: "not_processed", system_message: claimStateMessage("not_processed") };
+        return withContext({ ...base, system_state: "not_processed", system_message: claimStateMessage("not_processed") });
       }
-      return { ...base, system_state: "technical_error", system_message: claimStateMessage("technical_error", llmMessage(err)) };
+      return withContext({ ...base, system_state: "technical_error", system_message: claimStateMessage("technical_error", llmMessage(err)) });
     }
     for (const p of assessed.passages) {
       if (p.quoteRejected) event("quote_rejected", { claim: c.id, source_id: p.record.source_id, stance: p.modelStance });
@@ -479,7 +501,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
         tier: p.record.tier,
         route: p.record.route,
       }));
-    return {
+    return withContext({
       ...base,
       verdict: d.verdict,
       verdict_label: VERDICT_LABEL_PL[d.verdict],
@@ -490,7 +512,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
         : null,
       citations,
       warnings: [...base.warnings, ...d.warnings],
-    };
+    });
   }
 
   // ── 8. Assemble ────────────────────────────────────────────────────────────

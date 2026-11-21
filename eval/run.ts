@@ -227,6 +227,16 @@ const cost = ran.reduce((s, r) => s + r.cost_usd, 0);
 const e2e = ran.filter((r) => !r.transport_error && r.schema_valid && r.expectation_met && (r.gold === null || !r.predicted.startsWith("status:technical")));
 const cons = ran.filter((r) => r.consistency);
 
+// Known-incident context (EUvsDisinfo): never a verdict input, so it is reported for human review, not scored.
+const ctxClaims = allClaims.filter(({ c }) => c.class === "fact");
+const ctxRoute = (c: { routes: { route: string; status: string }[] }) => c.routes.find((x) => x.route.startsWith("euvsdisinfo"));
+const ctxStatus = new Map<string, number>();
+for (const { c } of ctxClaims) {
+  const st = ctxRoute(c)?.status ?? "absent";
+  ctxStatus.set(st, (ctxStatus.get(st) ?? 0) + 1);
+}
+const ctxRows = ctxClaims.filter(({ c }) => c.context_matches?.length);
+
 // Citation correctness: human labels if present (eval/labels/citations.json: { "<case>|<source_id>|<claim id>": true|false }).
 let labels: Record<string, boolean> = {};
 try {
@@ -260,6 +270,13 @@ Cases: ${ran.length} run${results.length > ran.length ? `, ${results.length - ra
 | End-to-end (completed, valid contract, expectations met) | ${pct(e2e.length, ran.length)} | 100% |
 | Channel consistency (web vs messaging) | ${pct(cons.filter((r) => r.consistency!.same).length, cons.length)} | 100% |
 | Moderator loop | not built (escalation is only "recommended"; tested in pipeline_test.ts) | if built |
+
+## Known-incident context (EUvsDisinfo, review by hand: is each match the same narrative?)
+Fact claims: ${ctxClaims.length} · route status: ${[...ctxStatus].map(([k, v]) => `${k} ${v}`).join(", ") || "n/a"} · claims with a match: ${ctxRows.length}
+
+| Case | Claim | Match (score) |
+|---|---|---|
+${ctxRows.map(({ case: id, c }) => `| ${id} | ${c.text.replace(/\|/g, "/")} | ${c.context_matches!.map((m) => `[${m.title.replace(/\|/g, "/")}](${m.url}) (${m.score})`).join("<br>")} |`).join("\n") || "| - | - | none |"}
 
 ## Per class
 | Class | Precision | Recall | F1 | n |

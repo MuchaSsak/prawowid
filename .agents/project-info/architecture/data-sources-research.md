@@ -6,7 +6,7 @@ Scope: how practical each candidate source is to ingest for the PRAWDOWID 24h MV
 
 | Source | Type | Access method | License / terms | Dates available | Effort | Priority |
 |---|---|---|---|---|---|---|
-| EUvsDisinfo cases + articles (MCP) | Secondary: known-incidents corpus (EEAS East StratCom) | MCP streamable HTTP, bearer token, tools `cases` / `articles`, offset + limit ≤100 | No explicit license found; organizer-provided access. **Assumption**: reuse with attribution and a link back is acceptable for the demo | Case `date` (unix), article `dateGmt` | Low (about 200 paginated calls for all 19,248 cases) | **P0** |
+| EUvsDisinfo cases + articles (MCP) | Secondary: known-incidents corpus (EEAS East StratCom) | MCP streamable HTTP, bearer token, tools `cases` / `articles`, offset + limit ≤100 | No explicit license found; organizer-provided access. **Assumption**: reuse with attribution and a link back is acceptable for the demo | Case `date` (unix), article `dateGmt` | Low (about 200 paginated calls for all 19,873 cases (2026-11-21)) | **P0** |
 | Google Fact Check Tools API (`claims:search`) | Secondary: fact-checkers (ClaimReview) | REST + API key, `languageCode=pl`, `reviewPublisherSiteFilter` | Google APIs ToS; the returned items link to publisher-owned articles | `claimDate`, `reviewDate` | Low | **P0** |
 | CERT Polska komunikaty | Primary: official (cyber, phishing, fake messages) | RSS `https://moje.cert.pl/advisories/feed/` | **Assumption**: public advisories, quotation with attribution | Date + reference number per item | Very low | **P0** |
 | gov.pl: RCB (komunikaty, Alert RCB, raport dobowy) | Primary: official (crisis, civil protection) | HTML list pages, predictable `?page=N&size=10`; no RSS found | gov.pl text: **CC BY-SA 4.0** (photos/video CC BY-NC-ND 4.0) | Date shown per item | Low | **P0** |
@@ -44,7 +44,7 @@ Scope: how practical each candidate source is to ingest for the PRAWDOWID 24h MV
 
 ### 2. EUvsDisinfo (MCP server and alternatives)
 
-- MCP: `https://euvsdisinfo-mcp-server.vercel.app/mcp`, streamable HTTP (not SSE), `Authorization: Bearer <token>`. Flow: `initialize` returns an `mcp-session-id` header, then `tools/call` with `cases` or `articles` and `{offset, limit≤100}`. Source: organizer how-to (`.agents/project-info/sources/2026-11-21-euvsdisinfo-mcp-how-to.pdf`). Totals: 19,248 cases and 6,691 articles. A full pull is about 193 + 67 calls.
+- MCP: `https://mcp.euvsd.info/mcp` (moved from the old vercel host, see [euvsdisinfo-mcp.md](euvsdisinfo-mcp.md)), streamable HTTP, key via `?key=`, Bearer or `X-API-Key`. Stateless `tools/call` works without `initialize`. Tools `cases`, `articles` `{offset, limit≤100}`, plus `search` and `narratives`. Totals: 19,873 cases (2026-11-21) and 6,800+ articles. A full pull is about 193 + 68 calls.
 - Case fields: `id`, `title`, `claim`, `fact` (debunk), `date` (unix seconds), `keywords[]`, `countries[]`, `linksToDisinformation[]` (url, archiveUrl, snapShotURL, headLine, language), `url` (euvsdisinfo.eu/report/...). Article fields: `id`, `title`, `content`, `dateGmt`, `categories`, `articleLanguage`, `url`.
 - Value: the core of the "match against known incidents" bonus. Cases are multilingual (claim language via `linksToDisinformation.language`), so they also support the multilingual-retrieval bonus.
 - License: no explicit license or copyright page was found (`/copyright/` and `/disclaimer/` return 404; `https://euvsdisinfo.eu/about/` only calls the database an "open-source repository" and says MCP access is "by request only"). **Assumption**: as EEAS material, reuse with attribution is acceptable, and the organizer's provision of the token makes demo use legitimate. The catalog should record "EEAS / EUvsDisinfo, no explicit license, used with attribution and link; MCP access granted by organizer". Do not republish the archived disinformation content itself (third-party copyright). Store `claim` / `fact` and links only.
@@ -92,7 +92,7 @@ Top sources by value per effort: (1) EUvsDisinfo MCP, (2) Google Fact Check API 
 
 | # | Source | Type | Target count | Domain(s) | Topic domains covered |
 |---|---|---|---|---|---|
-| 1 | EUvsDisinfo cases (filtered: countries contain Poland/Ukraine/EU, plus the latest 2 years) | Secondary: incident DB | 300-1000 indexed (all 19,248 optional for matching) | euvsdisinfo.eu | security, war in Ukraine, migration, health, elections, energy |
+| 1 | EUvsDisinfo cases (filtered: countries contain Poland/Ukraine/EU, plus the latest 2 years) | Secondary: incident DB | 300-1000 indexed (all 19,873 optional for matching) | euvsdisinfo.eu | security, war in Ukraine, migration, health, elections, energy |
 | 2 | Google FCT `languageCode=pl` + per-publisher filters | Secondary: fact-checkers | 150-300 ClaimReviews | demagog.org.pl, sprawdzam.afp.com, konkret24.tvn24.pl, oko.press (+ fakehunter.pap.pl if present) | politics, health, economy, war, climate |
 | 3 | CERT Polska advisories RSS | Primary | 50 | cert.pl | cyber / scams |
 | 4 | gov.pl RCB komunikaty + Alert RCB | Primary | 40 | gov.pl | crisis / civil protection |
@@ -119,7 +119,7 @@ Result: about 700+ documents (≥100 even without EUvsDisinfo), 12+ web domains 
 ### Open checks (first hour)
 
 1. One Google FCT call per Polish publisher filter to confirm which ones return ClaimReviews with `languageCode=pl`.
-2. Confirm the EUvsDisinfo token works and measure the response time per 100 cases.
+2. EUvsDisinfo token confirmed working on mcp.euvsd.info (2026-11-21). Still to measure: response time per 100 cases.
 3. Check whether `https://demagog.org.pl/feed/sharefeed` is reachable with a plain, honest user agent. If not, rely on Google FCT only.
 4. Check the IMGW warning field names and the Odyseusz page structure.
 

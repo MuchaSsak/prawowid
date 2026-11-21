@@ -48,6 +48,19 @@ export const RouteOutcomeSchema = z.strictObject({
   detail: z.string().optional(),
 });
 
+export const ContextMatchSchema = z.strictObject({
+  kind: z.literal("known_incident"),
+  catalog: z.string(),
+  record_type: z.enum(["case", "article"]),
+  title: z.string(),
+  url: z.string(),
+  published_at: nullableString,
+  excerpt: z.string(),
+  route: z.string(),
+  match: z.enum(["keyword", "semantic", "hybrid"]),
+  score: z.number(),
+});
+
 export const ClaimResultSchema = z.strictObject({
   id: z.string(),
   text: z.string(),
@@ -66,6 +79,7 @@ export const ClaimResultSchema = z.strictObject({
   citations: z.array(CitationSchema),
   warnings: z.array(WarningSchema),
   routes: z.array(RouteOutcomeSchema),
+  context_matches: z.array(ContextMatchSchema).optional(),
 }).refine((c) => (c.verdict === null) !== (c.system_state === null), {
   message: "exactly one of verdict / system_state must be set",
 });

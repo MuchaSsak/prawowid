@@ -82,7 +82,12 @@ Every field is always present (no optional fields in the response); `null` means
       "route": "google_factcheck|sejm_eli|corpus|…"
     }],
     "warnings": [{ "type": "sources_conflict", "text": "…" }],
-    "routes": [{ "route": "google_factcheck", "label": "…", "status": "hits|no_hits|unavailable|error|timeout|skipped", "required": true, "detail": "optional" }]
+    "routes": [{ "route": "google_factcheck", "label": "…", "status": "hits|no_hits|unavailable|error|timeout|skipped", "required": true, "detail": "optional" }],
+    "context_matches": [{                         // optional, absent when none; context only, never a citation or verdict input
+      "kind": "known_incident", "catalog": "EUvsDisinfo", "record_type": "case|article", "title": "…", "url": "https://euvsdisinfo.eu/report/…",
+      "published_at": "ISO" | null, "excerpt": "catalog text, truncated", "route": "euvsdisinfo_live|euvsdisinfo_corpus",
+      "match": "keyword|semantic|hybrid", "score": 0.75
+    }]
   }],
   "warnings": [{ "type": "injection_detected", "text": "…" }],   // request-level
   "limitations": ["…"],
@@ -92,4 +97,4 @@ Every field is always present (no optional fields in the response); `null` means
             "cost_usd": 0.0009, "cached": false, "mode": "live|mock" }
 }
 ```
-`claims[].provenance` says where a claim came from: `text`, `article`, `image#1`, or a timestamp for recordings (`video@01:15`, `audio@00:18`); the web app shows it as a tag. The web app builds its own heading from `claims` ("Sprawdziliśmy N zdania") and does not show `summary.text`, which stays for short channels such as the messaging bot. Rendering rules for every channel: show `verdict_label` for a verdict and `system_message` for a system state, styled differently; when `warnings[0].type === "demo_data"`, show it prominently. The messaging bot renders a short form (verdict, strength, up to 3 citations, a link to the web result) from the same object, so both channels show the same verdict and evidence.
+`claims[].provenance` says where a claim came from: `text`, `article`, `image#1`, or a timestamp for recordings (`video@01:15`, `audio@00:18`); the web app shows it as a tag. The web app builds its own heading from `claims` ("Sprawdziliśmy N zdania") and does not show `summary.text`, which stays for short channels such as the messaging bot. Rendering rules for every channel: show `verdict_label` for a verdict and `system_message` for a system state, styled differently; when `warnings[0].type === "demo_data"`, show it prominently. Show `context_matches` apart from the sources, labelled as context (the web app: a collapsed "Podobne przekazy w bazach dezinformacji (kontekst, nie dowód)" disclosure under the sources); a claim with a match also carries one `known_narrative` warning, so a channel that renders only warnings still shows it. The messaging bot renders a short form (verdict, strength, up to 3 citations, a link to the web result) from the same object, so both channels show the same verdict and evidence.

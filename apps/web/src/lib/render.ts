@@ -215,12 +215,44 @@ function warningBox(w: Warning): HTMLElement {
     ? "Przyjęliśmy założenie"
     : w.type === "archival_material"
     ? "Uwaga: to stary materiał"
+    : w.type === "known_narrative"
+    ? "Podobny przekaz był już opisywany"
     : "Ważne";
   return h("div", { class: `note note-${w.type}` }, h("strong", {}, title), h("p", {}, w.text));
 }
 
 function detailsBlock(summary: string, ...children: (Node | null)[]): HTMLElement {
   return h("details", { class: "more" }, h("summary", {}, summary), h("div", { class: "more-body" }, ...children));
+}
+
+/** Known incidents (EUvsDisinfo): context next to the claim, behind a disclosure and visibly apart from the sources. */
+function contextMatches(c: ClaimResult): HTMLElement | null {
+  if (!c.context_matches?.length) return null;
+  return detailsBlock(
+    "Podobne przekazy w bazach dezinformacji (kontekst, nie dowód)",
+    h(
+      "ul",
+      { class: "context-matches" },
+      ...c.context_matches.map((m) => {
+        const title = m.title.length > 90 ? m.title.slice(0, 90) + "…" : m.title;
+        return h(
+          "li",
+          {},
+          m.excerpt ? h("blockquote", {}, `„${m.excerpt}”`) : null,
+          h(
+            "p",
+            { class: "cite-meta" },
+            h("span", { class: "publisher" }, m.catalog),
+            m.published_at ? `, ${date(m.published_at)}` : "",
+            ": ",
+            hostname(m.url)
+              ? h("a", { href: m.url, target: "_blank", rel: "noopener noreferrer nofollow" }, title, h("span", { class: "sr-only" }, " (otworzy się w nowej karcie)"))
+              : title,
+          ),
+        );
+      }),
+    ),
+  );
 }
 
 function claimCard(c: ClaimResult, index: number, total: number, uid: string): HTMLElement {
@@ -277,6 +309,7 @@ function claimCard(c: ClaimResult, index: number, total: number, uid: string): H
     c.missing ? h("div", { class: "section" }, h("p", { class: "label" }, "Czego nie udało się ustalić"), h("p", {}, c.missing)) : null,
     ...c.warnings.map(warningBox),
     sources,
+    contextMatches(c),
     h("div", { class: "advice" }, h("strong", {}, "Co teraz?"), h("p", {}, VERDICT_ADVICE[v])),
     reasons || c.routes.length ? detailsBlock("Szczegóły tej oceny", reasons, routesList(c)) : null,
     ),

@@ -120,6 +120,8 @@ tmp/
 temp/
 .tmp/
 uploads/
+# Bulk pulls of third-party catalogs (EUvsDisinfo): reload into the DB, never commit
+/data/
 
 # ─────────────────────────────────────────────────────────────
 # Editors & OS

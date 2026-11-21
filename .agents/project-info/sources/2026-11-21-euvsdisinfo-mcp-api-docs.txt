@@ -1,0 +1,593 @@
+Source: https://veedoo.fibery.io/Documentation/Guides/EUvsDisinfo-MCP.-API.-(07.2025)-262?sharing-key=b10c22de-b630-4efc-824d-e117d530a4c8
+Rendered page text captured 2026-11-21 (headless Chromium). Unmodified below.
+
+GUIDE
+#
+262
+Report
+Try Fibery
+Guide Owner
+Private User
+Project (if this guide is for a specific project)
+Private Project
+Section
+Development
+Parent guide
+Guide
+EUvsDisinfo MCP Server
+Basics
+Authentication
+Tools
+cases
+articles
+search
+narratives
+Two operation modes
+Mode 1: Stateful (with initialization)
+Mode 2: Stateless (no initialization)
+tools/call examples
+cases: latest 10 cases
+cases: pagination — second page of 25
+articles: latest 5 articles
+search: search without date filtering
+search: bounded by date range
+narratives: all narratives
+narratives: for a single quarter
+Error codes
+Health check
+Connecting from Claude.ai
+Implementation notes
+
+
+
+
+EUvsDisinfo MCP Server
+
+
+
+
+
+
+
+MCP server providing access to the EUvsDisinfo database — the largest open registry of pro-Kremlin disinformation cases (19,000+ cases, 6,800+ articles).
+
+Implements Streamable HTTP transport per the MCP specification (2025-03-26+), supporting both stateful mode (with initialize handshake) and stateless mode (one-shot requests without a session — used by the Claude.ai client).
+
+Basics
+
+Property
+
+	
+
+Value
+
+
+
+
+URL
+
+	
+
+https://mcp.euvsd.info/mcp
+
+
+
+
+Transport
+
+	
+
+Streamable HTTP (HTTP POST + optional SSE)
+
+
+
+
+Authentication
+
+	
+
+API key via query parameter, Authorization: Bearer, or X-API-Key
+
+
+
+
+Wire format
+
+	
+
+JSON-RPC 2.0
+
+
+
+
+Required Accept
+
+	
+
+application/json, text/event-stream
+
+Authentication
+
+The API key can be supplied in three ways (checked in this order):
+
+?key=YOUR_API_KEY                       # query parameter
+Authorization: Bearer YOUR_API_KEY      # header
+X-API-Key: YOUR_API_KEY                 # header
+
+
+
+Without a valid key the server responds with 401 Unauthorized and a JSON-RPC error code -32001.
+
+Tools
+cases
+
+Returns a paginated list of disinformation cases, sorted by date (newest first).
+
+Parameter
+
+	
+
+Type
+
+	
+
+Required
+
+	
+
+Description
+
+
+
+
+limit
+
+	
+
+int
+
+	
+
+yes
+
+	
+
+Number of cases to fetch (1–100)
+
+
+
+
+offset
+
+	
+
+int
+
+	
+
+yes
+
+	
+
+Number of cases to skip (≥ 0)
+
+Each case includes: id, title, claim, fact, date (Unix timestamp), keywords, countries, linksToDisinformation[], url.
+
+articles
+
+Paginated list of analytical articles, sorted by date.
+
+Parameter
+
+	
+
+Type
+
+	
+
+Required
+
+	
+
+Description
+
+
+
+
+limit
+
+	
+
+int
+
+	
+
+yes
+
+	
+
+Number of articles to fetch (1–100)
+
+
+
+
+offset
+
+	
+
+int
+
+	
+
+yes
+
+	
+
+Number of articles to skip (≥ 0)
+
+Each article includes: id, title, content (HTML→text), dateGmt, keywords[], categories[], articleLanguage[], thumbnailURL, url.
+
+search
+
+Full-text search across both articles and cases, with optional date filtering.
+
+Parameter
+
+	
+
+Type
+
+	
+
+Required
+
+	
+
+Description
+
+
+
+
+query
+
+	
+
+string
+
+	
+
+yes
+
+	
+
+Search query (minimum 3 characters)
+
+
+
+
+date_from
+
+	
+
+string
+
+	
+
+no
+
+	
+
+Start date in YYYY-MM-DD format
+
+
+
+
+date_to
+
+	
+
+string
+
+	
+
+no
+
+	
+
+End date in YYYY-MM-DD format
+
+If date_from > date_to the request fails with a validation error. Returns an array of objects with fields: type (article or claim_review), title, content, link.
+
+narratives
+
+List of disinformation narratives aggregated over a period. With no parameters returns all narratives.
+
+Parameter
+
+	
+
+Type
+
+	
+
+Required
+
+	
+
+Description
+
+
+
+
+date_from
+
+	
+
+string
+
+	
+
+no
+
+	
+
+Start date in YYYY-MM-DD format
+
+
+
+
+date_to
+
+	
+
+string
+
+	
+
+no
+
+	
+
+End date in YYYY-MM-DD format
+
+Returns an array of { narrative: string, date: string } objects.
+
+Two operation modes
+
+The server supports both modes defined by the Streamable HTTP specification. Which one is used depends on the client.
+
+Mode 1: Stateful (with initialization)
+
+The classic three-step MCP flow. This mode is used by MCP Inspector and the official MCP CLI. Session state lives in server memory.
+
+Step 1 — initialize (no mcp-session-id header):
+
+curl -i -X POST "https://mcp.euvsd.info/mcp?key=YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "initialize",
+    "params": {
+      "protocolVersion": "2025-03-26",
+      "capabilities": {},
+      "clientInfo": {"name": "my-client", "version": "1.0"}
+    }
+  }'
+
+The server replies with an SSE event and returns the mcp-session-id in the response headers:
+
+HTTP/1.1 200 OK
+Content-Type: text/event-stream
+mcp-session-id: 037cd3ec-a2bd-4526-97a5-9b0b02941bbc
+
+event: message
+data: {"result":{"protocolVersion":"2025-03-26","capabilities":{...}}, "jsonrpc":"2.0","id":1}
+
+
+
+Step 2 — tools/list (with the session ID):
+
+curl -i -X POST "https://mcp.euvsd.info/mcp?key=YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "mcp-session-id: 037cd3ec-a2bd-4526-97a5-9b0b02941bbc" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
+
+Step 3 — tools/call:
+
+curl -i -X POST "https://mcp.euvsd.info/mcp?key=YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "mcp-session-id: 037cd3ec-a2bd-4526-97a5-9b0b02941bbc" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "tools/call",
+    "params": {
+      "name": "cases",
+      "arguments": {"limit": 10, "offset": 0}
+    }
+  }'
+
+Step 4 (optional) — DELETE to explicitly terminate the session:
+
+curl -X DELETE "https://mcp.euvsd.info/mcp?key=YOUR_API_KEY" \
+  -H "mcp-session-id: 037cd3ec-a2bd-4526-97a5-9b0b02941bbc"
+Mode 2: Stateless (no initialization)
+
+This is how the Claude.ai client operates: it does not perform a prior initialize and instead sends its own client-generated mcp-session-id that the server has never issued. In this mode the server spins up an ephemeral transport per request, handles it, and discards the transport.
+
+curl -i -X POST "https://mcp.euvsd.info/mcp?key=YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "mcp-session-id: any-client-generated-uuid" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "cases",
+      "arguments": {"limit": 10, "offset": 0}
+    }
+  }'
+
+The server processes the request immediately and returns the result — no session, no state.
+
+Security note. Stateless mode does not preserve correlation between requests, so Last-Event-ID resumability is unavailable. For long-running streams and resumable scenarios, use stateful mode.
+
+tools/call examples
+
+Each example below shows just the JSON-RPC request body (the params.arguments field). Headers and method: "tools/call" are the same as in the examples above.
+
+cases: latest 10 cases
+{
+  "name": "cases",
+  "arguments": {"limit": 10, "offset": 0}
+}
+cases: pagination — second page of 25
+{
+  "name": "cases",
+  "arguments": {"limit": 25, "offset": 25}
+}
+articles: latest 5 articles
+{
+  "name": "articles",
+  "arguments": {"limit": 5, "offset": 0}
+}
+search: search without date filtering
+{
+  "name": "search",
+  "arguments": {"query": "Mariupol"}
+}
+search: bounded by date range
+{
+  "name": "search",
+  "arguments": {
+    "query": "biolab",
+    "date_from": "2024-01-01",
+    "date_to": "2024-12-31"
+  }
+}
+narratives: all narratives
+{
+  "name": "narratives",
+  "arguments": {}
+}
+narratives: for a single quarter
+{
+  "name": "narratives",
+  "arguments": {
+    "date_from": "2025-01-01",
+    "date_to": "2025-03-31"
+  }
+}
+Error codes
+
+HTTP
+
+	
+
+JSON-RPC code
+
+	
+
+Cause
+
+
+
+
+401
+
+	
+
+-32001
+
+	
+
+Missing or invalid API key
+
+
+
+
+406
+
+	
+
+-32000
+
+	
+
+Accept header does not include both application/json and text/event-stream
+
+
+
+
+400
+
+	
+
+-32000
+
+	
+
+Invalid mcp-session-id (stateful mode only) or missing initialize
+
+
+
+
+500
+
+	
+
+-32603
+
+	
+
+Internal server error (Elasticsearch, WordPress REST, etc.)
+
+Tool-level errors (e.g. an invalid date format in search) come back as JSON-RPC errors with the message in the message field.
+
+Health check
+
+Separate endpoint, no authentication required:
+
+curl https://mcp.euvsd.info/health
+
+Response:
+
+{"status":"ok","timestamp":"2026-05-04T10:00:00.000Z","authRequired":true}
+Connecting from Claude.ai
+
+Settings → Connectors → Add custom connector
+
+URL: https://mcp.euvsd.info/mcp?key=YOUR_API_KEY
+
+Transport: Streamable HTTP (auto-detected)
+
+Save — done.
+
+Once connected, all four tools are available: cases, articles, search, narratives.
+
+Implementation notes
+
+The server is based on the official @modelcontextprotocol/sdk (TypeScript) example, with two important patches required for compatibility with Claude.ai:
+
+Accept header normalization. A middleware adds the missing MIME types before request handling — the Claude.ai client sends only application/json, while the SDK requires both application/json and text/event-stream.
+
+Stateless fallback. When a request arrives with an unknown mcp-session-id and is not an initialize request, the server creates an ephemeral StreamableHTTPServerTransport with sessionIdGenerator: undefined (the SDK's stateless mode), processes the single request, and disposes of the transport. This is necessary because the Claude.ai client never performs the initialize handshake.
+
+Without these two patches, the official MCP server example does not work with Claude.ai — it returns either 406 Not Acceptable or 400 Bad Request: No valid session ID.
+
+
+
+
+
+
+Created By
+Private User
+Creation Date
+Jul 8, 2025 13:45
+Modification Date
+May 4, 2026 15:42

@@ -312,6 +312,10 @@ body.is-chat .thread { display: grid; gap: 32px; width: 100%; max-width: 54rem; 
 .more-body p { margin: 0 0 8px; }
 .more-body ul { margin: 4px 0 8px; padding-left: 22px; }
 .card .more { margin-top: -4px; }
+/* Known incidents (EUvsDisinfo): context, never evidence, so no stance colors and no source buttons. */
+.more-body ul.context-matches { list-style: none; padding-left: 0; display: grid; gap: 16px; }
+.context-matches blockquote { margin: 0 0 4px; padding-left: 12px; border-left: 3px dashed var(--line); white-space: pre-line; }
+.context-matches a { color: var(--navy); overflow-wrap: anywhere; }
 .route-hits { color: var(--ok-fg); }
 .route-unavailable, .route-error, .route-timeout { color: var(--ink); font-weight: 700; }
 

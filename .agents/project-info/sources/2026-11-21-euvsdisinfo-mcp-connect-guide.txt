@@ -1,0 +1,231 @@
+Source: https://veedoo.fibery.io/Documentation/Guides/Connect-AI-tools-assistans-for-MCP-server-(5-05-2026)-268?sharing-key=91744a47-cc53-4904-a4f4-29ef0533d304
+Rendered page text captured 2026-11-21 (headless Chromium). Unmodified below.
+
+GUIDE
+#
+268
+Report
+Try Fibery
+Guide Owner
+Private User
+Project (if this guide is for a specific project)
+Private Project
+Section
+Parent guide
+Private Guides
+Guide
+How to connect AI tools for MCP server
+Merged from [Guides] Connect AI tools/assistans for MCP server (2/12/2025)
+How to connect AI tools for MCP server
+How to connect AI tools for MCP server 
+
+(version 5/05/2026)
+
+! Also you can see video manual (video file attached)
+
+
+
+
+
+
+
+
+1. https://claude.ai/
+
+	1.1 Use connectors. “One button solution”. Any paid plan required. Unavailable for free plan. 
+
+Open settings
+
+
+
+
+
+
+
+Open connectors
+
+
+
+
+
+
+
+Press the “Add custom connector” button. 
+
+
+
+
+You can use any name. Insert the MCP server URL
+https://mcp.euvsd.info/mcp?key=%your_key%
+
+
+
+
+	Where %your_key% is the access token from https://euvsdisinfo.eu/. 
+You can generate it here.
+
+
+
+
+
+
+
+
+
+
+
+Press the “add” button.
+
+
+
+
+
+
+
+
+
+
+If you see a new window again - > close it. Press “cancel” near the “Add” button.
+
+
+
+
+Now you should see your server.
+
+
+
+
+
+
+
+You can configure your server if you press the configure button.
+
+
+
+
+
+
+
+Better to keep “Need approval” for every request if you want to see the query before send.
+
+
+
+
+That’s all. 
+Now you can ask Claude:
+ “What you can say about the war in Ukraine. Use EuVsDisinfo MCP server.”
+
+
+
+
+Merged from [Guides] Connect AI tools/assistans for MCP server (2/12/2025)
+How to connect AI tools for MCP server 
+
+(version 12/12/2025)
+
+! Also you can see video manual (video file attached)
+
+
+
+
+
+
+
+
+1. https://claude.ai/
+
+	1.1 Use connectors. “One button solution”. Any paid plan required. Unavailable for free plan. 
+
+Open settings
+
+
+
+
+
+
+
+Open connectors
+
+
+
+
+
+
+
+
+
+
+Press the “Add custom connector” button. 
+
+
+
+
+
+
+
+
+
+
+You can use any name. Insert the MCP server URL
+ https://phpstack-1415503-5765398.cloudwaysapps.com/mcp?key=%your_key%
+
+
+
+
+	Where %your_key% is the access token from https://euvsdisinfo.eu/. 
+You can generate it here.
+
+
+
+
+
+
+
+
+Press the “add” button.
+
+
+
+
+
+
+
+
+
+
+If you see a new window again - > close it. Press “cancel” near the “Add” button.
+
+
+
+
+Now you should see your server.
+
+
+
+
+
+
+
+You can configure your server if you press the configure button.
+
+
+
+
+Better to keep “Need approval” for every request if you want to see the query before send.
+
+
+
+
+That’s all. 
+Now you can ask Claude:
+ “What you can say about the war in Ukraine. Use EuVsDisinfo MCP server.”
+
+
+
+
+Created By
+Private User
+Creation Date
+Dec 11, 2025 17:12
+Modification Date
+Sep 15, 2026 10:39

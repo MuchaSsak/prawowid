@@ -29,6 +29,8 @@ export type CheckEventType =
   | "span_rejected"
   | "verdict_disagreement"
   | "number_check"
+  /** Known-incident context shown next to a claim (EUvsDisinfo); never evidence. */
+  | "context_match"
   | "route_error"
   | "llm_error"
   | "intake_error"

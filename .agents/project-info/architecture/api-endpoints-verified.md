@@ -4,7 +4,7 @@ Exact calls we can make, **each one tested by hand with curl on 2026-11-21** (st
 ## Verified endpoints
 | Source | Call | Verified result | Use |
 |---|---|---|---|
-| **EUvsDisinfo MCP** | `POST https://euvsdisinfo-mcp-server.vercel.app/mcp` JSON-RPC `initialize`, then `tools/call` `cases`/`articles` `{offset,limit≤100}` with headers `Authorization: Bearer`, `mcp-session-id` | No token → **401** (the endpoint is alive). Full flow in [euvsdisinfo-mcp.md](euvsdisinfo-mcp.md) | Bulk ingest (needs the token) |
+| **EUvsDisinfo MCP** | `POST https://mcp.euvsd.info/mcp` (new host; old vercel host superseded), stateless `tools/call` `cases`/`articles` `{offset,limit≤100}`, `search {query,date_from?,date_to?}`, `narratives`; key via `?key=`, `Authorization: Bearer` or `X-API-Key` | `/health` up and no key → **401** (2026-11-21). Our token **works** (200 with case data, 2026-11-21). Full flow in [euvsdisinfo-mcp.md](euvsdisinfo-mcp.md) | Bulk ingest + optional live search (needs the token) |
 | **Google Fact Check** | `GET https://factchecktools.googleapis.com/v1alpha1/claims:search?query=…&languageCode=pl&key=KEY` | No key → **403 PERMISSION_DENIED** (alive, needs a key) | Live lookup + ingest |
 | **OpenRouter embeddings** | `POST https://openrouter.ai/api/v1/embeddings` `{model:"baai/bge-m3",input}` | No key → **401**. `/api/v1/embeddings/models` lists **40** models incl. `baai/bge-m3`, `intfloat/multilingual-e5-large`, `mistralai/mistral-embed-2312` | Embeddings |
 | **OpenRouter video/audio** | `POST /api/v1/responses` with `input_video` (URL or base64; YouTube only via Google AI Studio) / `input_audio` (base64 wav/mp3) | From the docs (not called) | Media → text |

@@ -71,6 +71,8 @@ export interface Config {
   secrets: {
     openrouterApiKey?: string;
     googleFactCheckApiKey?: string;
+    /** EUvsDisinfo MCP key (narratives/euvsdisinfo): known-incident context, never evidence. */
+    euvsdisinfoToken?: string;
   };
 }
 
@@ -87,6 +89,7 @@ export function loadConfig(env: Env): Config {
     secrets: {
       openrouterApiKey: secret("OPENROUTER_API_KEY"),
       googleFactCheckApiKey: secret("GOOGLE_FACT_CHECK_API_KEY"),
+      euvsdisinfoToken: secret("EUVSDISINFO_TOKEN"),
     },
   };
 }

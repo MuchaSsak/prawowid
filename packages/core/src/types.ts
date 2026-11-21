@@ -84,7 +84,30 @@ export interface Citation {
   route: string;
 }
 
-export type RouteStatus = "hits" | "no_hits" | "unavailable" | "error" | "timeout" | "skipped";
+/**
+ * A known disinformation incident that resembles the claim (EUvsDisinfo today). Context only: it is
+ * never a citation, never read by the assessment model and never decides a verdict (hard constraint).
+ */
+export interface ContextMatch {
+  kind: "known_incident";
+  /** The catalog it comes from, e.g. "EUvsDisinfo". */
+  catalog: string;
+  /** "case" = a debunked disinformation claim; "article" = an analysis. */
+  record_type: "case" | "article";
+  title: string;
+  url: string;
+  published_at: string | null;
+  /** Text from the catalog record (truncated), shown as is. */
+  excerpt: string;
+  /** Which matcher found it (e.g. euvsdisinfo_live, later euvsdisinfo_corpus). */
+  route: string;
+  /** keyword = word overlap; semantic/hybrid once the corpus has embeddings. */
+  match: "keyword" | "semantic" | "hybrid";
+  /** 0..1, comparable only within one matcher. */
+  score: number;
+}
+
+export type RouteStatus ="hits" | "no_hits" | "unavailable" | "error" | "timeout" | "skipped";
 export interface RouteOutcome {
   route: string;
   label: string;
@@ -117,6 +140,8 @@ export interface ClaimResult {
   citations: Citation[];
   warnings: Warning[];
   routes: RouteOutcome[];
+  /** Known incidents resembling the claim (context, never evidence). Absent when there are none. */
+  context_matches?: ContextMatch[];
 }
 
 export const INPUT_TYPES = ["text", "url", "image", "video", "audio"] as const;

@@ -29,6 +29,8 @@ export type SourceScript = {
   eurostat?: (url: URL) => unknown | Response;
   nbp?: (url: URL) => unknown | Response;
   gus?: (url: URL) => unknown | Response;
+  /** EUvsDisinfo MCP (mcp.euvsd.info): gets the tool name and arguments, returns the tool payload or a Response. */
+  euvsdisinfo?: (tool: string, args: Record<string, unknown>, auth: string | null) => unknown | Response;
   web?: (url: URL) => Response | undefined;
 };
 
@@ -92,6 +94,18 @@ export function stubFetch(model: ModelScript, sources: SourceScript = {}) {
       const r = sources.gus?.(url);
       return r instanceof Response ? r : r === undefined ? new Response("no script", { status: 500 }) : json(r);
     }
+    if (url.hostname === "mcp.euvsd.info") {
+      const b = body as { params: { name: string; arguments: Record<string, unknown> } };
+      const auth = init?.headers ? new Headers(init.headers).get("authorization") : null;
+      const r = sources.euvsdisinfo?.(b.params.name, b.params.arguments, auth);
+      if (r instanceof Response) return r;
+      // Like the real server: SSE with one JSON-RPC message carrying structuredContent.
+      const msg = { jsonrpc: "2.0", id: 1, result: { content: [{ type: "text", text: "…" }], structuredContent: r ?? [] } };
+      return new Response(`event: message
+data: ${JSON.stringify(msg)}
+
+`, { headers: { "content-type": "text/event-stream" } });
+    }
     const page = sources.web?.(url);
     if (page) return page;
     return new Response("not found", { status: 404 });
@@ -99,12 +113,15 @@ export function stubFetch(model: ModelScript, sources: SourceScript = {}) {
   return { calls, restore: () => (globalThis.fetch = original) };
 }
 
-export function deps(keys: { openrouter?: boolean; google?: boolean } = { openrouter: true, google: true }): CoreDeps & {
+export function deps(
+  keys: { openrouter?: boolean; google?: boolean; euvsdisinfo?: boolean } = { openrouter: true, google: true },
+): CoreDeps & {
   store: MemoryCheckStore;
 } {
   const env: Record<string, string> = {};
   if (keys.openrouter) env.OPENROUTER_API_KEY = "test-key";
   if (keys.google) env.GOOGLE_FACT_CHECK_API_KEY = "test-key";
+  if (keys.euvsdisinfo) env.EUVSDISINFO_TOKEN = "test-euvsd-key";
   const config = loadConfig({ get: (k) => env[k] });
   // Synthetic fact-check publishers in tests live on *.example; they are allowlisted here only.
   config.trustedSources = [...config.trustedSources, {

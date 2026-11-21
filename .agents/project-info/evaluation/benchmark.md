@@ -4,7 +4,7 @@ What is tested, how each metric is computed, the latest results and the known ga
 ## Two layers
 | Layer | Command | Cost | What it proves |
 |---|---|---|---|
-| Deterministic tests (150) | `bun run test` | **free**: model and source APIs are stubbed, zero external calls | the rules: no fabricated sources, the source allowlist, abstention, conflicts, the number check, injection, PII never leaves, missing keys, contract v1, HTTP behaviour |
+| Deterministic tests (156) | `bun run test` | **free**: model and source APIs are stubbed, zero external calls | the rules: no fabricated sources, the source allowlist, abstention, conflicts, the number check, injection, PII never leaves, missing keys, contract v1, HTTP behaviour |
 | Live benchmark (50 cases) | `bun run eval` (full, ~$0.05) · `bun run eval:quick` (6 cases, ~$0.005) · `bun run eval:remote` (deployed URL) | real OpenRouter + Google credits | the jury's metrics on real models and sources |
 | Statistics smoke test | `deno run --allow-net packages/core/test/live/smoke-stats.ts` | **free** (no model, no keys) | every Eurostat indicator, NBP rates/gold/reference rate and GUS answer live |
 
@@ -15,6 +15,7 @@ Run the full benchmark only before a demo, a submission or a prompt/model change
 - `packages/core/test/sources_test.ts` (20): the trusted-source allowlist (look-alike domains rejected, unlisted publishers dropped before the model, tier by credentials, one publisher = one origin, refutation wins a tie with "partly false"); Eurostat (series, EU average and rank in the record, status flags); the number check (wrong number never confirmed, matching number never false, number from another year flagged); Eurostat down → technical state; GUS down → verdict stands with a caveat; NBP (rate in force on a date, 404 = no hits, reference-rate history parser); JSON-stat decoding; period parsing; the prompt's indicator list comes from the catalog.
 - `packages/core/test/contract_test.ts` (20): every mock scenario and live outputs validate against the same v1 schema ([decision 006](../decisions/006-api-contract-v1-and-mock.md)).
 - `packages/core/test/core_test.ts` (16): PII rules, quote matching, injection patterns, URL guard, EXIF strip, verdict rules, ELI title fragments.
+- `packages/core/test/narratives_test.ts` (6): EUvsDisinfo known-incident context: never a citation or model input, verdict unchanged, weak matches and articles dropped, no key / rejected key, our own index takes over from the live search, SSE/JSON/HTML parsing, case mapping.
 - `apps/api/main_test.ts` (35): every route including `GET /api/v1/sources`, all 18 mock scenarios over HTTP, missing-key path, malformed bodies, SSRF URLs, 413, rate limits per IP and per bot end user, CORS, 404s.
 
 ## Reference set (`eval/cases.json`)
@@ -51,6 +52,8 @@ Full runs, local core, mistral-small-2603 (extraction) + mistral-large-2512 (ass
 
 Per class, run 3: false F1 0.91 (15/16), not_verifiable 0.86, confirmed 0.67 (precision 1.00, recall 0.50), insufficient_evidence 0.61, **misleading 0.50** (was 0.00: S07 other-year number, O04 "partly true"). Run 3 includes the harder S/O cases, so accuracy is not directly comparable with run 2. The abstention miss is C01, whose gold was then corrected (see above). Full table: `eval/results/latest.md`; raw data: `eval/results/*.json`.
 
+**Quick run after claim-extraction v3 + EUvsDisinfo context (6 cases, $0.0054, 2026-11-21, user ran `eval:quick`):** A02 false ✓, A07 confirmed ✓, N02 not_verifiable ✓, D01 insufficient_evidence ✓, J01 technical state ✓, **E03 confirmed → insufficient_evidence ✗** (already in known gap 1, not a regression). Latency 7.3 / 8.5 s, $0.089 per 100 checks (run 3: $0.098). End-to-end 6/6. The EUvsDisinfo route ran on all 4 fact claims: `no_hits` 4, no false "known narrative" note. Six cases are too few for a macro-F1 comparison with run 3; the next full run measures v3. The report now has a "Known-incident context" section listing every match for review.
+
 **After run 3, targeted checks (14 cases, ~$0.015):** the tie rule fixed A06 (Demagog "Fałsz" vs USA Today "Partly false" → false); the fiction rule fixed S09 (now `not_a_claim`) while A01 stays false; N01 now `not_verifiable`; C01 `false`; S07 and O04 still `misleading`; B01 and B03 still abstain. On those cases alone, macro-F1 was 0.89 (8/10).
 
 Fixes between runs 1 and 2: Sejm ELI title search on literal title fragments, base acts ranked above amendments; causal and "secretly contains" claims are facts; a lone "misleading" passage no longer outranks a refutation with more origins; missing-key cases get their own cache. Between runs 2 and 3: connector retry; opinions always listed; official record fields count as statements; older passages are context for later periods; **trusted-source allowlist** ([decision 008](../decisions/008-trusted-source-allowlist.md)); **Eurostat/NBP/GUS routes with the code-side number check**; fact-check ratings like "Częściowa prawda"/"Missing context" → misleading; links inside chat messages are read.
@@ -61,3 +64,4 @@ Fixes between runs 1 and 2: Sejm ELI title search on literal title fragments, ba
 3. No route yet for MSZ's Odyseusz, news agencies' own text, regional statistics or Sejm votings. Organizer sample A (Italian strike) can only be answered by abstaining.
 4. Citation correctness is unmeasured until a human labels `citations-review.csv`.
 5. The gold labels are single-annotator.
+6. **No reference case covers a known narrative**, so EUvsDisinfo match quality (precision of the "known narrative" note) is not measured by the benchmark; only the live smoke test checked it (2 of 2 matches correct for one query).
