@@ -1,6 +1,8 @@
 # Blender background scenes: the build prompt
 The prompt we give a Blender-capable agent (e.g. Claude with a Blender MCP) to build the four looping low-poly background scenes for the Prawdomat web app and pitch. Scenes picked by the user from a brainstorm: 1 (armchair), 2 (kitchen table), 5 (park bench), 8 (newspaper kiosk). Style reference: the YouTube channel Fern ("armchair documentaries", 4M+ subscribers, 3D reconstructions; source: https://www.pluggedin.com/youtube-reviews/fern/). Fern publishes no breakdown of the pipeline, so the style notes below are our reading of the videos (Inference); the agent must check them against real frames.
 
+Status (2026-11-21): the rendered loop is live behind the web app's hero text as `apps/web/public/video/prawdomat-bg-loop.webm` (see [codebase](../architecture/codebase.md)).
+
 Copy everything below the line into the agent.
 
 ---
