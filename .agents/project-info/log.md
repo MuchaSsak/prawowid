@@ -140,3 +140,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | /prywatnosc keeps "Nie robimy tego w 24h bez prawnika!" and adds 5 points a real policy must cover; codebase and compliance-matrix updated
 ## [2026-11-21] lint | clean: privacy wording consistent across codebase, compliance-matrix and open-questions
 ## [2026-11-21] update | user: the placeholder /prywatnosc is accepted for the hackathon and not counted in compliance; open question removed, compliance-matrix privacy row reworded
+## [2026-11-21] update | added minimal vector DB integration plan: Python retrieval service behind HttpCorpusStore, existing core and API contract unchanged

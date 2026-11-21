@@ -50,6 +50,7 @@ Format: `- [path](path): one-line summary`
 - [architecture/api-reference.md](architecture/api-reference.md): **for channel builders**: every endpoint, header, request field, env var (incl. `MOCK_CLIENTS`), mock scenario, Deno Deploy setup, versioning rules
 - [architecture/codebase.md](architecture/codebase.md): **what is built**: code layout, evidence routes (Google Fact Check, ELI, Eurostat, NBP, GUS), the number check, interim verdict choices, measured latency/cost, next steps
 - [architecture/technical-approach-research.md](architecture/technical-approach-research.md): pipeline best practice, models, retrieval, injection defense, eval harness, IFCN/EFCSN
+- [architecture/vector-db-integration-plan.md](architecture/vector-db-integration-plan.md): minimalny plan wpięcia istniejącego PostgreSQL + pgvector przez `CorpusStore`
 
 ## prompts/
 - [prompts/README.md](prompts/README.md): how prompts are used in code, patterns and anti-patterns, the change procedure
