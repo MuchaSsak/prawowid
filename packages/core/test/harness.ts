@@ -126,7 +126,10 @@ export interface ClaimSpec {
   class?: "fact" | "opinion" | "prediction";
   type?: string | null;
   risk?: "high" | "normal";
-  time?: string;
+  /** As the model writes it (`time_text`); null = the text states no date. Default "2025". */
+  time?: string | null;
+  direction?: "past" | "future";
+  assumptions?: { text: string; source_span: string }[];
   indicator?: string | null;
   geo?: string | null;
   claimed_value?: number | null;
@@ -143,7 +146,8 @@ export function extraction(claims: ClaimSpec[], extra: Record<string, unknown> =
       provenance: "text",
       class: c.class ?? "fact",
       type: (c.class ?? "fact") === "fact" ? (c.type === undefined ? "event" : c.type) : null,
-      time: c.time ?? "2025",
+      time_text: (c.class ?? "fact") === "fact" ? (c.time === undefined ? "2025" : c.time) : null,
+      time_direction: c.direction ?? "past",
       place: null,
       entities: [],
       search_queries_pl: (c.class ?? "fact") === "fact" ? ["zapytanie testowe"] : [],
@@ -153,6 +157,7 @@ export function extraction(claims: ClaimSpec[], extra: Record<string, unknown> =
       claimed_value: c.claimed_value ?? null,
       currency: c.currency ?? null,
       risk: c.risk ?? "normal",
+      assumptions: c.assumptions ?? [],
       ambiguities: [],
       why_not_verifiable: (c.class ?? "fact") === "fact" ? null : "To opinia.",
     })),

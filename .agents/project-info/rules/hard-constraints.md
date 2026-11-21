@@ -30,3 +30,6 @@ Non-negotiable rules for everything we build. Breaking one can zero the bonus po
 18. Channel adapters are separate from the verification core, and every channel calls the same core.
 19. The LLM provider or model is swappable through configuration, with no rebuild.
 20. The jury must be able to run the project from the README alone, end-to-end, with no help from us.
+
+## Scope (organizer directive)
+21. **We fight disinformation by checking factual statements against our source list, not by assessing opinions.** "Rząd kłamie" and other opinions, comments and imprecise generalisations get `nie podlega weryfikacji` with one short reason. We don't discuss, weigh or search for evidence about them. Specific factual statements in the same material are checked on their own. (ustalenie z organizatorami przekazane przez użytkownika, 2026-11-21)

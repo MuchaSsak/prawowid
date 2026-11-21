@@ -10,7 +10,7 @@ Format: `- [path](path): one-line summary`
 
 ## rules/
 - [rules/README.md](rules/README.md): scope of the folder 
-- [rules/hard-constraints.md](rules/hard-constraints.md): 20 non-negotiable rules from the task (no fabricated sources, verdicts vs system states, security, eval integrity)
+- [rules/hard-constraints.md](rules/hard-constraints.md): 21 non-negotiable rules from the task and the organizers (no fabricated sources, verdicts vs system states, security, eval integrity, facts not opinions)
 
 ## hackathon/
 - [hackathon/README.md](hackathon/README.md): scope of the folder 

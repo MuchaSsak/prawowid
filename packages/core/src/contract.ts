@@ -20,6 +20,7 @@ export const WarningSchema = z.strictObject({
     "injection_detected",
     "partial_analysis",
     "assumed_period",
+    "assumed_scope",
     "illegible_media",
     "demo_data",
   ]),

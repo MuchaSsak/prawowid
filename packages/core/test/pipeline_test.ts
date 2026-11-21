@@ -517,3 +517,142 @@ Deno.test({ ...T, name: "a link in a message that cannot be read (SSRF) is discl
     s.restore();
   }
 } });
+
+
+// ── v2 extraction: scope from context, year filled by code, facts first (pipeline §2) ──────────
+const NOW = () => new Date("2026-11-21T12:00:00Z");
+const FERRY_CONTEXT = "Port Przykładowo poinformował o problemach z rejsami promowymi.";
+const FERRY = "Port Przykładowo wstrzymał 16 listopada wszystkie rejsy.";
+
+Deno.test({ ...T, name: "scope from context → assumed_scope warning quoting the fragment, no clarification", async fn() {
+  const s = stubFetch(
+    {
+      extraction: () =>
+        extraction([{
+          text: "Port Przykładowo wstrzymał 16 listopada wszystkie swoje rejsy promowe.",
+          span: FERRY,
+          time: "16 listopada",
+          assumptions: [{ text: "chodzi o wszystkie rejsy promowe z portu Przykładowo", source_span: FERRY_CONTEXT }],
+        }]),
+    },
+    { googleFactCheck: () => ({}) },
+  );
+  try {
+    const r = await runCheck(text(`${FERRY_CONTEXT} ${FERRY}`), { ...deps(), now: NOW });
+    valid(r);
+    assertEquals(r.status, "ok");
+    const w = r.claims[0].warnings.find((x) => x.type === "assumed_scope");
+    assertExists(w);
+    assertEquals(w.text, `Przyjęliśmy, że chodzi o wszystkie rejsy promowe z portu Przykładowo, na podstawie zdania: „${FERRY_CONTEXT}”.`);
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "an assumption whose fragment is not in the input drops the claim (no invented resolution)", async fn() {
+  const s = stubFetch({
+    extraction: () =>
+      extraction([{ text: FERRY, assumptions: [{ text: "chodzi o rejsy do Szwecji", source_span: "tego zdania nie ma w tekście" }] }]),
+  });
+  const d = deps();
+  try {
+    const r = await runCheck(text(FERRY), d);
+    assertEquals(r.claims.length, 0);
+    assert(d.store.events.some((e) => e.type === "span_rejected"));
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "missing year in pasted text → filled from the submission date, disclosed, passed to assessment", async fn() {
+  let assessedTime = "";
+  const s = stubFetch(
+    {
+      extraction: () => extraction([{ text: FERRY, time: "16 listopada" }]),
+      assessment: (inp) => {
+        assessedTime = (inp.claim as { time?: string }).time ?? "";
+        return assess({ Demagog: { stance: "refutes", needle: "Ocena" } }, "false")(inp);
+      },
+    },
+    { googleFactCheck: () => factCheck("Demagog", "Fałsz", FERRY) },
+  );
+  try {
+    const r = await runCheck(text(FERRY), { ...deps(), now: NOW });
+    valid(r);
+    assertEquals(r.claims[0].time, "2026-11-16");
+    assertEquals(assessedTime, "2026-11-16");
+    const w = r.claims[0].warnings.find((x) => x.type === "assumed_period");
+    assertEquals(
+      w?.text,
+      "Tekst nie podaje roku; przyjęliśmy 2026 na podstawie daty zgłoszenia (21.11.2026); jeśli tekst jest starszy, wynik może być inny.",
+    );
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "missing year in pasted text → the original's date from the corpus is the reference date", async fn() {
+  const original = "Rada Miasta Przykładowo zdecydowała, że 16 listopada port wstrzyma wszystkie rejsy promowe na cały dzień.";
+  const s = stubFetch(
+    { extraction: () => extraction([{ text: "Port Przykładowo wstrzymał rejsy 16 listopada.", span: original, time: "16 listopada" }]) },
+    { googleFactCheck: () => ({}) },
+  );
+  const d = { ...deps(), now: NOW };
+  await d.corpus.upsert([{
+    source_id: "doc:orig",
+    route: "corpus",
+    title: "Komunikat (test)",
+    publisher: "Urząd Miasta Przykładowo (test)",
+    url: "https://example.org/orig",
+    published_at: "2025-11-10",
+    retrieved_at: "2026-11-21T00:00:00Z",
+    tier: "official",
+    origin_key: "doc:orig",
+    text: `Komunikat. ${original}`,
+  }]);
+  try {
+    const r = await runCheck(text(original), d);
+    assertEquals(r.claims[0].time, "2024-11-16");
+    assert(r.claims[0].warnings.some((w) => w.type === "assumed_period" && w.text.includes("oryginalnego tekstu (10.11.2025)")));
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "URL with a publication date → the year comes from it", async fn() {
+  const html = `<html><head><title>Artykuł testowy</title><meta property="article:published_time" content="2025-05-01"></head>
+    <body><article><h1>Artykuł testowy</h1><p>${FERRY} To zdanie jest dłuższe, aby Readability uznało tekst za artykuł.</p>
+    <p>Kolejny akapit z treścią artykułu o porcie Przykładowo, jego promach oraz rejsach.</p></article></body></html>`;
+  const s = stubFetch(
+    { extraction: () => extraction([{ text: FERRY, time: "16 listopada" }]) },
+    {
+      googleFactCheck: () => ({}),
+      web: (u) => u.pathname === "/robots.txt" ? new Response("User-agent: *\nAllow: /") : new Response(html, { headers: { "content-type": "text/html" } }),
+    },
+  );
+  try {
+    const r = await runCheck({ input: { type: "url", value: "https://news.example/port" } }, { ...deps(), now: NOW });
+    assertEquals(r.claims[0].time, "2024-11-16");
+    assert(r.claims[0].warnings.some((w) => w.type === "assumed_period" && w.text.includes("daty publikacji (01.05.2025)")));
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "a general accusation is a one-line opinion listed after the facts, never searched", async fn() {
+  const op = "Zarząd portu kłamie.";
+  const s = stubFetch(
+    { extraction: () => extraction([{ text: op, class: "opinion" }, { text: FERRY }]) },
+    { googleFactCheck: () => ({}) },
+  );
+  try {
+    const r = await runCheck(text(`${op} ${FERRY}`), deps());
+    valid(r);
+    assertEquals(r.claims.map((c) => c.class), ["fact", "opinion"]);
+    assertEquals(r.claims[1].verdict, "not_verifiable");
+    const queries = s.calls.filter((c) => c.url.hostname === "factchecktools.googleapis.com").map((c) => c.url.searchParams.get("query"));
+    assert(queries.every((q) => !q?.includes("kłamie")));
+  } finally {
+    s.restore();
+  }
+} });

@@ -31,6 +31,7 @@ export const MOCK_SCENARIOS = [
   "not_verifiable",
   "conflict",
   "mixed",
+  "assumptions",
   "partial",
   "escalation",
   "injection",
@@ -55,7 +56,8 @@ export const MOCK_SCENARIO_DESCRIPTIONS: Record<MockScenario, string> = {
   insufficient_evidence: "1 claim, brak wystarczających dowodów, no matching sources",
   not_verifiable: "1 opinion, nie podlega weryfikacji",
   conflict: "1 claim, sources contradict each other → abstain + sources_conflict warning",
-  mixed: "3 claims: confirmed fact, opinion, insufficient evidence",
+  mixed: "3 claims: confirmed fact, insufficient evidence, then the opinion (facts first)",
+  assumptions: "1 claim whose scope was taken from context (assumed_scope) and whose year was filled (assumed_period)",
   partial: "status partial: 1 verdict + 1 claim with system_state source_unavailable",
   escalation: "high-risk claim without evidence → escalation recommended",
   injection: "input contained instructions to the AI → injection_detected warning, normal verdict",
@@ -153,6 +155,7 @@ const T = {
   park: "Park Miejski w Przykładowie jest najpiękniejszym parkiem w regionie.",
   water: "W Przykładowie od dziś nie ma wody pitnej i trzeba się ewakuować.",
   mayor: "Burmistrz Przykładowa ogłosił darmową komunikację miejską od 2026 roku.",
+  ferry: "Port Przykładowo wstrzymał 16 listopada wszystkie swoje rejsy promowe.",
 };
 
 function claimsFor(s: MockScenario): { status: RequestStatus; claims: ClaimResult[]; warnings: Warning[]; detail?: string } {
@@ -225,9 +228,27 @@ function claimsFor(s: MockScenario): { status: RequestStatus; claims: ClaimResul
         warnings: [],
         claims: [
           claimsFor("confirmed").claims[0],
-          { ...claimsFor("not_verifiable").claims[0], id: "c2" },
           { ...claimsFor("insufficient_evidence").claims[0], id: "c3" },
+          { ...claimsFor("not_verifiable").claims[0], id: "c2" },
         ],
+      };
+    case "assumptions":
+      return {
+        status: "ok",
+        warnings: [],
+        claims: [claim("c1", T.ferry, "confirmed", {
+          time: "2025-11-16",
+          strength: { level: "high", reasons: ["[DEMO] oficjalne źródło: Urząd Miasta Przykładowo"] },
+          explanation: "[DEMO] Według Urzędu Miasta Przykładowo port 16 listopada wstrzymał wszystkie swoje rejsy promowe.",
+          citations: [cite(1, "supports", "official", "16 listopada port w Przykładowie wstrzymał wszystkie rejsy promowe.")],
+          warnings: [
+            {
+              type: "assumed_scope",
+              text: "Przyjęliśmy, że chodzi o wszystkie rejsy z portu Przykładowo, na podstawie zdania: „Port Przykładowo poinformował o problemach z rejsami promowymi”.",
+            },
+            { type: "assumed_period", text: "Tekst nie podaje roku; przyjęliśmy 2025 na podstawie daty publikacji (20.11.2025)." },
+          ],
+        })],
       };
     case "partial":
       return {

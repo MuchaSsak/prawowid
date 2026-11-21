@@ -59,7 +59,8 @@ Pick a scenario (first match wins):
 | `confirmed` / `false` / `misleading` / `insufficient_evidence` | 1 claim with that verdict and citations |
 | `not_verifiable` | 1 opinion |
 | `conflict` | sources contradict → abstain + `sources_conflict` warning |
-| `mixed` | 3 claims: confirmed, opinion, insufficient evidence |
+| `mixed` | 3 claims: confirmed, insufficient evidence, then the opinion (facts first) |
+| `assumptions` | 1 claim with an `assumed_scope` and an `assumed_period` warning |
 | `partial` | `status: partial`, one claim with `system_state: source_unavailable` |
 | `escalation` | high-risk claim without evidence → `escalation.state: recommended` |
 | `injection` | `injection_detected` warning + a normal verdict |

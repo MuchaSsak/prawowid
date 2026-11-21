@@ -58,6 +58,8 @@ export type WarningType =
   | "injection_detected"
   | "partial_analysis"
   | "assumed_period"
+  /** A scope word was narrowed from the surrounding text; the text quotes that fragment. */
+  | "assumed_scope"
   | "illegible_media"
   /** Mock mode: the response is synthetic demo data, not a check. */
   | "demo_data";

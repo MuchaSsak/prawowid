@@ -12,7 +12,7 @@ import { maskPii } from "../guard/pii.ts";
 import { extractImage } from "../intake/image.ts";
 import { fetchArticle, IntakeError, type ResolveHost } from "../intake/url.ts";
 import { LlmError, type LlmUsage } from "../llm/openrouter.ts";
-import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v2.ts";
+import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v3.ts";
 import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v2.ts";
 import type { CheckEventRow, CheckStore, CorpusStore } from "../store/types.ts";
 import {
@@ -26,6 +26,7 @@ import {
   type Warning,
 } from "../types.ts";
 import { assessClaim } from "./assess.ts";
+import { periodNote, referenceDate, resolveTime } from "./dates.ts";
 import { type ExtractedClaim, extractClaims, type Material } from "./extract.ts";
 import {
   BASE_LIMITATIONS,
@@ -262,7 +263,16 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     return finish(cached.status, null);
   }
 
-  // ── 5. Extract claims (LLM #1) ─────────────────────────────────────────────
+  // ── 5. Reference date for dates without a year (pipeline §2): publication date of the material,
+  //       else the original found in the corpus, else the submission date. Never asked of the user.
+  const ref = await referenceDate({
+    publishedAt: response.input.published_at,
+    texts: material.map((m) => m.text),
+    corpus: deps.corpus,
+    today,
+  });
+
+  // ── 6. Extract claims (LLM #1) ─────────────────────────────────────────────
   const tExtract = Date.now();
   let extracted;
   try {
@@ -311,20 +321,23 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     return finish(map[extraction.input_kind], extraction.clarification_question);
   }
 
-  // ── 6. Evidence per claim, in parallel ─────────────────────────────────────
+  // ── 7. Evidence per claim, in parallel ─────────────────────────────────────
   const ctx: ConnectorContext = { config: deps.config, signal: deadline.signal, corpus: deps.corpus };
   const tEvidence = Date.now();
   const claimResults = await Promise.all(extraction.claims.map((c) => checkOne(c)));
   mark("evidence", tEvidence);
 
   async function checkOne(c: ExtractedClaim): Promise<ClaimResult> {
+    const resolved = c.class === "fact"
+      ? resolveTime(c.time_text, c.time_direction, ref)
+      : { time: c.time_text ?? "unknown", filledYear: false };
     const base: ClaimResult = {
       id: c.id,
       text: c.text,
       provenance: c.provenance,
       class: c.class,
       type: c.type,
-      time: c.time,
+      time: resolved.time,
       risk: c.risk,
       verdict: null,
       verdict_label: null,
@@ -345,14 +358,20 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
         explanation: c.why_not_verifiable || templateExplanation("not_verifiable", []),
       };
     }
-    if (c.time === "unknown") {
-      base.warnings.push({ type: "assumed_period", text: "Twierdzenie nie podaje daty; porównujemy je z najnowszymi dostępnymi informacjami." });
+    // Scope narrowed from the surrounding text: shown with the fragment it rests on (at most 2).
+    for (const a of c.assumptions.slice(0, 2)) {
+      const what = a.text.trim().replace(/^przyjęliśmy,?\s*że\s*/i, "").replace(/[.\s]+$/, "");
+      const span = a.source_span.trim();
+      const quote = span.length > 160 ? `${span.slice(0, 157).trimEnd()}…` : span;
+      if (what) base.warnings.push({ type: "assumed_scope", text: `Przyjęliśmy, że ${what}, na podstawie zdania: „${quote}”.` });
     }
+    const note = periodNote(resolved, ref);
+    if (note) base.warnings.push({ type: "assumed_period", text: note });
 
     const query = {
       text: c.text,
       type: c.type,
-      time: c.time,
+      time: resolved.time,
       entities: c.entities,
       search_queries_pl: c.search_queries_pl.length ? c.search_queries_pl : [c.text],
       search_query_en: c.search_query_en,
@@ -389,7 +408,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     let assessed;
     try {
       assessed = await assessClaim({
-        claim: { text: c.text, time: c.time, place: c.place },
+        claim: { text: c.text, time: resolved.time, place: c.place },
         records: r.records,
         apiKey: deps.config.secrets.openrouterApiKey,
         model: deps.config.models.evidence_assessment,
@@ -460,9 +479,10 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     };
   }
 
-  // ── 7. Assemble ────────────────────────────────────────────────────────────
-  response.claims = claimResults;
+  // ── 8. Assemble ────────────────────────────────────────────────────────────
+  // Facts first, opinions and predictions after them as one-liners (hard constraint 21).
   const facts = claimResults.filter((c) => c.class === "fact");
+  response.claims = [...facts, ...claimResults.filter((c) => c.class !== "fact")];
   const opinions = claimResults.length - facts.length;
   response.summary = { fact_claims: facts.length, opinions, text: summaryText(facts.length, opinions) };
   const highRiskAbstain = facts.find((c) => c.risk === "high" && c.verdict === "insufficient_evidence");

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { LIMITS } from "../config.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
 import { containsVerbatim, normalizeForMatch } from "../guard/normalize.ts";
-import { claimExtractionSystem } from "../prompts/claim-extraction.v2.ts";
+import { claimExtractionSystem } from "../prompts/claim-extraction.v3.ts";
 import { CLAIM_TYPES } from "../types.ts";
 import { INDICATOR_KEYS } from "../connectors/stats-catalog.ts";
 
@@ -19,7 +19,9 @@ export const ExtractedClaim = z.strictObject({
   provenance: z.string(),
   class: z.enum(["fact", "opinion", "prediction"]),
   type: z.enum(CLAIM_TYPES).nullable(),
-  time: z.string(),
+  /** The date or period as written in the material; code fills a missing year (dates.ts). */
+  time_text: z.string().nullable(),
+  time_direction: z.enum(["past", "future"]),
   place: z.string().nullable(),
   entities: z.array(z.string()),
   search_queries_pl: z.array(z.string()),
@@ -29,6 +31,8 @@ export const ExtractedClaim = z.strictObject({
   claimed_value: z.number().nullable(),
   currency: z.string().nullable(),
   risk: z.enum(["high", "normal"]),
+  /** Scope taken from the surrounding material; each must quote the fragment that fixes it. */
+  assumptions: z.array(z.strictObject({ text: z.string(), source_span: z.string() })),
   ambiguities: z.array(z.string()),
   why_not_verifiable: z.string().nullable(),
 });
@@ -46,7 +50,7 @@ export type Extraction = z.infer<typeof Extraction>;
 
 export interface ExtractionResult {
   extraction: Extraction;
-  /** Claims whose source_span was not found in the input (the model may not invent claims). */
+  /** Claims whose source_span (or an assumption's span) was not found in the input (no invented claims). */
   rejectedSpans: string[];
   /** True when more fact claims were found than the cap. */
   capped: boolean;
@@ -83,9 +87,17 @@ export async function extractClaims(args: {
   const normCorpus = normalizeForMatch(corpus);
   const rejectedSpans: string[] = [];
   const kept = data.claims.filter((c) => {
-    if (containsVerbatim(corpus, c.source_span)) return true;
-    rejectedSpans.push(c.source_span.slice(0, 200));
-    return false;
+    if (!containsVerbatim(corpus, c.source_span)) {
+      rejectedSpans.push(c.source_span.slice(0, 200));
+      return false;
+    }
+    // An unsupported scope resolution counts as an invented claim: drop the claim.
+    const bad = c.assumptions.find((a) => !containsVerbatim(corpus, a.source_span));
+    if (bad) {
+      rejectedSpans.push(bad.source_span.slice(0, 200));
+      return false;
+    }
+    return true;
   });
 
   // Span order, then cap fact claims: high risk first, then original order.

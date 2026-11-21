@@ -18,12 +18,12 @@ The brief makes **"odpowiedź po polsku, prostym i zrozumiałym językiem"** an 
 | `false` | fałszywe | rules in pipeline §5 |
 | `misleading` | wprowadzające w błąd | the core fact is true but its time, place or scope differs, or there is a wrong conclusion |
 | `insufficient_evidence` | brak wystarczających dowodów | no or weak evidence, or sources conflict (with `sources_conflict`) |
-| `not_verifiable` | nie podlega weryfikacji | opinion, value judgment, intent, prediction |
+| `not_verifiable` | nie podlega weryfikacji | opinion, value judgment, intent, prediction, sweeping generalisation ("rząd kłamie"). One short line after the fact claims, no commentary ([hard constraint 21](../rules/hard-constraints.md#scope-organizer-directive)) |
 
 **B. System states (never verdicts; shown as a different-looking banner, not as a verdict card):**
 | State | Level | Message idea (pl) |
 |---|---|---|
-| `needs_clarification` | request | "Doprecyzuj, o co pytasz: …" + the clarifying question |
+| `needs_clarification` | request | "Doprecyzuj, o co pytasz: …" + the clarifying question. Only when nothing in the input is checkable; never about a date, scope or speaker the system can settle (user, 2026-11-21) |
 | `out_of_scope` | request | "Sprawdzamy twierdzenia o faktach. To pytanie wykracza poza zakres." |
 | `not_a_claim` | request | a joke, greeting or nonsense: a friendly short reply plus what we can do |
 | `input_rejected` | request | too large, unsupported file, or an unsupported platform for video |
@@ -37,7 +37,7 @@ Not in v1 yet: `media_not_analyzed` (a failed image read is a request-level `tec
 
 Rule: a missing key, a hit limit or an outage **never** produces `insufficient_evidence`. It produces a system state (scenario J).
 
-**C. Warnings (alongside a verdict; never decide it):** `archival_material` (a source or the material is old relative to the claim), `sources_conflict`, `known_narrative` (an EUvsDisinfo match, as context), `source_status` (e.g. an EU-sanctioned outlet: neutral, current, verifiable), `implied_claim` (from `implied_warnings`), `paraphrase` (the quote attributed in the material isn't verbatim), `injection_detected`, `partial_analysis`, `assumed_period` (the claim has no date; compared with the latest data), `illegible_media` (image only partly readable), `demo_data` (mock mode: the whole response is synthetic; always first in `warnings`).
+**C. Warnings (alongside a verdict; never decide it):** `archival_material` (a source or the material is old relative to the claim), `sources_conflict`, `known_narrative` (an EUvsDisinfo match, as context), `source_status` (e.g. an EU-sanctioned outlet: neutral, current, verifiable), `implied_claim` (from `implied_warnings`), `paraphrase` (the quote attributed in the material isn't verbatim), `injection_detected`, `partial_analysis`, `assumed_period` (code filled a missing year or the claim has no date; names the reference date and its basis: publication, original text or submission), `assumed_scope` (a scope word was narrowed from the surrounding text; quotes that fragment: "Przyjęliśmy, że chodzi o …, na podstawie zdania: „…”"; at most 2 per claim; added 2026-11-21 as an additive v1 value, user), `illegible_media` (image only partly readable), `demo_data` (mock mode: the whole response is synthetic; always first in `warnings`).
 
 **D. Evidence strength:** `high | medium | low` (Wysoka / Średnia / Niska) + `reasons[]` (tier, recency, match, number of independent sources). It is computed in code.
 
