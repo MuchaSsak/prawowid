@@ -40,3 +40,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | EUvsDisinfo token retested again after a .env save (14:34): still 401 Invalid API key
 ## [2026-11-21] update | EUvsDisinfo: the server lists ?key=, Authorization and X-API-Key as accepted; our token gets "Invalid API key" on all three, so the token is the problem, not the request; noted in architecture/euvsdisinfo-mcp
 ## [2026-11-21] lint | clean after the PR #2 merge: no conflict markers, no verifier or public-only image wording outside decision 002/log, links and skill parity OK
+## [2026-11-21] update | skill explain-flow: asks for the output format first (md, PDF with visuals, or both); PDF via assets/template.html + scripts/render-pdf.mjs (headless Chrome/Edge), md stays the source of truth; added input edge cases and a self-check

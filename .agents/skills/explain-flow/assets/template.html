@@ -1,0 +1,204 @@
+<!doctype html>
+<!--
+  explain-flow PDF template. Copy this file next to the walkthrough .md (outside the repo),
+  replace every {{...}} placeholder and every EXAMPLE block with content from the .md,
+  delete the components you don't need, then render it with scripts/render-pdf.mjs.
+  Rules: the PDF says the same thing as the .md (no new facts), all CSS stays inline,
+  no external fonts, scripts or images (images go in as data: URIs).
+-->
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>{{TYTUŁ}} · Prawdowid explain-flow</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm; }
+  @page { @bottom-right { content: counter(page) " / " counter(pages); font: 9pt "Segoe UI", Arial, sans-serif; color: #7a8394; } }
+  :root {
+    --ink: #1c2230; --muted: #5b6475; --line: #dde2ea; --soft: #f5f7fa; --accent: #2f5bd3;
+    --ok: #1f8a4c; --ok-bg: #e6f4ec;        /* potwierdzone */
+    --bad: #c0362c; --bad-bg: #fbe9e7;      /* fałszywe */
+    --warn: #b7791f; --warn-bg: #fdf3e1;    /* wprowadzające w błąd */
+    --none: #5b6475; --none-bg: #eef0f4;    /* brak wystarczających dowodów */
+    --nv: #3d6f8f; --nv-bg: #e7f0f6;        /* nie podlega weryfikacji */
+  }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; color: var(--ink); background: #fff; font: 10.5pt/1.5 "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+  h1 { font-size: 21pt; line-height: 1.2; margin: 0 0 4px; }
+  h2 { font-size: 13.5pt; margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--line); break-after: avoid; }
+  h3 { font-size: 11pt; margin: 14px 0 6px; break-after: avoid; }
+  p { margin: 0 0 8px; }
+  ul { margin: 0 0 8px; padding-left: 18px; } li { margin-bottom: 3px; }
+  a { color: var(--accent); text-decoration: none; word-break: break-all; }
+  code { font: 9pt Consolas, "Courier New", monospace; background: var(--soft); padding: 1px 4px; border-radius: 3px; }
+  .muted { color: var(--muted); } .small { font-size: 9pt; }
+  section, .card, table, .flow, .preview, .callout { break-inside: avoid; }
+
+  /* Header */
+  .kicker { font-size: 9pt; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; }
+  .tag { font-size: 8.5pt; padding: 2px 8px; border-radius: 99px; background: var(--soft); border: 1px solid var(--line); }
+  .disclaimer { font-size: 8.5pt; color: var(--muted); margin-top: 6px; }
+
+  /* "W skrócie" summary */
+  .tldr { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0 6px; }
+  .stat { background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .stat b { display: block; font-size: 17pt; line-height: 1.1; }
+  .stat span { font-size: 8.5pt; color: var(--muted); }
+  .callout { border-left: 4px solid var(--accent); background: var(--soft); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 8px 0; }
+  .callout.gap { border-left-color: var(--warn); background: var(--warn-bg); }
+
+  /* Pipeline strip: which steps run for THIS input */
+  .pipeline { display: flex; align-items: stretch; gap: 0; margin: 6px 0 4px; }
+  .step { flex: 1; text-align: center; font-size: 8.5pt; padding: 6px 4px; border: 1.5px solid var(--accent); background: #eef3fd; border-radius: 6px; }
+  .step b { display: block; font-size: 9pt; }
+  .step.off { border-style: dashed; border-color: var(--line); background: #fff; color: #9aa2b1; }
+  .arrow { align-self: center; width: 16px; text-align: center; color: var(--muted); font-size: 11pt; }
+
+  /* Claim map: claim → source → verdict path (one row per claim) */
+  .flow { display: grid; grid-template-columns: 1.5fr 18px 1.15fr 18px 1.15fr; row-gap: 8px; align-items: stretch; margin: 6px 0; }
+  .flow .hd { font-size: 8pt; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+  .node { border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; font-size: 9pt; background: #fff; }
+  .node .id { font-weight: 700; color: var(--accent); margin-right: 4px; }
+  .flow .arrow { font-size: 10pt; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 9pt; margin: 6px 0 10px; }
+  th { text-align: left; background: var(--soft); color: var(--muted); font-weight: 600; font-size: 8.5pt; }
+  th, td { border-bottom: 1px solid var(--line); padding: 5px 7px; vertical-align: top; }
+  tr { break-inside: avoid; }
+
+  /* Verdict badges (the 5 verdicts only) */
+  .v { display: inline-block; font-size: 8.5pt; font-weight: 600; padding: 1px 8px; border-radius: 99px; white-space: nowrap; }
+  .v-ok { color: var(--ok); background: var(--ok-bg); } .v-bad { color: var(--bad); background: var(--bad-bg); }
+  .v-warn { color: var(--warn); background: var(--warn-bg); } .v-none { color: var(--none); background: var(--none-bg); }
+  .v-nv { color: var(--nv); background: var(--nv-bg); }
+  /* System states are NOT verdicts (rule 8): dashed outline, never a filled badge */
+  .state { display: inline-block; font: 8.5pt Consolas, monospace; padding: 1px 7px; border: 1px dashed var(--muted); border-radius: 4px; color: var(--muted); }
+  .avail { font-size: 9pt; white-space: nowrap; }
+
+  /* Verdict path per claim: condition → outcome */
+  .card { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin: 8px 0; }
+  .card h3 { margin-top: 0; }
+  .paths { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; font-size: 9pt; align-items: center; }
+  .paths div:nth-child(odd) { color: var(--ink); }
+  .live { font-size: 8pt; font-weight: 700; color: var(--ok); border: 1px solid var(--ok); border-radius: 4px; padding: 0 5px; margin-left: 4px; }
+
+  /* "Co zobaczy użytkownik": a mock of the app answer */
+  .preview { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin: 8px 0; }
+  .preview .bar { background: var(--ink); color: #fff; font-size: 8.5pt; padding: 5px 12px; }
+  .preview .body { padding: 10px 12px; }
+  .preview .claim { border-top: 1px solid var(--line); padding: 8px 0; }
+  .preview .claim:first-child { border-top: 0; padding-top: 0; }
+  .preview .banner { border: 1px dashed var(--muted); border-radius: 6px; padding: 6px 10px; font-size: 9pt; color: var(--muted); margin: 6px 0; }
+
+  .input-img { max-width: 100%; max-height: 90mm; border: 1px solid var(--line); border-radius: 6px; display: block; margin: 6px auto; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .pagebreak { break-before: page; }
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<div class="kicker">Prawdowid · jak by to przeszło przez nasz system</div>
+<h1>{{TYTUŁ}}</h1>
+<div class="meta">
+  <span class="tag">Wejście: {{tekst | URL | obraz | wideo}}</span>
+  <span class="tag">Język odpowiedzi: {{pl}}</span>
+  <span class="tag">{{RRRR-MM-DD}}</span>
+</div>
+<div class="disclaimer">Ilustracja naszego projektu zastosowanego do tego materiału, nie werdykt o prawdzie. Wynik podajemy tylko tam, gdzie było oznaczone „sprawdzone na żywo”.</div>
+
+<!-- ============ W SKRÓCIE ============ -->
+<div class="tldr">
+  <div class="stat"><b>{{n}}</b><span>twierdzeń sprawdzalnych</span></div>
+  <div class="stat"><b>{{n}}</b><span>nie podlega weryfikacji</span></div>
+  <div class="stat"><b>{{n}}</b><span>źródeł dostępnych dziś (✅)</span></div>
+  <div class="stat"><b>{{n}}</b><span>luk w źródłach (❌/🔑)</span></div>
+</div>
+<div class="callout"><b>W skrócie:</b> {{2-3 zdania: co to za materiał, co da się sprawdzić, główna luka}}</div>
+
+<!-- ============ WEJŚCIE + PIPELINE ============ -->
+<h2>Wejście</h2>
+<p>{{co to jest, skąd, data publikacji; dla URL: co jest na stronie (tekst, obrazy, wideo) i co z nimi robimy}}</p>
+<!-- Optional: the input image as a data: URI -->
+<!-- <img class="input-img" src="data:image/png;base64,..." alt="{{opis obrazu}}"> -->
+
+<!-- Pipeline strip: mark steps that don't run for this input with class "off" -->
+<div class="pipeline">
+  <div class="step"><b>1. Pobranie</b>tekst / strona</div><div class="arrow">→</div>
+  <div class="step off"><b>2. Media</b>OCR / transkrypt</div><div class="arrow">→</div>
+  <div class="step"><b>3. Twierdzenia</b>LLM #1</div><div class="arrow">→</div>
+  <div class="step"><b>4. Źródła</b>routing + API</div><div class="arrow">→</div>
+  <div class="step"><b>5. Stanowisko</b>LLM #2</div><div class="arrow">→</div>
+  <div class="step"><b>6. Werdykt</b>reguły w kodzie</div>
+</div>
+<p class="small muted">Przerywana ramka = krok nie działa dla tego wejścia.</p>
+
+<!-- ============ PODZIAŁ NA TWIERDZENIA ============ -->
+<h2>Podział na twierdzenia</h2>
+<table>
+  <tr><th>#</th><th>Twierdzenie / fragment</th><th>Klasa · typ</th><th>Ryzyko</th><th>Co dalej</th></tr>
+  <!-- EXAMPLE row -->
+  <tr><td>1</td><td>{{twierdzenie}}</td><td>{{fakt · statystyka}}</td><td>{{wysokie}}</td><td>{{GUS BDL}}</td></tr>
+  <tr><td>2</td><td>{{opinia}}</td><td>{{opinia}}</td><td>—</td><td><span class="v v-nv">nie podlega weryfikacji</span></td></tr>
+</table>
+<p class="small"><b>Pominięte</b> (retoryka, oczywistości): {{…}}</p>
+
+<!-- ============ MAPA: twierdzenie → źródło → ścieżka werdyktu ============ -->
+<!-- Use only when there are 2+ fact claims; one row per fact claim; nothing that isn't in the tables. -->
+<h2>Mapa sprawdzania</h2>
+<div class="flow">
+  <div class="hd">Twierdzenie</div><div></div><div class="hd">Gdzie sprawdzamy</div><div></div><div class="hd">Możliwe werdykty</div>
+  <!-- EXAMPLE row -->
+  <div class="node"><span class="id">#1</span>{{krótko}}</div><div class="arrow">→</div>
+  <div class="node">{{GUS BDL, zmienna X}} <span class="avail">✅</span></div><div class="arrow">→</div>
+  <div class="node"><span class="v v-ok">potwierdzone</span> / <span class="v v-warn">wprowadzające w błąd</span></div>
+</div>
+
+<!-- ============ ŹRÓDŁA I WERDYKTY ============ -->
+<h2>Źródła i werdykty</h2>
+<table>
+  <tr><th>#</th><th>Gdzie sprawdzamy (endpoint)</th><th>Dostępne?</th></tr>
+  <tr><td>1</td><td>{{nazwa}} · <code>{{endpoint}}</code></td><td class="avail">✅ mamy</td></tr>
+</table>
+<!-- One card per fact claim -->
+<div class="card">
+  <h3>#1 {{twierdzenie}} <!-- <span class="live">SPRAWDZONE NA ŻYWO</span> --></h3>
+  <p class="small muted">Etap stanowiska szuka: {{czego dokładnie}}</p>
+  <div class="paths">
+    <div>Jeśli {{źródło mówi X}}</div><div><span class="v v-ok">potwierdzone</span></div>
+    <div>Jeśli {{dotyczy tylko części}}</div><div><span class="v v-warn">wprowadzające w błąd</span></div>
+    <div>Jeśli brak źródła</div><div><span class="v v-none">brak wystarczających dowodów</span></div>
+    <div>Jeśli API nie odpowiada</div><div><span class="state">source_unavailable</span></div>
+  </div>
+</div>
+
+<!-- ============ CO ZOBACZY UŻYTKOWNIK ============ -->
+<h2>Co zobaczy użytkownik</h2>
+<div class="preview">
+  <div class="bar">Prawdowid · wynik sprawdzenia</div>
+  <div class="body">
+    <p><b>{{podsumowanie tekstu}}</b></p>
+    <div class="claim">
+      <span class="v v-ok">potwierdzone</span> <span class="small muted">· siła: {{Wysoka}}</span>
+      <p>{{1 zdanie wyjaśnienia}}</p>
+      <p class="small">Sprawdź sam: <a href="{{url}}">{{url lub [link do źródła]}}</a></p>
+    </div>
+    <!-- System state example (never styled as a verdict): -->
+    <!-- <div class="banner">ⓘ Nie mogliśmy sprawdzić w {{źródło}}. To nie jest ocena treści.</div> -->
+    <p class="small muted">Ostrzeżenia: {{…}} · Eskalacja: {{brak / rekomendowana}}</p>
+  </div>
+</div>
+
+<!-- ============ TEORIA / TECHNICZNIE / LUKI ============ -->
+<h2>Dlaczego tak</h2>
+<ul><li>{{zasada powiązana z tym wejściem}}</li></ul>
+
+<h2>Technicznie</h2>
+<ul><li>{{wywołania, modele, koszt, opóźnienie, co asynchronicznie}}</li></ul>
+
+<h2>Luki i ograniczenia</h2>
+<div class="callout gap">{{czego dziś nie zrobimy dla tego wejścia, uczciwie}}</div>
+
+</body>
+</html>
