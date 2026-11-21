@@ -44,12 +44,14 @@ export async function assessClaim(args: {
   records: SourceRecord[];
   apiKey?: string;
   model: string;
+  fallbackModel?: string;
   signal?: AbortSignal;
 }): Promise<AssessmentResult> {
   const ids = args.records.map((_, i) => `p${i + 1}`);
   const { data, usage } = await chatJson({
     apiKey: args.apiKey,
     model: args.model,
+    fallbackModel: args.fallbackModel,
     system: evidenceAssessmentSystem("Polish"),
     // No URLs or titles go to the model: it cannot copy or invent them. Code adds them later.
     user: JSON.stringify({

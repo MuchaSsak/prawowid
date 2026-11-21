@@ -368,6 +368,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
         records: r.records,
         apiKey: deps.config.secrets.openrouterApiKey,
         model: deps.config.models.evidence_assessment,
+        fallbackModel: deps.config.models.claim_extraction,
         signal: deadline.signal,
       });
       usages.push(assessed.usage);

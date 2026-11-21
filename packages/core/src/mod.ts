@@ -5,3 +5,5 @@ export { isPrivateIp, type ResolveHost } from "./intake/url.ts";
 export { MemoryCheckStore, MemoryCorpusStore } from "./store/memory.ts";
 export type { CheckLogRow, CheckStore, CorpusStore } from "./store/types.ts";
 export { CONNECTORS } from "./connectors/mod.ts";
+export { CheckRequestSchema, CheckResponseSchema, contractJsonSchema } from "./contract.ts";
+export { MOCK_SCENARIO_DESCRIPTIONS, MOCK_SCENARIOS, type MockScenario, mockResponse, pickScenario } from "./mock/fixtures.ts";

@@ -37,6 +37,8 @@ export interface ChatJsonOptions<T extends z.ZodType> {
   maxTokens?: number;
   /** Aborts when the whole request runs out of time. */
   signal?: AbortSignal;
+  /** Used once if the primary model stays rate limited after the retry. */
+  fallbackModel?: string;
 }
 
 const ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
@@ -143,6 +145,14 @@ export async function chatJson<T extends z.ZodType>(
       (err.kind === "invalid_output" || err.kind === "http" || err.kind === "rate_limited");
     if (!retryable || opts.signal?.aborted) throw err;
     if (err.kind === "rate_limited") await new Promise((r) => setTimeout(r, 1500));
-    return await once(opts);
+    try {
+      return await once(opts);
+    } catch (err2) {
+      // Still rate limited: degrade to the fallback model (same EU routing) rather than fail.
+      if (err2 instanceof LlmError && err2.kind === "rate_limited" && opts.fallbackModel && !opts.signal?.aborted) {
+        return await once({ ...opts, model: opts.fallbackModel });
+      }
+      throw err2;
+    }
   }
 }

@@ -1,10 +1,21 @@
 /**
  * Prawdowid API (Deno + Hono). A thin channel adapter over @prawdowid/core: every channel (web
- * now, a messaging bot later) calls the same runCheck (hard constraint 18).
+ * now, a messaging bot next) calls the same runCheck (hard constraint 18).
+ * Full reference: .agents/project-info/architecture/api-reference.md
  *
- *   POST   /api/check            { input: { type: "text"|"url"|"image", value }, user_message?, session_id? }
- *   GET    /api/health           which secrets/routes are configured (booleans only, never values)
- *   DELETE /api/session/:id      deletes a session's logs and cached results
+ *   GET    /                         service info (JSON)
+ *   GET    /api/v1/health            mode + which secrets are configured (booleans only)
+ *   POST   /api/v1/check             run a check (live or mock), returns CheckResponse
+ *   GET    /api/v1/schema            JSON Schema of the request and response (contract v1)
+ *   GET    /api/v1/mock/scenarios    mock scenario names and what each returns
+ *   DELETE /api/v1/session/:id       delete a session's logs and cached results
+ *
+ * Env (all optional except the LLM key in live mode):
+ *   OPENROUTER_API_KEY, GOOGLE_FACT_CHECK_API_KEY   secrets (live mode)
+ *   PRAWDOWID_MODE=live|mock                        mock = every check returns fixtures (default live)
+ *   MOCK_DELAY_MS=600                               simulated latency in mock mode
+ *   CLIENT_KEYS=bot:<secret>,...                    server-to-server clients (messaging bot)
+ *   WEB_ORIGINS=https://…,…                         browser origins allowed by CORS
  */
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -13,10 +24,12 @@ import {
   type CheckRequest,
   type CheckResponse,
   CONTRACT_VERSION,
-  isPrivateIp,
+  contractJsonSchema,
   loadConfig,
   MemoryCheckStore,
   MemoryCorpusStore,
+  MOCK_SCENARIO_DESCRIPTIONS,
+  mockResponse,
   runCheck,
 } from "@prawdowid/core";
 
@@ -24,20 +37,31 @@ const config = loadConfig({ get: (k) => Deno.env.get(k) });
 const store = new MemoryCheckStore();
 const corpus = new MemoryCorpusStore();
 const PORT = Number(Deno.env.get("PORT") ?? 8787);
+const MODE: "live" | "mock" = Deno.env.get("PRAWDOWID_MODE") === "mock" ? "mock" : "live";
+const MOCK_DELAY_MS = Number(Deno.env.get("MOCK_DELAY_MS") ?? 600);
 const ALLOWED_ORIGINS = (Deno.env.get("WEB_ORIGINS") ?? "http://localhost:4321,http://127.0.0.1:4321")
   .split(",").map((s) => s.trim()).filter(Boolean);
+/** name → key; a client sends `X-Client-Key: <key>` and gets per-end-user rate limits. */
+const CLIENT_KEYS = new Map(
+  (Deno.env.get("CLIENT_KEYS") ?? "").split(",").map((p) => p.trim()).filter(Boolean).map((p) => {
+    const i = p.indexOf(":");
+    return [p.slice(i + 1), p.slice(0, i)] as [string, string];
+  }),
+);
 
 async function resolveHost(hostname: string): Promise<string[]> {
   const [a, aaaa] = await Promise.allSettled([Deno.resolveDns(hostname, "A"), Deno.resolveDns(hostname, "AAAA")]);
-  const ips = [
-    ...(a.status === "fulfilled" ? a.value : []),
-    ...(aaaa.status === "fulfilled" ? aaaa.value : []),
-  ];
+  const ips = [...(a.status === "fulfilled" ? a.value : []), ...(aaaa.status === "fulfilled" ? aaaa.value : [])];
   if (ips.length === 0) throw new Error("no DNS records");
   return ips;
 }
 
-// ── Rate limit: fixed window per client, in memory (good enough for one instance) ──
+async function sha256(text: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// ── Rate limit: fixed window, in memory (per instance) ──────────────────────
 const WINDOW_MS = 60_000;
 const MAX_PER_WINDOW = 12;
 const hits = new Map<string, { n: number; start: number }>();
@@ -52,59 +76,6 @@ function rateLimited(key: string): boolean {
   return h.n > MAX_PER_WINDOW;
 }
 
-const app = new Hono();
-
-app.use("/api/*", cors({ origin: (o) => (ALLOWED_ORIGINS.includes(o) ? o : null), allowMethods: ["GET", "POST", "DELETE"] }));
-
-app.get("/api/health", (c) =>
-  c.json({
-    ok: true,
-    configured: {
-      openrouter: Boolean(config.secrets.openrouterApiKey),
-      google_fact_check: Boolean(config.secrets.googleFactCheckApiKey),
-    },
-    models: config.models,
-    storage: "memory (mock, lost on restart)",
-  }));
-
-app.post(
-  "/api/check",
-  bodyLimit({
-    maxSize: 8 * 1024 * 1024,
-    onError: (c) => c.json(rejected("Plik jest za duży (maks. 5 MB obrazu).")),
-  }),
-  async (c) => {
-    const ip = c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
-      (c.env as { remoteAddr?: { hostname?: string } } | undefined)?.remoteAddr?.hostname ?? "local";
-    if (rateLimited(ip)) {
-      return c.json(systemOnly("rate_limited", "Zbyt wiele zapytań", "Spróbuj ponownie za chwilę."), 429);
-    }
-    let body: CheckRequest;
-    try {
-      body = await c.req.json();
-    } catch {
-      return c.json(rejected("Nieprawidłowe zapytanie (oczekujemy JSON)."), 400);
-    }
-    const result = await runCheck({ ...body, channel: "web" }, {
-      config,
-      store,
-      corpus,
-      resolveHost,
-    });
-    return c.json(result);
-  },
-);
-
-app.delete("/api/session/:id", async (c) => {
-  const id = c.req.param("id");
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`session:${id}`));
-  const hash = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
-  const res = await store.deleteSession(hash);
-  return c.json({ deleted: true, checks: res.checks });
-});
-
-app.notFound((c) => c.json({ error: "not found" }, 404));
-
 function systemOnly(status: CheckResponse["status"], title: string, text: string): CheckResponse {
   return {
     contract_version: CONTRACT_VERSION,
@@ -118,23 +89,112 @@ function systemOnly(status: CheckResponse["status"], title: string, text: string
     limitations: [],
     escalation: { state: "none", reason: null },
     input: { type: "text", title: null, url: null, published_at: null, description: null },
-    meta: { latency_ms: 0, stages_ms: {}, models: [], prompt_versions: [], cost_usd: 0, cached: false, mode: "live" },
+    meta: { latency_ms: 0, stages_ms: {}, models: [], prompt_versions: [], cost_usd: 0, cached: false, mode: MODE },
   };
 }
-function rejected(text: string) {
-  return systemOnly("input_rejected", "Nie możemy przyjąć tych danych", text);
-}
+const rejected = (text: string) => systemOnly("input_rejected", "Nie możemy przyjąć tych danych", text);
+
+const app = new Hono();
+
+app.use(
+  "/api/*",
+  cors({
+    origin: (o) => (ALLOWED_ORIGINS.includes(o) ? o : null),
+    allowMethods: ["GET", "POST", "DELETE"],
+    allowHeaders: ["Content-Type", "X-Client-Key", "X-End-User"],
+  }),
+);
+
+app.get("/", (c) =>
+  c.json({
+    service: "Prawdowid API",
+    contract_version: CONTRACT_VERSION,
+    mode: MODE,
+    docs: "GET /api/v1/schema, GET /api/v1/mock/scenarios, POST /api/v1/check",
+  }));
+
+app.get("/api/v1/health", (c) =>
+  c.json({
+    ok: true,
+    contract_version: CONTRACT_VERSION,
+    mode: MODE,
+    configured: {
+      openrouter: Boolean(config.secrets.openrouterApiKey),
+      google_fact_check: Boolean(config.secrets.googleFactCheckApiKey),
+    },
+    models: config.models,
+    storage: "memory (mock, lost on restart)",
+  }));
+
+app.get("/api/v1/schema", (c) => c.json(contractJsonSchema()));
+
+app.get("/api/v1/mock/scenarios", (c) =>
+  c.json({
+    how_to_pick: [
+      'request field "mock": "<scenario>" (or true = picked from the input)',
+      'text input starting with "demo:<scenario>" (works from a chat app)',
+      "PRAWDOWID_MODE=mock on the server makes every check a mock",
+    ],
+    scenarios: MOCK_SCENARIO_DESCRIPTIONS,
+  }));
+
+app.post(
+  "/api/v1/check",
+  bodyLimit({ maxSize: 8 * 1024 * 1024, onError: (c) => c.json(rejected("Plik jest za duży (maks. 5 MB obrazu)."), 413) }),
+  async (c) => {
+    // Clients with a key (the messaging bot) are limited per end user, browsers per IP.
+    const client = CLIENT_KEYS.get(c.req.header("x-client-key") ?? "");
+    const ip = c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
+      (c.env as { remoteAddr?: { hostname?: string } } | undefined)?.remoteAddr?.hostname ?? "local";
+    const endUser = c.req.header("x-end-user");
+    const limitKey = client && endUser ? `${client}:${await sha256(endUser)}` : `ip:${ip}`;
+    if (rateLimited(limitKey)) {
+      return c.json(systemOnly("rate_limited", "Zbyt wiele zapytań", "Spróbuj ponownie za chwilę."), 429);
+    }
+
+    let body: CheckRequest;
+    try {
+      body = await c.req.json();
+    } catch {
+      return c.json(rejected("Nieprawidłowe zapytanie (oczekujemy JSON)."), 400);
+    }
+    if (!body || typeof body !== "object" || !body.input || typeof body.input.value !== "string") {
+      return c.json(rejected('Brak pola "input": { "type": "text"|"url"|"image", "value": "…" }.'), 400);
+    }
+    const channel = body.channel ?? (client ? "messaging" : "web");
+
+    const wantsMock = MODE === "mock" || body.mock === true || (typeof body.mock === "string" && body.mock !== "");
+    if (wantsMock) {
+      if (!body.input.value.trim()) {
+        const r = rejected("Wklej tekst, link albo dodaj obraz.");
+        r.meta.mode = "mock";
+        return c.json(r);
+      }
+      if (MOCK_DELAY_MS > 0) await new Promise((r) => setTimeout(r, MOCK_DELAY_MS));
+      const res = mockResponse({ ...body, channel });
+      res.meta.latency_ms = MOCK_DELAY_MS;
+      return c.json(res);
+    }
+    return c.json(await runCheck({ ...body, channel }, { config, store, corpus, resolveHost }));
+  },
+);
+
+app.delete("/api/v1/session/:id", async (c) => {
+  const res = await store.deleteSession(await sha256(`session:${c.req.param("id")}`));
+  return c.json({ deleted: true, checks: res.checks });
+});
+
+app.notFound((c) => c.json({ error: "not found", see: "GET /" }, 404));
 
 // Retention for the mock store (decisions/001: 30 days).
 setInterval(() => store.prune(new Date()), 3600_000);
 
-// Exported for tests; served when run directly.
-export { app, isPrivateIp };
+export { app };
 if (import.meta.main) {
   console.log(
-    `Prawdowid API on http://localhost:${PORT}  (openrouter: ${config.secrets.openrouterApiKey ? "yes" : "NO"}, google fact check: ${
+    `Prawdowid API on http://localhost:${PORT}  mode=${MODE}  openrouter=${config.secrets.openrouterApiKey ? "yes" : "NO"}  google_fact_check=${
       config.secrets.googleFactCheckApiKey ? "yes" : "NO"
-    })`,
+    }`,
   );
   Deno.serve({ port: PORT }, (req, info) => app.fetch(req, { remoteAddr: info.remoteAddr }));
 }

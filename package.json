@@ -14,7 +14,7 @@
     "web:dev": "bun run --cwd apps/web dev",
     "web:build": "bun run --cwd apps/web build",
     "check": "turbo run check",
-    "test": "deno test --allow-env packages/core",
+    "test": "deno test --allow-env --allow-net packages/core apps/api",
     "supabase:schemas:check": "node supabase/scripts/check-schemas.mjs",
     "supabase:migration": "node supabase/scripts/migrate.mjs --generate",
     "supabase:push": "node supabase/scripts/migrate.mjs --push",

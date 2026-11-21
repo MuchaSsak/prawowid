@@ -112,7 +112,7 @@ export function initApp() {
     }, 2500);
 
     try {
-      const res = await fetch(`${api}/api/check`, {
+      const res = await fetch(`${api}/api/v1/check`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -143,7 +143,7 @@ export function initApp() {
   $<HTMLButtonElement>("forget").addEventListener("click", async () => {
     try {
       const id = localStorage.getItem("prawdowid_session");
-      if (id) await fetch(`${api}/api/session/${encodeURIComponent(id)}`, { method: "DELETE" });
+      if (id) await fetch(`${api}/api/v1/session/${encodeURIComponent(id)}`, { method: "DELETE" });
       localStorage.removeItem("prawdowid_session");
       result.replaceChildren(h("div", { class: "system-banner" }, h("strong", {}, "Dane sesji usunięte"), h("p", {}, "Usunęliśmy historię sprawdzeń tej sesji.")));
     } catch {
