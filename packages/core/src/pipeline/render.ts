@@ -77,3 +77,33 @@ export const BASE_LIMITATIONS = [
   "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
   "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
 ];
+
+// ── Leading word (user, 2026-11-21; organizer samples A, B, E, G, J) ────────────────────────────
+// "Tak."/"Nie." for a question, "To prawda."/"To nieprawda." for a statement, only when the answer is
+// unambiguous: confirmed + "yes", false + "no", or misleading + "no" when the claim as stated is not
+// true (old or other-place material shown as current, sample B). Partly true, a wrong conclusion
+// (sample C), abstention (the Italy strike sample) and conflicts get no leading word.
+export type PlainAnswer = "yes" | "no" | "neither";
+
+const LEAD_RE = /^\s*(tak|nie|to prawda|to nieprawda)\s*[.,!:–-]\s*/i;
+
+/** True when the user asked a question ("Czy …?", "… ?") rather than pasting a statement. */
+export function isQuestion(text: string): boolean {
+  const t = text.trim();
+  return /^czy(?![\p{L}])/iu.test(t) || /\?\s*$/.test(t) || /\?\s*(sprawdź|sprawdz|zobacz)/i.test(t);
+}
+
+export function leadWord(verdict: Verdict, plain: PlainAnswer, question: boolean): string | null {
+  const yes = question ? "Tak." : "To prawda.";
+  const no = question ? "Nie." : "To nieprawda.";
+  if (verdict === "confirmed" && plain === "yes") return yes;
+  if ((verdict === "false" || verdict === "misleading") && plain === "no") return no;
+  return null;
+}
+
+/** The model is told not to start with Tak/Nie; any such word is removed so only code decides it. */
+export function withLead(explanation: string, lead: string | null): string {
+  const body = explanation.replace(LEAD_RE, "");
+  const text = body ? body.charAt(0).toUpperCase() + body.slice(1) : body;
+  return lead ? `${lead} ${text}` : text;
+}

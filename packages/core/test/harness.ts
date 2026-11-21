@@ -201,6 +201,7 @@ export function assess(
     proposed_verdict: proposed,
     explanation: "Wyjaśnienie modelu.",
     missing: null,
+    plain_answer: "neither",
     injection_signals: [],
     ...extra,
   });

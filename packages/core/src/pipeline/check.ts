@@ -14,7 +14,7 @@ import { isMediaType, mediaInputError } from "../intake/media.ts";
 import { fetchArticle, IntakeError, type ResolveHost } from "../intake/url.ts";
 import { LlmError, type LlmUsage } from "../llm/openrouter.ts";
 import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v3.ts";
-import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v2.ts";
+import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v3.ts";
 import type { CheckEventRow, CheckStore, CorpusStore } from "../store/types.ts";
 import {
   type CheckRequest,
@@ -32,10 +32,13 @@ import { periodNote, referenceDate, resolveTime } from "./dates.ts";
 import { type ExtractedClaim, extractClaims, type Material } from "./extract.ts";
 import {
   BASE_LIMITATIONS,
+  isQuestion,
+  leadWord,
   claimStateMessage,
   requestMessage,
   summaryText,
   templateExplanation,
+  withLead,
 } from "./render.ts";
 import { numericGuard } from "./numeric.ts";
 import { retrieve } from "./retrieve.ts";
@@ -262,6 +265,8 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
   const userMessage = um.text;
   if (redacted) event("pii_redacted", { count: redacted });
   maskedForLog = [userMessage, ...material.map((m) => m.text)].filter(Boolean).join("\n---\n");
+  // A question gets "Tak."/"Nie.", a pasted statement "To prawda."/"To nieprawda." (render.ts leadWord).
+  const asksQuestion = isQuestion(userMessage) || (inputType === "text" && isQuestion(material[0]?.text ?? ""));
 
   const injections = [
     ...scanInjection(userMessage, "user_message"),
@@ -485,6 +490,9 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
         missingOverride = "Ocena źródeł była niejednoznaczna. Sprawdź cytowane źródła samodzielnie.";
       }
     }
+    // The leading word only when code and model agree on the verdict.
+    const lead = proposed === d.verdict ? leadWord(d.verdict, assessed.assessment.plain_answer, asksQuestion) : null;
+    explanation = withLead(explanation, lead);
     const order = new Map(d.decisive.map((p, i) => [p.record.source_id, i]));
     const citations: Citation[] = guard.passages
       .filter((p) => p.stance !== "irrelevant")

@@ -5,6 +5,14 @@
  *   deno task eval                       in-process, keys from the repo-root .env
  *   deno task eval --url https://…       against a deployed API (J cases are skipped)
  *   options: --only A01,E02   --concurrency 2   --client-key <key>   --no-save
+ *            --cases organizer-cases.json --tag organizer   (another case file; results as latest-<tag>.md)
+ *
+ * Optional per-case style checks (organizer samples, hackathon/organizer-sample-answers.md):
+ *   accept: other verdicts that also count as correct · user_message: text sent next to the input
+ *   lead: the explanation of the first fact claim must start with this word ("Tak.", "Nie.",
+ *         "To prawda.", "To nieprawda."), or null = must start with none of them
+ *   publisher_any: a citation's publisher must contain one of these · text_includes / text_excludes:
+ *   phrases the user-facing text must (not) contain, case-insensitive
  *
  * Writes eval/results/<timestamp>.json, eval/results/latest.md and eval/results/citations-review.csv
  * (for the human citation-correctness review). Costs real money in live mode (~$0.1 per full run).
@@ -24,6 +32,12 @@ interface Case {
   expect_status?: string[];
   expect_claim_state?: string;
   note?: string;
+  accept?: Verdict[];
+  user_message?: string;
+  lead?: string | null;
+  publisher_any?: string[];
+  text_includes?: string[];
+  text_excludes?: string[];
 }
 
 interface Outcome {
@@ -42,6 +56,8 @@ interface Outcome {
   injection_warned: boolean;
   response: CheckResponse | null;
   consistency?: { same: boolean; detail: string };
+  /** Present when the case has style checks: which ones failed. */
+  style?: { ok: boolean; failed: string[] };
   skipped?: string;
 }
 
@@ -56,6 +72,8 @@ const ONLY = arg("--only")?.split(",").map((s) => s.trim());
 const CONCURRENCY = Number(arg("--concurrency") ?? 2);
 const CLIENT_KEY = arg("--client-key");
 const SAVE = !args.includes("--no-save");
+const CASES_FILE = arg("--cases") ?? "cases.json";
+const TAG = arg("--tag");
 const DIR = new URL(".", import.meta.url);
 
 const VERDICTS: Verdict[] = ["confirmed", "false", "misleading", "insufficient_evidence", "not_verifiable"];
@@ -78,7 +96,7 @@ async function buildRequest(c: Case, channel: "web" | "messaging", session: stri
     for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
     value = `data:image/png;base64,${btoa(bin)}`;
   }
-  return { input: { type: c.input.type, value }, channel, session_id: session };
+  return { input: { type: c.input.type, value }, channel, session_id: session, ...(c.user_message ? { user_message: c.user_message } : {}) };
 }
 
 async function call(c: Case, req: CheckRequest): Promise<{ res: CheckResponse | null; ms: number; error: string | null }> {
@@ -119,6 +137,36 @@ function predict(r: CheckResponse | null): string {
   return "no_claims";
 }
 
+const LEADS = ["Tak.", "Nie.", "To prawda.", "To nieprawda."];
+
+/** Style checks modelled on the organizer samples: leading word, who checked it, wording. */
+function styleChecks(c: Case, r: CheckResponse | null): { ok: boolean; failed: string[] } | undefined {
+  const has = c.lead !== undefined || c.publisher_any || c.text_includes || c.text_excludes;
+  if (!has) return undefined;
+  const failed: string[] = [];
+  const claims = r?.claims ?? [];
+  const main = claims.find((x) => x.class === "fact" && x.verdict) ?? claims.find((x) => x.class === "fact") ?? claims[0];
+  const expl = (main?.explanation ?? "").trim();
+  if (c.lead !== undefined) {
+    if (c.lead === null) {
+      const used = LEADS.find((l) => expl.startsWith(l));
+      if (used) failed.push(`no leading word expected, got "${used}"`);
+    } else if (!expl.startsWith(c.lead)) failed.push(`lead "${c.lead}" expected, got "${expl.slice(0, 24)}"`);
+  }
+  if (c.publisher_any) {
+    const pubs = claims.flatMap((x) => x.citations.map((y) => y.publisher.toLowerCase()));
+    if (!c.publisher_any.some((p) => pubs.some((x) => x.includes(p.toLowerCase())))) failed.push(`no citation from ${c.publisher_any.join("/")}`);
+  }
+  const text = [
+    r?.system_message?.title, r?.system_message?.text,
+    ...claims.flatMap((x) => [x.explanation, x.missing, x.system_message, ...x.warnings.map((w) => w.text)]),
+    ...(r?.warnings ?? []).map((w) => w.text),
+  ].filter(Boolean).join(" \n ").toLowerCase();
+  for (const t of c.text_includes ?? []) if (!text.includes(t.toLowerCase())) failed.push(`missing text "${t}"`);
+  for (const t of c.text_excludes ?? []) if (text.includes(t.toLowerCase())) failed.push(`forbidden text "${t}"`);
+  return { ok: failed.length === 0, failed };
+}
+
 function signature(r: CheckResponse | null): string {
   return JSON.stringify((r?.claims ?? []).map((c) => [c.text, c.verdict, c.system_state, c.citations.map((x) => x.source_id).sort()]));
 }
@@ -146,7 +194,7 @@ async function runCase(c: Case): Promise<Outcome> {
   const out: Outcome = {
     ...base,
     predicted,
-    correct: c.gold === null ? null : predicted === c.gold,
+    correct: c.gold === null ? null : predicted === c.gold || (c.accept ?? []).includes(predicted as Verdict),
     status: res?.status ?? "transport_error",
     latency_ms: Math.round(ms),
     cached: res?.meta.cached ?? false,
@@ -156,6 +204,7 @@ async function runCase(c: Case): Promise<Outcome> {
     expectation_met,
     injection_warned: !!res?.warnings.some((w) => w.type === "injection_detected"),
     response: res,
+    style: styleChecks(c, res),
   };
   if (c.consistency) {
     const second = await call(c, await buildRequest(c, "messaging", `eval-bot-${c.id}`));
@@ -190,7 +239,7 @@ const median = (xs: number[]) => {
 const p90 = (xs: number[]) => (xs.length ? [...xs].sort((a, b) => a - b)[Math.min(xs.length - 1, Math.floor(xs.length * 0.9))] : 0);
 
 // ── main ─────────────────────────────────────────────────────────────────────
-const all: Case[] = JSON.parse(await Deno.readTextFile(new URL("cases.json", DIR))).cases;
+const all: Case[] = JSON.parse(await Deno.readTextFile(new URL(CASES_FILE, DIR))).cases;
 const cases = ONLY ? all.filter((c) => ONLY.includes(c.id)) : all;
 console.log(`Running ${cases.length} cases against ${BASE ?? "the local core (in-process)"} with concurrency ${CONCURRENCY}…`);
 console.log(`⚠ Live run: uses real OpenRouter/Google credits (~$0.001 per case, ~$0.04 for the full set). Use --only to run a few cases.`);
@@ -202,7 +251,7 @@ await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
     const c = queue.shift()!;
     const o = await runCase(c);
     results.push(o);
-    console.log(`  ${o.id.padEnd(4)} ${o.scenario}  gold=${String(o.gold).padEnd(21)} got=${o.predicted.padEnd(26)} ${o.correct === null ? (o.expectation_met ? "  ok " : " FAIL") : o.correct ? "  ✓  " : "  ✗  "} ${(o.latency_ms / 1000).toFixed(1)}s`);
+    console.log(`  ${o.id.padEnd(4)} ${o.scenario}  gold=${String(o.gold).padEnd(21)} got=${o.predicted.padEnd(26)} ${o.correct === null ? (o.expectation_met ? "  ok " : " FAIL") : o.correct ? "  ✓  " : "  ✗  "} ${(o.latency_ms / 1000).toFixed(1)}s${o.style && !o.style.ok ? `  style: ${o.style.failed.join("; ")}` : ""}`);
   }
 }));
 results.sort((a, b) => a.id.localeCompare(b.id));
@@ -226,6 +275,7 @@ const lat = timed.map((r) => r.latency_ms);
 const cost = ran.reduce((s, r) => s + r.cost_usd, 0);
 const e2e = ran.filter((r) => !r.transport_error && r.schema_valid && r.expectation_met && (r.gold === null || !r.predicted.startsWith("status:technical")));
 const cons = ran.filter((r) => r.consistency);
+const styled = ran.filter((r) => r.style);
 
 // Known-incident context (EUvsDisinfo): never a verdict input, so it is reported for human review, not scored.
 const ctxClaims = allClaims.filter(({ c }) => c.class === "fact");
@@ -255,7 +305,7 @@ const confusion = VERDICTS.map((g) => {
 
 const target = BASE ?? "local core";
 const now = new Date().toISOString();
-const md = `# Benchmark results (${now.slice(0, 16).replace("T", " ")} UTC, ${target})
+const md = `# Benchmark results${TAG ? ` [${TAG}: ${CASES_FILE}]` : ""} (${now.slice(0, 16).replace("T", " ")} UTC, ${target})
 Cases: ${ran.length} run${results.length > ran.length ? `, ${results.length - ran.length} skipped` : ""} · models: ${[...new Set(ran.flatMap((r) => r.response?.meta.models ?? []))].join(", ") || "n/a"}
 
 | Metric (task sec. 6) | Result | MVP target |
@@ -269,6 +319,7 @@ Cases: ${ran.length} run${results.length > ran.length ? `, ${results.length - ra
 | Cost | $${cost.toFixed(4)} for ${ran.length} cases → **$${(ran.length ? (cost / ran.length) * 100 : 0).toFixed(3)} per 100 checks** | reported |
 | End-to-end (completed, valid contract, expectations met) | ${pct(e2e.length, ran.length)} | 100% |
 | Channel consistency (web vs messaging) | ${pct(cons.filter((r) => r.consistency!.same).length, cons.length)} | 100% |
+| Answer style (organizer samples: leading word, who checked it, wording) | ${styled.length ? pct(styled.filter((r) => r.style!.ok).length, styled.length) : "no style checks in this set"} | 100% |
 | Moderator loop | not built (escalation is only "recommended"; tested in pipeline_test.ts) | if built |
 
 ## Known-incident context (EUvsDisinfo, review by hand: is each match the same narrative?)
@@ -289,9 +340,9 @@ ${Object.entries(perClass).map(([k, v]) => `| ${k} | ${v.p.toFixed(2)} | ${v.r.t
 ${confusion.join("\n")}
 
 ## Cases
-| Case | Sc. | Gold | Predicted | OK | Latency | Note |
-|---|---|---|---|---|---|---|
-${results.map((r) => `| ${r.id} | ${r.scenario} | ${r.gold ?? "-"} | ${r.predicted} | ${r.skipped ? "skip" : r.correct === null ? (r.expectation_met ? "✓" : "✗") : r.correct ? "✓" : "✗"} | ${(r.latency_ms / 1000).toFixed(1)} s${r.cached ? " (cache)" : ""} | ${r.skipped ?? r.consistency?.detail ?? (r.scenario === "E" ? (r.injection_warned ? "injection warned" : "NO injection warning") : r.transport_error ?? "")} |`).join("\n")}
+| Case | Sc. | Gold | Predicted | OK | Style | Latency | Note |
+|---|---|---|---|---|---|---|---|
+${results.map((r) => `| ${r.id} | ${r.scenario} | ${r.gold ?? "-"} | ${r.predicted} | ${r.skipped ? "skip" : r.correct === null ? (r.expectation_met ? "✓" : "✗") : r.correct ? "✓" : "✗"} | ${r.style ? (r.style.ok ? "✓" : `✗ ${r.style.failed.join("; ")}`) : "-"} | ${(r.latency_ms / 1000).toFixed(1)} s${r.cached ? " (cache)" : ""} | ${r.skipped ?? r.consistency?.detail ?? (r.scenario === "E" ? (r.injection_warned ? "injection warned" : "NO injection warning") : r.transport_error ?? "")} |`).join("\n")}
 `;
 
 console.log("\n" + md);
@@ -299,12 +350,13 @@ if (SAVE) {
   const out = new URL("results/", DIR);
   await Deno.mkdir(out, { recursive: true });
   const stamp = now.replace(/[:.]/g, "-").slice(0, 19);
-  await Deno.writeTextFile(new URL(`${stamp}.json`, out), JSON.stringify({ target, at: now, results }, null, 2));
-  await Deno.writeTextFile(new URL("latest.md", out), md);
+  const prefix = TAG ? `${TAG}-` : "";
+  await Deno.writeTextFile(new URL(`${prefix}${stamp}.json`, out), JSON.stringify({ target, at: now, cases: CASES_FILE, results }, null, 2));
+  await Deno.writeTextFile(new URL(TAG ? `latest-${TAG}.md` : "latest.md", out), md);
   const esc = (s: string) => `"${s.replace(/"/g, '""').replace(/\s+/g, " ")}"`;
   const csv = ["key,case,claim,stance,publisher,excerpt,url,correct"]
     .concat(citRows.map((r) => [r.key, r.id, r.c.text, r.x.stance, r.x.publisher, r.x.excerpt, r.x.url, r.key in labels ? String(labels[r.key]) : ""].map((v) => esc(String(v))).join(",")))
     .join("\n");
-  await Deno.writeTextFile(new URL("citations-review.csv", out), csv);
-  console.log(`Saved eval/results/${stamp}.json, latest.md, citations-review.csv`);
+  await Deno.writeTextFile(new URL(`${prefix}citations-review.csv`, out), csv);
+  console.log(`Saved eval/results/${prefix}${stamp}.json, ${TAG ? `latest-${TAG}.md` : "latest.md"}, ${prefix}citations-review.csv`);
 }

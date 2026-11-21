@@ -25,6 +25,15 @@ Run the full benchmark only before a demo, a submission or a prompt/model change
 - C (real conflict) can't be produced reliably from live sources, so the conflict rule is proven by the stubbed test.
 - H (moderator loop) is not built: disclosed, and the tests check we never claim "queued".
 
+## Organizer-style set (`eval/organizer-cases.json`)
+`deno task eval:organizer` (or `bun run eval:organizer`), 26 cases, ~$0.03, results in `eval/results/latest-organizer.md` and `organizer-<time>.json` (the main `latest.md` is untouched). Added 2026-11-21 (user) to test whether we answer questions *like* the [organizer samples](../hackathon/organizer-sample-answers.md), not only the samples themselves.
+- **X01-X08:** the organizer samples A, C, D, E, G, H, J (two J variants: API working and forced failure), each with style checks.
+- **R01-R18:** the same patterns on other topics: simple facts as questions and as statements (true and false), old or other-place footage (B), approximations and attribution shifts (C), invented local changes (D, H), "ostatnio" (the Italy-strike pattern), an injected fake assistant turn (E), "Czy Demagog sprawdzał…" with and without the Google key (J), a sweeping accusation (hard constraint 21) and an accusation plus a checkable figure.
+- **Gold labels** come from real Demagog ratings found in Google Fact Check Explorer on 2026-11-21 (date and rating in each case's `note`); invented local cases expect abstention. **Assumption:** a human should review them. Ratings can change and the index can drop items, so re-check a failing R case in Fact Check Explorer before blaming the pipeline.
+- **`accept`:** B cases count `false` or `misleading` as correct (Demagog rates old footage "Fałsz"; our rules may call it misleading). Both must start with "Nie."/"To nieprawda.".
+- **Style checks** (new optional case fields in `eval/run.ts`, reported as "Answer style"): `lead` (the explanation must start with "Tak."/"Nie."/"To prawda."/"To nieprawda.", or `null` = with none of them), `publisher_any` (a citation from Demagog, Eurostat…), `text_includes` / `text_excludes` (e.g. "nie oznacza" in abstentions, never "nie ma takiego artykułu" on a source failure).
+- Not covered: F (needs a prepared screenshot), I (needs a post URL that matches a checked item), the H case merge (not built).
+
 ## Metric definitions (eval/run.ts)
 - **Case prediction:** if the request status is not `ok`/`partial` → `status:<x>` (always wrong; a technical error never counts as an abstention). Otherwise the fact claims' verdicts aggregated worst-first: `false` > `misleading` > `insufficient_evidence` > `confirmed`; no fact claims → `not_verifiable` if an opinion was listed.
 - **Macro-F1:** over the 5 verdict classes present in the gold labels.

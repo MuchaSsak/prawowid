@@ -71,6 +71,9 @@ function fillMonth(m: number, ref: string, future: boolean): string {
   return `${y}-${pad(m)}`;
 }
 
+/** How far back "ostatnio" and "niedawno" reach (user, 2026-11-21). */
+export const RECENT_DAYS = 30;
+
 const addDaysIso = (isoDate: string, n: number) => new Date(Date.parse(`${isoDate}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 
 /** Relative expressions resolved against the reference date (the date the material speaks from). */
@@ -78,6 +81,11 @@ function relativeTime(t: string, ref: string): string | null {
   const y = Number(ref.slice(0, 4));
   const m = Number(ref.slice(5, 7));
   const has = (re: RegExp) => re.test(t);
+  // "Ostatnio", "niedawno": a window of RECENT_DAYS before the reference date (user, 2026-11-21),
+  // written as an ISO interval "start/end" (parsePeriod reads its end).
+  if (has(/(?<![\p{L}])(ostatnio|niedawno|ostatnimi\s+czasy|w\s+ostatnich\s+dniach|w\s+ostatnim\s+czasie)(?![\p{L}])/u)) {
+    return `${addDaysIso(ref, -RECENT_DAYS)}/${ref}`;
+  }
   if (has(/(?<![\p{L}])przedwczoraj(?![\p{L}])/u)) return addDaysIso(ref, -2);
   if (has(/(?<![\p{L}])wczoraj(?![\p{L}])/u)) return addDaysIso(ref, -1);
   if (has(/(?<![\p{L}])(dziś|dzis|dzisiaj)(?![\p{L}])/u)) return ref;
@@ -99,7 +107,8 @@ function relativeTime(t: string, ref: string): string | null {
  * - a stated year: "16 listopada 2024" → 2024-11-16, "listopad 2024" → 2024-11, "16.11.2024" → 2024-11-16;
  *   anything else with a year ("w 2024 roku", "2020-2024") passes through for parsePeriod;
  * - no year: "16 listopada", "16.11" and "w listopadzie" get the year from the reference date;
- * - relative words ("wczoraj", "w zeszłym roku", "w tym miesiącu") are resolved against it;
+ * - relative words ("wczoraj", "w zeszłym roku", "w tym miesiącu") are resolved against it, and
+ *   "ostatnio" / "niedawno" become the window "start/end" of the last RECENT_DAYS days;
  * - no text → "unknown"; unparsed text passes through unchanged.
  */
 export function resolveTime(
@@ -231,7 +240,14 @@ export function periodNote(resolved: ResolvedTime, ref: ReferenceDate): string |
   }
   if (resolved.relative) {
     const t = resolved.time;
-    const shown = /^\d{4}-\d{2}-\d{2}$/.test(t) ? formatDatePl(t) : /^\d{4}-\d{2}$/.test(t) ? `${t.slice(5, 7)}.${t.slice(0, 4)}` : t;
+    const interval = t.match(/^(\d{4}-\d{2}-\d{2})\/(\d{4}-\d{2}-\d{2})$/);
+    const shown = interval
+      ? `okres ${formatDatePl(interval[1])}–${formatDatePl(interval[2])}`
+      : /^\d{4}-\d{2}-\d{2}$/.test(t)
+      ? formatDatePl(t)
+      : /^\d{4}-\d{2}$/.test(t)
+      ? `${t.slice(5, 7)}.${t.slice(0, 4)}`
+      : t;
     return `Tekst podaje czas względnie („${resolved.relative}”); przyjęliśmy ${shown} na podstawie ${basis}.`;
   }
   if (resolved.filledYear) {

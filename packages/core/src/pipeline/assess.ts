@@ -4,7 +4,7 @@ import { LIMITS } from "../config.ts";
 import type { SourceRecord } from "../connectors/types.ts";
 import { containsVerbatim } from "../guard/normalize.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
-import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v2.ts";
+import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v3.ts";
 import type { Stance } from "../types.ts";
 
 export const Assessment = z.strictObject({
@@ -18,6 +18,8 @@ export const Assessment = z.strictObject({
   proposed_verdict: z.enum(["confirmed", "false", "misleading", "insufficient_evidence"]),
   explanation: z.string(),
   missing: z.string().nullable(),
+  /** Is the claim, as stated, true? Code turns it into the leading "Tak."/"Nie." (render.ts leadWord). */
+  plain_answer: z.enum(["yes", "no", "neither"]),
   injection_signals: z.array(z.strictObject({ excerpt: z.string(), passage_id: z.string() })),
 });
 export type Assessment = z.infer<typeof Assessment>;
