@@ -207,3 +207,6 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | clean (scope: recording transcription pages; links, anchors, index, skill parity checked; README format-example link is intentional)
 ## [2026-11-21] update | API rate limits rebuilt (apps/api/rate-limit.ts): token-bucket burst 12 + 1/5 s, 150/h, 600/day per IP (IPv6 /64) or end user, abuse ban 15 min doubling to 24 h, live-check budget 600/h 4,000/day, 1,500/day per client key, admin login guard, Retry-After; socket IP over spoofable X-Forwarded-For; api-reference, codebase, messaging-bot (spend limits done), deliverables, cost sheet B19-B20
 ## [2026-11-21] lint | 4 findings fixed: stale 12/min limit in messaging-bot (2x), MOCK_CLIENTS row and open question still waiting on spend caps, cost-sheet trigger now names rate-limit.ts; skill parity ok
+## [2026-11-21] update | Discord /demo removed (bot gets live answers; it only replied "demo unavailable"); demo: text gate kept; runbook + messaging-bot updated
+## [2026-11-21] lint | 1 finding: bot test count 135 -> 134 after /demo removal (fixed)
+## [2026-11-21] lint | 1 finding fixed during PR #11 rebase: clarified which rate limits can return 429 before mode routing. Preserved both log histories and verified routing, index, source citations, links and skill parity.

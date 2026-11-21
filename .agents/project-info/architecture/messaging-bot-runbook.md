@@ -37,7 +37,7 @@ On the API (Deno Deploy): `CLIENT_KEYS=bot:<key>`, `PRAWDOWID_MODE` (the web's m
 3. Install it on the demo server with `applications.commands` plus `bot` with permissions = 0. Leave the `@everyone` role with its default "View Channel" in the demo channel, or REST calls made as the bot can return 403.
 4. Register the commands **per server**, so they appear instantly (`bun run bot:discord:commands`):
    - `/sprawdz` with options `tresc` (string) and `obraz` (attachment), both optional; the bot requires at least one.
-   - `/demo` with a required `scenariusz` dropdown of the mock scenarios (only answers while the bot gets mock responses).
+   - (`/demo` was removed on 2026-11-21 when the bot went to live answers. Re-running the script replaces the server's command list, so an old `/demo` disappears.)
    - `/pomoc`.
    - `/usun-dane`.
 5. Make a public invite link. It goes into the README at the invite gate: M1 passes in mock mode and the privacy contact is filled in.

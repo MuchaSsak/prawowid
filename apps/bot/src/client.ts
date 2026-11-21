@@ -29,8 +29,8 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
     ...(endUser ? { "X-End-User": endUser } : {}),
   });
   // `/health` with our key reports `client_mode` (includes MOCK_CLIENTS); a 200 check answer
-  // refreshes it. A 429 is not used: it is answered before the API's mock switch, so it says "live"
-  // even for a bot held in mock, and one rate-limited user would turn /demo off for everyone.
+  // refreshes it. A per-user 429 can arrive before mock/live routing and report "live"
+  // even for a bot held in mock. Ignore it so a rate-limited user cannot turn demo: off for everyone.
   // `seq` orders requests (timestamps tie within a millisecond); `at` is only for the TTL.
   let mode: { value: "live" | "mock"; at: number; seq: number } | null = null;
   let seq = 0;
@@ -64,7 +64,7 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
         return { kind: "failure", reason: "invalid_response", detail: `HTTP ${res.status}; ${v.errors.slice(0, 5).join(",")}` };
       }
       // A 200 has passed the API's mock/live routing, so its meta.mode is this bot's real mode (a
-      // switch from mock to live shows up here at once). 400/413/429 are answered before routing.
+      // switch from mock to live shows up here at once).
       // Only a newer request may replace the cached mode: a slow mock answer that lands after a
       // newer live one must not bring mock back.
       const m = v.response.meta.mode;
