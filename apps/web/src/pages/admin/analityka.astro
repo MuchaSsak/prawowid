@@ -28,6 +28,23 @@ const ranges = [
       <button type="button" id="test-off" class="test-off">Wyłącz</button>
     </div>
 
+    <section id="gate" class="gate" hidden>
+      <form id="gate-form" class="gate-card">
+        <a class="brand" href="/">
+          <svg class="mark" data-rosette="mark" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+          Prawdomat
+        </a>
+        <h2>Klucz administratora</h2>
+        <label class="sr-only" for="token">Klucz administratora</label>
+        <div class="gate-row">
+          <input id="token" name="token" type="password" autocomplete="current-password" placeholder="ADMIN_TOKEN" required />
+          <button type="submit" class="pill-btn">Otwórz</button>
+        </div>
+        <p id="gate-error" class="gate-error" role="alert" hidden></p>
+        <button type="button" id="gate-sample" class="text-btn">Pokaż dane przykładowe</button>
+      </form>
+    </section>
+
     <div class="admin-shell">
       <aside class="side">
         <a class="brand" href="/">
@@ -68,25 +85,13 @@ const ranges = [
 
         <p id="notice" class="notice" role="status" hidden></p>
 
-        <section id="gate" class="gate" hidden>
-          <form id="gate-form" class="gate-card">
-            <h2>Klucz administratora</h2>
-            <label class="sr-only" for="token">Klucz administratora</label>
-            <div class="gate-row">
-              <input id="token" name="token" type="password" autocomplete="current-password" placeholder="ADMIN_TOKEN" required />
-              <button type="submit" class="pill-btn">Otwórz</button>
-            </div>
-            <p id="gate-error" class="gate-error" role="alert" hidden></p>
-            <button type="button" id="gate-sample" class="text-btn">Pokaż dane przykładowe</button>
-          </form>
-        </section>
 
         <div id="content" class="dash" hidden>
           <section class="kpis" id="kpis" aria-label="Najważniejsze liczby"></section>
 
           <section class="a-card span-2">
-            <div class="card-title"><h2>Ruch</h2><p id="volume-sub" class="sub"></p></div>
-            <div id="volume"></div>
+            <div class="card-title"><h2>Tematy</h2><p class="sub">Najczęściej sprawdzane twierdzenia, dane osobowe zamaskowane</p></div>
+            <div id="topics"></div>
           </section>
 
           <section class="a-card">
@@ -95,23 +100,8 @@ const ranges = [
           </section>
 
           <section class="a-card">
-            <div class="card-title"><h2>Tematy</h2><p class="sub">Zmiana wobec poprzedniego okresu</p></div>
-            <div id="topics"></div>
-          </section>
-
-          <section class="a-card span-2">
-            <div class="card-title"><h2>Werdykty według tematu</h2><p class="sub">Jak często zdania z danego tematu okazują się prawdziwe albo fałszywe</p></div>
-            <div id="mix"></div>
-          </section>
-
-          <section class="a-card">
-            <div class="card-title"><h2>Najczęściej sprawdzane</h2><p class="sub">Powtarzające się twierdzenia, dane osobowe zamaskowane</p></div>
-            <div id="top-claims"></div>
-          </section>
-
-          <section class="a-card">
-            <div class="card-title"><h2>Bezpieczeństwo i rzetelność</h2></div>
-            <div id="integrity"></div>
+            <div class="card-title"><h2>Ruch</h2><p id="volume-sub" class="sub"></p></div>
+            <div id="volume"></div>
           </section>
         </div>
       </main>

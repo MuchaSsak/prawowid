@@ -8,7 +8,7 @@ import type { Verdict } from "@prawdowid/core/types";
 import { h } from "../dom.ts";
 import { icon } from "../render.ts";
 import { drawRosettes } from "../rosette.ts";
-import { dataTable, empty, fmt, heatmap, legend, lineChart, type LinePoint, segmentedBar, sparkline, volumeBar } from "./charts.ts";
+import { dataTable, empty, fmt, heatmap, lineChart, type LinePoint, sparkline, volumeBar } from "./charts.ts";
 
 const TOKEN_KEY = "prawdowid.admin-token";
 const RANGE_KEY = "prawdowid.admin-range";
@@ -22,16 +22,13 @@ const RANGE_PREV: Record<AnalyticsRange, string> = {
 };
 const BUCKET_TEXT = { hour: "na godzinę", day: "na dzień", week: "na tydzień", month: "na miesiąc" } as const;
 
-/** Segment order validated for colour-blind and normal-vision separation: green … red at the ends. */
-const MIX: { key: Verdict; label: string; color: string }[] = [
-  { key: "confirmed", label: "Potwierdzone", color: "var(--ok-bar)" },
-  { key: "not_verifiable", label: "Nie podlega weryfikacji", color: "var(--op-bar)" },
-  { key: "misleading", label: "Wprowadzające w błąd", color: "var(--mis2-bar)" },
-  { key: "insufficient_evidence", label: "Brak dowodów", color: "var(--unk-bar)" },
-  { key: "false", label: "Fałszywe", color: "var(--bad-bar)" },
-];
-const VERDICT_SHORT = Object.fromEntries(MIX.map((m) => [m.key, m.label])) as Record<Verdict, string>;
-const CHANNEL: Record<string, string> = { web: "Strona", discord: "Discord", whatsapp: "WhatsApp", messenger: "Messenger", api: "API" };
+const VERDICT_SHORT: Record<Verdict, string> = {
+  confirmed: "Potwierdzone",
+  not_verifiable: "Nie podlega weryfikacji",
+  misleading: "Wprowadzające w błąd",
+  insufficient_evidence: "Brak dowodów",
+  false: "Fałszywe",
+};
 
 const store = {
   get(k: string, s: Storage = localStorage) {
@@ -70,6 +67,13 @@ export function initAnalytics() {
   const testBar = $("test-bar");
   const logout = $<HTMLButtonElement>("logout");
 
+  // Locked = the key screen covers the whole page; only the key or sample data opens the panel.
+  const lock = (on: boolean) => {
+    gate.hidden = !on;
+    content.hidden = on;
+    document.body.classList.toggle("is-locked", on);
+  };
+
   const syncUrl = () => {
     const u = new URL(location.href);
     if (sample) u.searchParams.set("test", "true");
@@ -94,13 +98,11 @@ export function initAnalytics() {
     const id = ++request;
     notice.hidden = true;
     if (sample) {
-      gate.hidden = true;
-      content.hidden = false;
+      lock(false);
       return render(sampleAnalytics(range));
     }
     if (!token) {
-      content.hidden = true;
-      gate.hidden = false;
+      lock(true);
       gateError.hidden = true;
       return;
     }
@@ -111,16 +113,14 @@ export function initAnalytics() {
       if (res.status === 401) {
         token = null;
         store.set(TOKEN_KEY, null, sessionStorage);
-        content.hidden = true;
-        gate.hidden = false;
+        lock(true);
         gateError.textContent = "Nieprawidłowy klucz.";
         gateError.hidden = false;
         return syncControls();
       }
       if (res.status === 404) return showNotice("Panel jest wyłączony na serwerze: ustaw ADMIN_TOKEN w API.");
       if (!res.ok) return showNotice(`API zwróciło błąd ${res.status}.`);
-      gate.hidden = true;
-      content.hidden = false;
+      lock(false);
       render(await res.json() as AnalyticsReport);
     } catch {
       if (id === request) showNotice("Nie udało się połączyć z API. Możesz włączyć dane przykładowe.");
@@ -136,6 +136,10 @@ export function initAnalytics() {
 
   function render(r: AnalyticsReport) {
     content.classList.remove("is-loading");
+    // Replay the short staggered entry on every new report (first load, range or sample switch).
+    content.classList.remove("is-entering");
+    void content.offsetWidth;
+    content.classList.add("is-entering");
     if (!r.sample && (r.range === "90d" || r.range === "1y")) {
       showNotice("Dane rzeczywiste sięgają 30 dni wstecz (retencja logów).");
     }
@@ -143,9 +147,6 @@ export function initAnalytics() {
     renderVolume(r);
     heatmap($("heatmap"), r.heatmap);
     renderTopics(r);
-    renderMix(r);
-    renderTopClaims(r);
-    renderIntegrity(r);
   }
 
   function delta(value: number, prev: number, lowerIsBetter = false): HTMLElement {
@@ -163,17 +164,24 @@ export function initAnalytics() {
     );
   }
 
+  /** Change of a share in percentage points ("pp"), neutral ink: a share is not better up or down. */
+  function pointsDelta(value: number, prev: number): HTMLElement {
+    if (!prev) return h("p", { class: "kpi-delta" }, `brak danych z ${RANGE_PREV[range]}`);
+    const pp = Math.round((value - prev) * 100);
+    const arrow = pp === 0 ? "–" : pp > 0 ? "▲" : "▼";
+    return h("p", { class: "kpi-delta" }, h("span", { "aria-hidden": "true" }, arrow), ` ${Math.abs(pp)} pp wobec ${RANGE_PREV[range]}`);
+  }
+
   function renderKpis(r: AnalyticsReport) {
     const k = r.kpis;
+    const pct = (v: number) => `${Math.round(v * 100)}%`;
     const sec = (ms: number) => `${(ms / 1000).toLocaleString("pl-PL", { maximumFractionDigits: 1 })} s`;
-    const usd = (v: number) => `$${v.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     const tile = (label: string, value: string, d: HTMLElement) =>
       h("article", { class: "kpi" }, h("h3", { class: "kpi-label" }, label), h("p", { class: "kpi-value" }, value), d);
     $("kpis").replaceChildren(
       tile("Sprawdzenia", fmt(k.checks.value), delta(k.checks.value, k.checks.prev)),
-      tile("Sprawdzone zdania", fmt(k.claims.value), delta(k.claims.value, k.claims.prev)),
+      tile("Fałszywe lub mylące", pct(k.false_share.value), pointsDelta(k.false_share.value, k.false_share.prev)),
       tile("Mediana czasu odpowiedzi", k.median_latency_ms.value ? sec(k.median_latency_ms.value) : "–", delta(k.median_latency_ms.value, k.median_latency_ms.prev, true)),
-      tile("Koszt 100 sprawdzeń", usd(k.cost_per_100_usd.value), delta(k.cost_per_100_usd.value, k.cost_per_100_usd.prev, true)),
     );
   }
 
@@ -214,8 +222,9 @@ export function initAnalytics() {
 
   function renderTopics(r: AnalyticsReport) {
     const host = $("topics");
-    if (!r.topics.some((t) => t.claims)) return host.replaceChildren(empty());
-    const max = Math.max(...r.topics.map((t) => t.claims));
+    if (!r.top_claims.length) return host.replaceChildren(empty("Żadne twierdzenie nie powtórzyło się"));
+    const max = Math.max(...r.top_claims.map((c) => c.count));
+    const slices = sliceLabels(r);
     const growth = (g: number | null) => {
       if (g === null) return h("span", { class: "growth" }, "nowy");
       const pct = Math.round(g * 100);
@@ -232,110 +241,36 @@ export function initAnalytics() {
             "tr",
             {},
             h("th", { scope: "col", class: "num" }, "#"),
-            h("th", { scope: "col" }, "Temat"),
+            h("th", { scope: "col" }, "Twierdzenie"),
+            h("th", { scope: "col" }, "Werdykt"),
             h("th", { scope: "col", class: "hide-sm" }, "Trend"),
-            h("th", { scope: "col" }, "Zmiana"),
-            h("th", { scope: "col" }, "Zdania"),
+            h("th", { scope: "col", class: "hide-sm" }, "Zmiana"),
+            h("th", { scope: "col" }, "Sprawdzenia"),
           ),
         ),
         h(
           "tbody",
           {},
-          ...r.topics.map((t, i) =>
+          ...r.top_claims.map((c, i) =>
             h(
               "tr",
-              {},
+              { style: `--row:${i}` },
               h("td", { class: "num muted" }, String(i + 1)),
-              h("th", { scope: "row" }, t.label),
-              h("td", { class: "hide-sm" }, sparkline(t.spark, `${t.label}: trend w 12 odcinkach okresu`)),
-              h("td", {}, growth(t.growth)),
-              h("td", {}, volumeBar(t.claims, max)),
+              h("th", { scope: "row", class: "claim-cell" }, c.text),
+              h(
+                "td",
+                {},
+                c.verdict
+                  ? h("span", { class: `mini-pill tone-${c.verdict}`, title: VERDICT_SHORT[c.verdict] }, icon(c.verdict, "sm"), h("span", { class: "pill-text" }, VERDICT_SHORT[c.verdict]))
+                  : h("span", { class: "muted" }, "–"),
+              ),
+              h("td", { class: "hide-sm" }, sparkline(c.spark, `${c.text}: trend w 12 odcinkach okresu`, slices)),
+              h("td", { class: "hide-sm" }, growth(c.growth)),
+              h("td", {}, volumeBar(c.count, max)),
             )
           ),
         ),
       ),
-    );
-  }
-
-  function renderMix(r: AnalyticsReport) {
-    const host = $("mix");
-    const rows = r.topics.filter((t) => t.topic !== "other" && MIX.some((m) => t.verdicts[m.key]));
-    if (!rows.length) return host.replaceChildren(empty("Brak ocen w tym okresie"));
-    const total = (t: (typeof rows)[number]) => MIX.reduce((s, m) => s + t.verdicts[m.key], 0);
-    host.replaceChildren(
-      legend(MIX.map((m) => ({ label: m.label, color: m.color }))),
-      h(
-        "div",
-        { class: "mix-rows" },
-        ...rows.map((t) =>
-          h(
-            "div",
-            { class: "mix-row" },
-            h("div", { class: "mix-head" }, h("span", {}, t.label), h("span", { class: "muted" }, `${fmt(total(t))} ocen`)),
-            segmentedBar(MIX.map((m) => ({ key: m.key, label: m.label, value: t.verdicts[m.key], color: m.color })), t.label),
-          )
-        ),
-      ),
-      dataTable(
-        "Tabela danych",
-        ["Temat", ...MIX.map((m) => m.label), "Awarie źródeł"],
-        rows.map((t) => [t.label, ...MIX.map((m) => fmt(t.verdicts[m.key])), fmt(t.system_states)]),
-      ),
-    );
-  }
-
-  function renderTopClaims(r: AnalyticsReport) {
-    const host = $("top-claims");
-    if (!r.top_claims.length) return host.replaceChildren(empty("Żadne twierdzenie nie powtórzyło się"));
-    host.replaceChildren(
-      h(
-        "ol",
-        { class: "claims" },
-        ...r.top_claims.map((c) =>
-          h(
-            "li",
-            {},
-            h("p", { class: "claim-q" }, c.text),
-            h(
-              "p",
-              { class: "claim-meta" },
-              c.verdict
-                ? h("span", { class: `mini-pill tone-${c.verdict}` }, icon(c.verdict, "sm"), VERDICT_SHORT[c.verdict])
-                : null,
-              h("span", {}, c.label),
-              h("span", {}, `${fmt(c.count)}×`),
-            ),
-          )
-        ),
-      ),
-    );
-  }
-
-  function renderIntegrity(r: AnalyticsReport) {
-    const i = r.integrity;
-    const facts = Math.max(1, r.kpis.claims.value - i.opinions);
-    const row = (value: number, label: string, note?: string) =>
-      h("li", {}, h("strong", { class: "int-value" }, fmt(value)), h("span", {}, label, note ? h("span", { class: "muted" }, ` · ${note}`) : null));
-    const totalChecks = Math.max(1, r.kpis.checks.value);
-    $("integrity").replaceChildren(
-      h(
-        "ul",
-        { class: "integrity" },
-        row(i.injection_detected, "zablokowanych prób wstrzyknięcia poleceń"),
-        row(i.pii_redacted, "pytań z zamaskowanymi danymi osobowymi"),
-        row(i.abstained, "uczciwych „brak dowodów”", `${Math.round((i.abstained / facts) * 100)}% faktów`),
-        row(i.context_matches, "zdań podobnych do znanych przekazów", "EUvsDisinfo"),
-        row(i.opinions, "opinii bez oceny prawdziwości"),
-        row(i.system_states, "awarii źródeł pokazanych jako stan, nie werdykt"),
-      ),
-      ...(r.channels.length
-        ? [h(
-          "p",
-          { class: "channels" },
-          h("span", { class: "muted" }, "Kanały: "),
-          r.channels.map((c) => `${CHANNEL[c.channel] ?? c.channel} ${Math.round((c.checks / totalChecks) * 100)}%`).join(" · "),
-        )]
-        : []),
     );
   }
 
@@ -371,6 +306,23 @@ export function initAnalytics() {
   });
 
   load();
+}
+
+/** Names of the 12 equal slices of the report range, for the sparkline hover (Warsaw time). */
+function sliceLabels(r: AnalyticsReport): string[] {
+  const from = Date.parse(r.from);
+  const step = (Date.parse(r.generated_at) - from) / 12;
+  const day = new Intl.DateTimeFormat("pl-PL", { timeZone: "Europe/Warsaw", day: "numeric", month: "short" });
+  const time = new Intl.DateTimeFormat("pl-PL", { timeZone: "Europe/Warsaw", hour: "2-digit", minute: "2-digit" });
+  return Array.from({ length: 12 }, (_, i) => {
+    // Rounded to the full hour: the range ends "now", so raw edges carry odd minutes.
+    const a = Math.round((from + i * step) / 3_600_000) * 3_600_000;
+    const b = Math.round((from + (i + 1) * step) / 3_600_000) * 3_600_000;
+    if (step <= 6 * 3_600_000) return `${time.format(a)}–${time.format(b)}`;
+    if (step < 86_400_000) return `${day.format(a)}, ${time.format(a)}–${time.format(b)}`;
+    const da = day.format(a), db = day.format(b - 1);
+    return da === db ? da : `${da} – ${db}`;
+  });
 }
 
 const MONTHS = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];

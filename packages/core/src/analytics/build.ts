@@ -50,7 +50,11 @@ export interface AnalyticsReport {
   sample: boolean;
   /** Oldest row the store still holds (real data is cut by the 30-day retention). */
   oldest_row: string | null;
-  kpis: { checks: Kpi; claims: Kpi; median_latency_ms: Kpi; cost_per_100_usd: Kpi };
+  /**
+   * `false_share`: share (0..1) of rated facts that came out `false` or `misleading`; the base is
+   * every claim with a truth verdict (not `not_verifiable`, not a system state).
+   */
+  kpis: { checks: Kpi; claims: Kpi; false_share: Kpi; median_latency_ms: Kpi; cost_per_100_usd: Kpi };
   /** `partial`: the bucket is cut by the range edge (first) or still running (last); not a real dip. */
   volume: { key: string; label: string; checks: number; claims: number; partial?: boolean }[];
   /** [weekday Mon..Sun][hour 0..23] → checks. */
@@ -67,7 +71,18 @@ export interface AnalyticsReport {
     verdicts: Record<Verdict, number>;
     system_states: number;
   }[];
-  top_claims: { text: string; count: number; topic: TopicKey; label: string; verdict: Verdict | null; last_at: string }[];
+  /** Most checked claims (masked text), with the same trend fields as `topics`. */
+  top_claims: {
+    text: string;
+    count: number;
+    prev: number;
+    growth: number | null;
+    spark: number[];
+    topic: TopicKey;
+    label: string;
+    verdict: Verdict | null;
+    last_at: string;
+  }[];
   integrity: {
     injection_detected: number;
     pii_redacted: number;
@@ -186,7 +201,11 @@ export function buildAnalytics(
   for (const k of [...CLAIM_TYPES, "other"] as TopicKey[]) {
     topics.set(k, { topic: k, label: TOPIC_LABEL[k], claims: 0, prev: 0, growth: null, spark: Array(12).fill(0), verdicts: emptyVerdicts(), system_states: 0 });
   }
-  const repeated = new Map<string, { text: string; count: number; topics: Map<TopicKey, number>; verdicts: Map<Verdict, number>; last: number }>();
+  const repeated = new Map<
+    string,
+    { text: string; count: number; prev: number; spark: number[]; topics: Map<TopicKey, number>; verdicts: Map<Verdict, number>; last: number }
+  >();
+  const claimKey = (text: string) => normalizeForMatch(text).toLowerCase().replace(/[.!?]+$/, "");
   const integrity = { injection_detected: 0, pii_redacted: 0, context_matches: 0, system_states: 0, opinions: 0, abstained: 0 };
   const channels = new Map<string, number>();
 
@@ -215,9 +234,10 @@ export function buildAnalytics(
       if (cl.verdict === "insufficient_evidence") integrity.abstained += weight;
       if (cl.context_match) integrity.context_matches += weight;
       if (cl.text && cl.class === "fact") {
-        const key = normalizeForMatch(cl.text).toLowerCase().replace(/[.!?]+$/, "");
-        const r = repeated.get(key) ?? { text: cl.text, count: 0, topics: new Map(), verdicts: new Map(), last: 0 };
+        const key = claimKey(cl.text);
+        const r = repeated.get(key) ?? { text: cl.text, count: 0, prev: 0, spark: Array(12).fill(0), topics: new Map(), verdicts: new Map(), last: 0 };
         r.count += weight;
+        r.spark[slice] += weight;
         r.topics.set(topicOf(cl.type), (r.topics.get(topicOf(cl.type)) ?? 0) + 1);
         if (isVerdict(cl.verdict)) r.verdicts.set(cl.verdict, (r.verdicts.get(cl.verdict) ?? 0) + 1);
         if (ms >= r.last) [r.last, r.text] = [ms, cl.text];
@@ -225,7 +245,13 @@ export function buildAnalytics(
       }
     }
   }
-  for (const c of prev) for (const cl of c.claims) topics.get(topicOf(cl.type))!.prev += w(c);
+  for (const c of prev) {
+    for (const cl of c.claims) {
+      topics.get(topicOf(cl.type))!.prev += w(c);
+      const r = cl.text && cl.class === "fact" ? repeated.get(claimKey(cl.text)) : undefined;
+      if (r) r.prev += w(c);
+    }
+  }
   for (const tp of topics.values()) tp.growth = tp.prev > 0 ? (tp.claims - tp.prev) / tp.prev : null;
 
   for (const e of events) {
@@ -238,6 +264,17 @@ export function buildAnalytics(
   const top = (m: Map<string, number>) => [...m.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
   const sumW = (xs: AnalyticsCheck[]) => xs.reduce((s, c) => s + w(c), 0);
   const claimsW = (xs: AnalyticsCheck[]) => xs.reduce((s, c) => s + c.claims.length * w(c), 0);
+  const falseShare = (xs: AnalyticsCheck[]) => {
+    let rated = 0, bad = 0;
+    for (const c of xs) {
+      for (const cl of c.claims) {
+        if (!isVerdict(cl.verdict) || cl.verdict === "not_verifiable") continue;
+        rated += w(c);
+        if (cl.verdict === "false" || cl.verdict === "misleading") bad += w(c);
+      }
+    }
+    return rated ? bad / rated : 0;
+  };
   const answered = (xs: AnalyticsCheck[]) => xs.filter((c) => c.latency_ms > 0 && (c.status === "ok" || c.status === "partial"));
   const costPer100 = (xs: AnalyticsCheck[]) => (xs.length ? (xs.reduce((s, c) => s + c.cost_usd, 0) / xs.length) * 100 : 0);
   const oldest = checks.reduce<number | null>((m, c) => (m === null || t(c) < m ? t(c) : m), null);
@@ -253,6 +290,7 @@ export function buildAnalytics(
     kpis: {
       checks: { value: sumW(cur), prev: sumW(prev) },
       claims: { value: claimCount, prev: claimsW(prev) },
+      false_share: { value: falseShare(cur), prev: falseShare(prev) },
       median_latency_ms: { value: median(answered(cur).map((c) => c.latency_ms)), prev: median(answered(prev).map((c) => c.latency_ms)) },
       cost_per_100_usd: { value: costPer100(cur), prev: costPer100(prev) },
     },
@@ -260,14 +298,18 @@ export function buildAnalytics(
     heatmap,
     topics: [...topics.values()].filter((x) => x.claims > 0 || x.prev > 0).sort((a, b) => b.claims - a.claims),
     top_claims: [...repeated.values()]
+      // Privacy (decision 011): a claim seen once could identify one person's query; only repeats leave.
       .filter((r) => r.count > 1)
       .sort((a, b) => b.count - a.count || b.last - a.last)
-      .slice(0, 6)
+      .slice(0, 8)
       .map((r) => {
         const topic = (top(r.topics as Map<string, number>) ?? "other") as TopicKey;
         return {
           text: r.text,
           count: r.count,
+          prev: r.prev,
+          growth: r.prev > 0 ? (r.count - r.prev) / r.prev : null,
+          spark: r.spark,
           topic,
           label: TOPIC_LABEL[topic],
           verdict: (top(r.verdicts as Map<string, number>) ?? null) as Verdict | null,

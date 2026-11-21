@@ -25,8 +25,9 @@ export interface TipRow {
   /** CSS color for the line key; none = no key. */
   key?: string;
 }
-export function showTip(x: number, y: number, title: string, rows: TipRow[]) {
+export function showTip(x: number, y: number, title: string, rows: TipRow[], mini = false) {
   tip ??= document.body.appendChild(h("div", { class: "chart-tip", role: "status" }));
+  tip.classList.toggle("is-mini", mini);
   tip.replaceChildren(
     h("div", { class: "tip-title" }, title),
     ...rows.map((r) =>
@@ -167,7 +168,11 @@ export function lineChart(host: HTMLElement, points: LinePoint[], seriesName: st
 }
 
 // ── sparkline ──────────────────────────────────────────────────────────────
-export function sparkline(values: number[], label: string): SVGSVGElement {
+/**
+ * Sparkline. With `labels` (one per value) it answers hover: a dot snaps to the nearest point and a
+ * tiny popover names that slice and its count.
+ */
+export function sparkline(values: number[], label: string, labels?: string[]): SVGSVGElement {
   const W = 72, H = 24;
   const max = Math.max(1, ...values);
   const x = (i: number) => 2 + (i / Math.max(1, values.length - 1)) * (W - 4);
@@ -177,6 +182,26 @@ export function sparkline(values: number[], label: string): SVGSVGElement {
   const d = values.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
   const last = values.length - 1;
   svg.append(s("path", { d, class: "spark-line" }), s("circle", { cx: x(last), cy: y(values[last]), r: 2.5, class: "spark-dot" }));
+  if (!labels || values.length < 2) return svg;
+  const hover = s("circle", { r: 2.5, class: "spark-hover" });
+  hover.style.display = "none";
+  svg.append(hover);
+  svg.classList.add("is-interactive");
+  const move = (e: PointerEvent) => {
+    const box = svg.getBoundingClientRect();
+    const i = Math.round(((e.clientX - box.left) / box.width * W - 2) / (W - 4) * last);
+    const k = Math.min(last, Math.max(0, i));
+    hover.setAttribute("cx", x(k).toFixed(1));
+    hover.setAttribute("cy", y(values[k]).toFixed(1));
+    hover.style.display = "";
+    showTip(box.left + (x(k) / W) * box.width, box.top + (y(values[k]) / H) * box.height, labels[k], [{ value: fmt(values[k]), label: "sprawdzeń" }], true);
+  };
+  svg.addEventListener("pointerenter", move);
+  svg.addEventListener("pointermove", move);
+  svg.addEventListener("pointerleave", () => {
+    hover.style.display = "none";
+    hideTip();
+  });
   return svg;
 }
 
@@ -215,47 +240,6 @@ export function heatmap(host: HTMLElement, grid: number[][]) {
     grid.map((row, d) => [DAYS_FULL[d], ...row.map(fmt)]),
   );
   host.replaceChildren(wrap, legend, table);
-}
-
-// ── 100% segmented bar ─────────────────────────────────────────────────────
-export interface Segment {
-  key: string;
-  label: string;
-  value: number;
-  /** CSS color of the fill. */
-  color: string;
-}
-export function segmentedBar(parts: Segment[], name: string): HTMLElement {
-  const total = parts.reduce((t, p) => t + p.value, 0);
-  const share = (v: number) => (total ? Math.round((v / total) * 100) : 0);
-  const bar = h("div", {
-    class: "seg-bar",
-    role: "img",
-    "aria-label": `${name}: ${parts.filter((p) => p.value).map((p) => `${p.label} ${share(p.value)}%`).join(", ")}`,
-  });
-  for (const p of parts) {
-    if (!p.value) continue;
-    const pct = share(p.value);
-    // A label goes inside only when it fits; otherwise the tooltip and the table carry it.
-    const seg = h("span", { class: "seg", style: `flex-grow:${p.value};background:${p.color}` }, (p.value / total) >= .09 ? `${pct}%` : "");
-    seg.addEventListener("pointerenter", (e) =>
-      showTip(e.clientX, e.clientY, name, [{ value: `${pct}%`, label: `${p.label} · ${fmt(p.value)}`, key: p.color }])
-    );
-    seg.addEventListener("pointermove", (e) =>
-      showTip(e.clientX, e.clientY, name, [{ value: `${pct}%`, label: `${p.label} · ${fmt(p.value)}`, key: p.color }])
-    );
-    seg.addEventListener("pointerleave", hideTip);
-    bar.append(seg);
-  }
-  return bar;
-}
-
-export function legend(items: { label: string; color: string }[]): HTMLElement {
-  return h(
-    "ul",
-    { class: "legend" },
-    ...items.map((i) => h("li", {}, h("span", { class: "legend-swatch", style: `background:${i.color}` }), i.label)),
-  );
 }
 
 /** Thin volume bar (8px, fully rounded) with the number beside it. */

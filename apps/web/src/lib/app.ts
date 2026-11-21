@@ -472,9 +472,28 @@ export function initApp() {
     return el;
   };
 
+  /** Placeholder shaped like one answer card (eyebrow, verdict pill, headline, text), shimmering. */
+  const skeleton = (): HTMLElement => {
+    const line = (cls: string) => h("span", { class: `skel-line ${cls}` });
+    return h(
+      "div",
+      { class: "skel", "aria-hidden": "true" },
+      h(
+        "div",
+        { class: "skel-card" },
+        h("div", { class: "skel-row" }, line("w-25"), line("w-15")),
+        h("span", { class: "skel-pill" }),
+        line("is-lg w-90"),
+        line("is-lg w-55"),
+        line("w-100"),
+        line("w-80"),
+      ),
+    );
+  };
+
   const botTurn = (): { el: HTMLElement; body: HTMLElement; status: HTMLElement } => {
     const status = h("p", { class: "progress" });
-    const body = h("div", { class: "result" });
+    const body = h("div", { class: "result" }, skeleton());
     const el = h("div", { class: "turn turn-bot is-waiting" }, avatar(), h("div", { class: "bot-body" }, status, body));
     return { el, body, status };
   };
@@ -520,12 +539,17 @@ export function initApp() {
     const timer = setInterval(() => {
       stage = Math.min(stage + 1, stages.length - 1);
       bot.status.textContent = stages[stage];
-    }, testMode ? 250 : 2500);
+    }, testMode ? 450 : 2500);
+
+    // The skeleton stays at least 1-1.5 s (sample data answers instantly, a fast API almost so):
+    // shorter, it only flashes.
+    const started = performance.now();
+    const minShow = 1000 + Math.random() * 500;
+    const settle = () => new Promise((r) => setTimeout(r, Math.max(0, minShow - (performance.now() - started))));
 
     let data: CheckResponse;
     try {
       if (testMode) {
-        await new Promise((r) => setTimeout(r, 900));
         data = mockResponse(req, nextScenario(req));
       } else {
         const res = await fetch(`${api}/api/v1/check`, {
@@ -536,10 +560,12 @@ export function initApp() {
         });
         data = (await res.json()) as CheckResponse;
       }
+      await settle();
       renderResult(bot.body, data);
       srStatus.textContent = announce(data);
     } catch (err) {
       const timeout = err instanceof DOMException && err.name === "TimeoutError";
+      await settle();
       bot.body.replaceChildren(
         stateCard(
           timeout ? "Serwer nie odpowiedział na czas" : "Brak połączenia z serwerem",

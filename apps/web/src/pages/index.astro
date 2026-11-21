@@ -101,7 +101,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
       import { initApp } from "../lib/app.ts";
       import { initBackdrop } from "../lib/backdrop.ts";
       initApp();
-      initBackdrop(document.querySelector<HTMLElement>(".frame")!);
+      initBackdrop(document.body);
     </script>
   </body>
 </html>

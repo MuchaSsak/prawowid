@@ -129,3 +129,11 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | clean: web backdrop/OG/mobile entry fits the codebase web row, routing table, index and skill parity intact (the two "dead links" are format examples)
 ## [2026-11-21] update | web: "Usuń dane sesji" footer button calls DELETE /api/v1/session/:id with a toast; compliance-matrix privacy row now ⚠️ (placeholder /prywatnosc, per-instance memory store)
 ## [2026-11-21] lint | 2 findings: codebase web row and open-questions still said the web UI had no delete-session button -> fixed
+## [2026-11-21] update | web backdrop moved from the hero panel to the dark page background on the input screen (user), hidden in chat; codebase web row updated
+## [2026-11-21] lint | clean: one-row edit in codebase.md, no new pages, routing/index/skills unchanged
+## [2026-11-21] update | admin: full-screen key lock, "Tematy" = most checked claims with verdict, removed verdict-mix and integrity cards, Ruch last, micro entry animations (decision 011, codebase rows)
+## [2026-11-21] lint | 2 findings: index entry and api-reference still described the old admin blocks / top_claims shape -> fixed
+## [2026-11-21] update | admin: "Sprawdzone zdania" and cost tiles replaced by one "Fałszywe lub mylące" share tile (new kpis.false_share), heatmap + Ruch in one row, sparkline hover popover (decision 011, codebase, api-reference, index)
+## [2026-11-21] lint | clean: admin facts agree across decision 011, codebase, api-reference and index; no new pages, routing and skills unchanged
+## [2026-11-21] update | web chat: loading skeleton with a 1-1.5 s minimum (also in sample mode), micro entry animations for bubbles and answer blocks (codebase web row)
+## [2026-11-21] lint | clean: one-row edit in codebase.md, no new pages, routing/index/skills unchanged

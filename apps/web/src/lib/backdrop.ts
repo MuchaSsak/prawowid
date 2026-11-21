@@ -1,8 +1,8 @@
 /**
- * The living backdrop: the hero panel's soft radial gradient, redrawn by an OGL fragment shader
- * so it drifts slowly on its own (no pointer input). Low contrast by design: it should read as the
- * same calm panel, just not frozen. Colors come from the CSS tokens, so it follows light/dark mode
- * and the chat state (flat page color + a faint accent haze).
+ * The living backdrop: the dark page around the hero panel on the input screen, redrawn by an OGL
+ * fragment shader as a faint blue haze that drifts slowly on its own (no pointer input). Low
+ * contrast by design. Colors come from the CSS tokens (--page, --navy), so it follows light/dark.
+ * Hidden and paused in chat.
  * Cheap on phones: device-pixel-ratio capped at 1, ~30 fps, paused when the tab is hidden, one
  * static frame under prefers-reduced-motion, and the plain CSS gradient stays as the fallback.
  */
@@ -40,7 +40,7 @@ float fbm(vec2 p) {
 }
 
 void main() {
-  float t = uTime * 0.05;
+  float t = uTime * 0.07;
   float aspect = uRes.x / max(uRes.y, 1.0);
   vec2 p = vec2(vUv.x * aspect, vUv.y) * 1.6;
 
@@ -56,7 +56,7 @@ void main() {
   vec3 col = mix(uHi, uLo, clamp(d / 0.62, 0.0, 1.0));
 
   // A faint accent haze riding the flow.
-  float haze = smoothstep(0.35, 0.85, flow);
+  float haze = smoothstep(0.3, 0.8, flow);
   col = mix(col, uAccent, haze * uAccentAmt);
 
   // Dither so the very low-contrast gradient never bands.
@@ -110,15 +110,14 @@ export function initBackdrop(host: HTMLElement): void {
 
   const readColors = () => {
     const css = getComputedStyle(document.documentElement);
-    const chat = document.body.classList.contains("is-chat");
     const u = program.uniforms;
     const page = toRgb(probe, css.getPropertyValue("--page"), [1, 1, 1]);
-    u.uHi.value = chat ? page : toRgb(probe, css.getPropertyValue("--panel-hi"), page);
-    u.uLo.value = chat ? page : toRgb(probe, css.getPropertyValue("--panel"), page);
+    u.uHi.value = page;
+    u.uLo.value = page;
     u.uAccent.value = toRgb(probe, css.getPropertyValue("--navy"), page);
-    // Dark: a faint blue glow is enough to feel alive. Light: barely there, it would read as dirt.
-    u.uAccentAmt.value = dark.matches ? (chat ? 0.035 : 0.06) : (chat ? 0.012 : 0.025);
-    u.uWarp.value = chat ? 0 : 0.28;
+    // Dark: a faint blue haze drifting over the near-black page. Light: barely there.
+    u.uAccentAmt.value = dark.matches ? 0.11 : 0.03;
+    u.uWarp.value = 0;
   };
 
   const resize = () => {
@@ -141,7 +140,7 @@ export function initBackdrop(host: HTMLElement): void {
   };
   const loop = (now: number) => {
     raf = requestAnimationFrame(loop);
-    if (now - last < 33) return; // ~30 fps is plenty for motion this slow
+    if (now - last < 33 || document.body.classList.contains("is-chat")) return; // hidden in chat // ~30 fps is plenty for motion this slow
     last = now;
     draw(now);
   };

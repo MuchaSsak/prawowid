@@ -116,11 +116,11 @@ button { font-family: inherit; letter-spacing: inherit; }
   background: radial-gradient(120% 80% at 50% 28%, var(--panel-hi) 0%, var(--panel) 62%);
   isolation: isolate;
 }
-/* The living backdrop (src/lib/backdrop.ts) paints over the CSS gradient, which stays as the
-   fallback without WebGL. Fixed to the viewport in chat, where the frame grows with the thread. */
-.backdrop { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
+/* The living backdrop (src/lib/backdrop.ts): the dark page behind the hero panel on the input
+   screen. The panel keeps its own CSS gradient on top; the plain page color is the no-WebGL fallback. */
+.backdrop { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
 .backdrop.is-on { opacity: 1; }
-body.is-chat .backdrop { position: fixed; }
+body.is-chat .backdrop { display: none; }
 .top { position: relative; z-index: 2; }
 .top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 32px 48px 0; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font: 400 1.625rem/1 var(--serif); letter-spacing: -.03em; color: var(--ink); text-decoration: none; }
@@ -214,6 +214,26 @@ body.is-chat .thread { display: grid; gap: 32px; width: 100%; max-width: 54rem; 
 .bot-body { display: grid; gap: 16px; min-width: 0; padding-top: 2px; }
 .progress { margin: 0; font-size: 1rem; color: var(--ink-2); }
 .result { min-width: 0; }
+
+/* ── micro motion in the thread: quick fade-and-rise, slight stagger; off under reduced motion ── */
+@keyframes msg-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.turn-user { animation: msg-in .24s cubic-bezier(.2, .7, .2, 1) both; }
+.turn-bot { animation: msg-in .24s cubic-bezier(.2, .7, .2, 1) 60ms both; }
+.sheet > * { animation: msg-in .3s cubic-bezier(.2, .7, .2, 1) both; }
+.sheet > :nth-child(2) { animation-delay: 50ms; }
+.sheet > :nth-child(3) { animation-delay: 100ms; }
+.sheet > :nth-child(4) { animation-delay: 150ms; }
+.sheet > :nth-child(n + 5) { animation-delay: 200ms; }
+
+/* ── loading skeleton: one answer card's shape ── */
+.skel-card { display: grid; gap: 12px; padding: 18px 22px 22px; border: 1px solid var(--line); border-radius: 16px; }
+.skel-row { display: flex; justify-content: space-between; gap: 12px; }
+.skel-line, .skel-pill { display: block; height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--tint) 0%, var(--tint-2) 40%, var(--tint) 80%) 0 0 / 250% 100%; animation: skel 1.3s ease-in-out infinite; }
+.skel-line.is-lg { height: 20px; border-radius: 8px; }
+.skel-pill { width: 136px; height: 30px; border-radius: 999px; margin: 2px 0 4px; }
+.skel-line.w-15 { width: 15%; } .skel-line.w-25 { width: 25%; } .skel-line.w-55 { width: 55%; }
+.skel-line.w-80 { width: 80%; } .skel-line.w-90 { width: 90%; } .skel-line.w-100 { width: 100%; }
+@keyframes skel { from { background-position: 100% 0; } to { background-position: -150% 0; } }
 
 /* ── the answer: one card per sentence, verdict first ───────────────────── */
 .sheet { display: grid; gap: 20px; font-size: 1rem; line-height: 1.6; }
