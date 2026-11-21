@@ -11,11 +11,11 @@
  *
  * Env: PRAWDOWID_API_URL (default: the deployed API), PRAWDOWID_WEB_URL. No secrets needed.
  */
-import { createClient } from "./client.ts";
-import { loadConfig, PLATFORMS, type Surface } from "./config.ts";
-import { converse, type Reply } from "./conversation.ts";
-import type { IncomingMessage } from "./intake.ts";
-import { resolveIdSecret } from "./pseudonym.ts";
+import { createClient } from "./client.js";
+import { loadConfig, PLATFORMS, type Surface } from "./config.js";
+import { converse, type Reply } from "./conversation.js";
+import type { IncomingMessage } from "./intake.js";
+import { resolveIdSecret } from "./pseudonym.js";
 
 const args = process.argv.slice(2);
 function takeFlag(name: string): string | undefined {

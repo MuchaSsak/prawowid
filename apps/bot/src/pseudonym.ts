@@ -5,7 +5,7 @@
  * public Discord id, so the session id also works as the capability for "usuń dane".
  * It is a stable pseudonym, not anonymous data: GDPR still applies.
  */
-import type { Surface } from "./config.ts";
+import type { Surface } from "./config.js";
 
 const enc = new TextEncoder();
 

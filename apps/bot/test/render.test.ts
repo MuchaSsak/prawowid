@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import type { CheckResponse } from "@prawdowid/core/types";
 // The same fixtures the API returns in mock mode.
-import { MOCK_SCENARIOS, mockResponse } from "../../../packages/core/src/mock/fixtures.ts";
-import { MAX_REPLY_CHARS, PLATFORMS, type Surface } from "../src/config.ts";
-import { ESCALATION_TEXT, renderDeleted, renderHelp, renderResponse } from "../src/render.ts";
-import { safeUrl, sanitizeText } from "../src/sanitize.ts";
-import { validateCheckResponse } from "../src/validate.ts";
+import { MOCK_SCENARIOS, mockResponse } from "../../../packages/core/src/mock/fixtures.js";
+import { MAX_REPLY_CHARS, PLATFORMS, type Surface } from "../src/config.js";
+import { ESCALATION_TEXT, renderDeleted, renderHelp, renderResponse } from "../src/render.js";
+import { safeUrl, sanitizeText } from "../src/sanitize.js";
+import { validateCheckResponse } from "../src/validate.js";
 
 const SURFACES: Surface[] = [...PLATFORMS, "console"];
 const VERDICT_LABELS = ["POTWIERDZONE", "FAŁSZYWE", "WPROWADZAJĄCE W BŁĄD", "BRAK WYSTARCZAJĄCYCH DOWODÓW", "NIE PODLEGA WERYFIKACJI"];

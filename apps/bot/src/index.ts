@@ -4,10 +4,10 @@
  * Discord works through slash commands only: DMs and @mentions need the Gateway (decision 007).
  */
 import { waitUntil } from "@vercel/functions";
-import { createApp } from "./app.ts";
-import { createClient } from "./client.ts";
-import { loadConfig } from "./config.ts";
-import { resolveIdSecret } from "./pseudonym.ts";
+import { createApp } from "./app.js";
+import { createClient } from "./client.js";
+import { loadConfig } from "./config.js";
+import { resolveIdSecret } from "./pseudonym.js";
 
 const config = loadConfig({ get: (k) => process.env[k] });
 // Production must have a stable HMAC key: a random one would orphan sessions on every cold start.

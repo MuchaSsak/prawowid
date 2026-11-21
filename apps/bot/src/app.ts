@@ -10,8 +10,8 @@
  * `waitUntil`. `/health?deep=1` (token-protected, mock round-trip, Redis) comes with M1b.
  */
 import { Hono } from "hono";
-import type { Platform } from "./config.ts";
-import { getChat, type PlatformDeps } from "./platforms.ts";
+import type { Platform } from "./config.js";
+import { getChat, type PlatformDeps } from "./platforms.js";
 
 export type WaitUntil = (task: Promise<unknown>) => void;
 type WebhookHandler = (req: Request, opts?: { waitUntil?: WaitUntil }) => Promise<Response>;
