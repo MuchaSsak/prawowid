@@ -9,6 +9,8 @@
  *   GET    /api/v1/schema            JSON Schema of the request and response (contract v1)
  *   GET    /api/v1/mock/scenarios    mock scenario names and what each returns
  *   DELETE /api/v1/session/:id       delete a session's logs and cached results
+ *   GET    /api/v1/admin/checks      recent check log rows (masked question, time, sources, verdicts);
+ *                                    needs Authorization: Bearer <ADMIN_TOKEN>, 404 when no token is set
  *
  * Env (all optional except the LLM key in live mode):
  *   OPENROUTER_API_KEY, GOOGLE_FACT_CHECK_API_KEY   secrets (live mode)
@@ -18,6 +20,7 @@
  *   MOCK_CLIENTS=bot,...                            these client names always get mock answers, even in live
  *                                                   mode (holds the bot in mock until its spend caps exist)
  *   WEB_ORIGINS=https://…,…                         browser origins allowed by CORS
+ *   ADMIN_TOKEN=<secret>                            enables GET /api/v1/admin/checks (the check log)
  */
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -29,6 +32,7 @@ import {
   contractJsonSchema,
   isMediaType,
   loadConfig,
+  LoggingCheckStore,
   mediaInputError,
   MemoryCheckStore,
   MemoryCorpusStore,
@@ -40,7 +44,10 @@ import {
 } from "@prawdowid/core";
 
 const config = loadConfig({ get: (k) => Deno.env.get(k) });
-const store = new MemoryCheckStore();
+// Every saved check also becomes one JSON audit line in the host's log (no question text), so the
+// MVP check log survives restarts and instances until Supabase lands (decision 001).
+const store = new LoggingCheckStore(new MemoryCheckStore());
+const ADMIN_TOKEN = Deno.env.get("ADMIN_TOKEN") ?? "";
 const corpus = new MemoryCorpusStore();
 const PORT = Number(Deno.env.get("PORT") ?? 8787);
 const MODE: "live" | "mock" = Deno.env.get("PRAWDOWID_MODE") === "mock" ? "mock" : "live";
@@ -214,6 +221,28 @@ app.post(
     return c.json(await runCheck({ ...body, channel }, { config, store, corpus, resolveHost }));
   },
 );
+
+/** Constant-time comparison of two strings via their digests (no early exit on the first difference). */
+async function sameSecret(a: string, b: string): Promise<boolean> {
+  const [x, y] = await Promise.all([sha256(a), sha256(b)]);
+  let diff = 0;
+  for (let i = 0; i < x.length; i++) diff |= x.charCodeAt(i) ^ y.charCodeAt(i);
+  return diff === 0;
+}
+
+// The check log for the team (MVP: question, time, sources, result). Server-to-server only: the
+// Authorization header is not allowed by CORS, so a browser page cannot call it.
+app.get("/api/v1/admin/checks", async (c) => {
+  if (!ADMIN_TOKEN) return c.json({ error: "not found", see: "GET /" }, 404);
+  if (!(await sameSecret(c.req.header("authorization") ?? "", `Bearer ${ADMIN_TOKEN}`))) {
+    return c.json({ error: "unauthorized" }, 401);
+  }
+  const limit = Math.min(Math.max(Number(c.req.query("limit") ?? 50) || 50, 1), 200);
+  return c.json({
+    note: "Masked questions, newest first. This instance's memory only (30-day retention); every check is also an audit line in the host log (event prawdowid.check).",
+    checks: await store.listRecent(limit),
+  });
+});
 
 app.delete("/api/v1/session/:id", async (c) => {
   const res = await store.deleteSession(await sha256(`session:${c.req.param("id")}`));

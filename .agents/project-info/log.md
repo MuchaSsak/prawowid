@@ -117,3 +117,7 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | clean
 ## [2026-11-21] update | web answer cards restyled after Mobbin references (status pill, serif sentence headline, compact source rows); no confirm on 'Nowe pytanie' (codebase.md)
 ## [2026-11-21] lint | clean
+## [2026-11-21] update | MVP check (user): compliance-matrix MVP section re-checked against the code (4 items ⚠️: web defaults to mock, bot not deployed, log in memory, no keys on Deno Deploy); check log made durable without question text: LoggingCheckStore audit line per check + GET /api/v1/admin/checks behind ADMIN_TOKEN (api-reference, codebase, .env.example)
+## [2026-11-21] lint | compliance-matrix intro no longer says "nothing is built"; other sections still describe the design (noted on the page)
+## [2026-11-21] update | PII masking: "zadzwoń"/"dzwońcie" (any form of dzwonić) now count as phone cues; found by the new check-log test, a spaced 3-3-3 count of people is still kept
+## [2026-11-21] update | merged origin/main (check log, vector DB package) with web UI work; log conflict resolved by keeping both sides
