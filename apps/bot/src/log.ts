@@ -40,27 +40,14 @@ export async function logEvent(e: { platform: string; eventId: string; checkId: 
 
 /**
  * From a platform API error body, only the machine fields: Discord `{ code, message, errors }` and
- * Meta `{ error: { code } }` carry numeric codes and field paths. Messages are dropped: upstream text.
+ * Meta `{ error: { code } }`: only the numeric code. Messages and field keys are upstream text.
  */
 function platformError(raw: unknown): Record<string, unknown> | undefined {
   if (typeof raw !== "string") return undefined;
   try {
-    const j = JSON.parse(raw) as { code?: unknown; message?: unknown; errors?: unknown; error?: { code?: unknown; message?: unknown } };
-    const codes: string[] = [];
-    const walk = (v: unknown, path: string) => {
-      if (!v || typeof v !== "object") return;
-      for (const [k, val] of Object.entries(v)) {
-        if (k === "_errors" && Array.isArray(val)) {
-          for (const e of val) codes.push(`${path}:${(e as { code?: string }).code}`);
-        } else walk(val, path ? `${path}.${k}` : k);
-      }
-    };
-    walk(j.errors, "");
+    const j = JSON.parse(raw) as { code?: unknown; error?: { code?: unknown } };
     const code = j.code ?? j.error?.code;
-    return {
-      ...(typeof code === "number" ? { code } : {}),
-      ...(codes.length ? { fields: codes.filter((c) => /^[\w.\[\]:-]{1,80}$/.test(c)).slice(0, 5) } : {}),
-    };
+    return typeof code === "number" ? { code } : undefined;
   } catch {
     return undefined;
   }

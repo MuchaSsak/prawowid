@@ -34,6 +34,8 @@ const VERDICT_LABEL: Record<string, string> = {
   insufficient_evidence: "brak wystarczających dowodów",
   not_verifiable: "nie podlega weryfikacji",
 };
+/** A citation URL longer than this is not posted (it would crowd out the other links). */
+const MAX_POSTED_URL = 500;
 const STRENGTH_PL: Record<string, string> = { high: "wysoka", medium: "średnia", low: "niska" };
 const KNOWN_REQUEST_STATES = new Set([
   "needs_clarification",
@@ -108,7 +110,7 @@ function renderClaim(c: ClaimResult, n: number, f: Fmt, maxCitations: number = L
     if (t) lines.push(`⚠️ ${t}`);
   }
   const links = c.citations
-    .map((s) => ({ url: safeUrl(s.url), publisher: sanitizeText(s.publisher, 80), date: sanitizeText(s.published_at, 20) }))
+    .map((s) => ({ url: safeUrl(s.url, MAX_POSTED_URL), publisher: sanitizeText(s.publisher, 80), date: sanitizeText(s.published_at, 20) }))
     .filter((s): s is { url: string; publisher: string; date: string } => s.url !== null)
     .slice(0, maxCitations);
   if (links.length) {

@@ -81,6 +81,25 @@ describe("conversation", () => {
     expect(await live.mode(signal())).toBe("mock");
   });
 
+  test("a switch from mock to live is picked up from the next 200 answer, so demo: is refused at once", async () => {
+    let apiMode: "live" | "mock" = "mock";
+    const calls: string[] = [];
+    const client = createClient(config, (async (u: string | URL | Request, init?: RequestInit) => {
+      calls.push(String(u));
+      if (String(u).endsWith("/api/v1/health")) return Response.json({ mode: "live", client_mode: apiMode });
+      const r = mockResponse(JSON.parse(String(init?.body)));
+      r.meta.mode = apiMode;
+      return Response.json(r);
+    }) as typeof fetch);
+    const d = { config, client, idSecret: SECRET };
+    expect((await converse(turn("demo:false"), d)).text).toContain("FAŁSZYWE");
+    apiMode = "live"; // the operator removes the bot from MOCK_CLIENTS
+    await converse(turn("Ceny prądu wzrosły o 300%"), d);
+    const before = calls.filter((c) => c.endsWith("/check")).length;
+    expect((await converse(turn("demo:false"), d)).text).toContain("tylko w trybie demonstracyjnym");
+    expect(calls.filter((c) => c.endsWith("/check")).length).toBe(before);
+  });
+
   test("A7: demo:<scenario> while the API answers live → a local reply, no check sent", async () => {
     const api = fakeApi({ mode: "live" });
     for (const t of ["demo:false", "  DEMO:false"]) {
@@ -241,7 +260,7 @@ describe("logging (A11)", () => {
     // A platform error body: only numeric code and field codes survive, never its message text.
     log.error("Discord interaction API error", {
       status: 400,
-      error: JSON.stringify({ code: 50035, message: "TAJNA echo", errors: { content: { _errors: [{ code: "BASE_TYPE_MAX_LENGTH", message: "TAJNA" }] } } }),
+      error: JSON.stringify({ code: 50035, message: "TAJNA echo", errors: { "48500100200": { _errors: [{ code: "BASE_TYPE_MAX_LENGTH", message: "TAJNA" }] } } }),
     });
     // A check_id that isn't a UUID is upstream text: not logged.
     await logEvent({ platform: "discord", eventId: "e2", checkId: "TAJNA <script>", startedAt: Date.now(), outcome: "ok" });
@@ -252,7 +271,7 @@ describe("logging (A11)", () => {
     expect(all).not.toContain("48500100200");
     expect(all).not.toContain("interaction-123");
     expect(JSON.parse(lines[0])).toMatchObject({ msg: "bot_event", platform: "discord", check_id: uuid, outcome: "ok" });
-    expect(JSON.parse(lines[2])).toMatchObject({ status: 400, platform_error: { code: 50035, fields: ["content:BASE_TYPE_MAX_LENGTH"] } });
+    expect(JSON.parse(lines[2])).toMatchObject({ status: 400, platform_error: { code: 50035 } });
     expect(JSON.parse(lines[3]).check_id).toBeNull();
     expect(JSON.parse(lines[1])).toMatchObject({ text: "handler failed", error_name: "TypeError" });
     expect(lines).toHaveLength(4);

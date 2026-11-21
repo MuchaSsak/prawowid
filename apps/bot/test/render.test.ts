@@ -115,6 +115,15 @@ describe("render: versioning (unknown values) and hostile content", () => {
     expect(out.endsWith("…")).toBe(false);
   });
 
+  test("an over-long first citation URL doesn't hide the links after it", () => {
+    const res = mock("false");
+    const base = res.claims[0].citations[0];
+    res.claims[0].citations = [{ ...base, url: `https://example.org/${"a".repeat(1500)}` }, { ...base, url: "https://example.org/ok" }];
+    const out = renderResponse(res, { surface: "console", webUrl: null });
+    expect(out).toContain("https://example.org/ok");
+    expect(out).not.toContain("aaaaaaaaaa");
+  });
+
   test("an all-failed technical_error shows each claim's system notice, never a verdict", () => {
     const res = mock("partial");
     res.status = "technical_error";
@@ -156,6 +165,7 @@ describe("sanitize", () => {
     expect(sanitizeText("example.*org* i _x_.com")).toBe("example[.]org i x[.]com");
     expect(sanitizeText("a.pl, t.co")).toBe("a[.]pl, t[.]co");
     expect(sanitizeText("m.in. urzędy")).toBe("m.in. urzędy");
+    expect(sanitizeText("m.in/potwierdzenie")).toBe("m[.]in/potwierdzenie");
   });
   test("non-strings and length", () => {
     expect(sanitizeText(null)).toBe("");

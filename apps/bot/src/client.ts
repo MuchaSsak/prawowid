@@ -28,9 +28,9 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
     ...(config.clientKey ? { "X-Client-Key": config.clientKey } : {}),
     ...(endUser ? { "X-End-User": endUser } : {}),
   });
-  // `/health` with our key is the authority: it reports `client_mode`, which includes MOCK_CLIENTS.
-  // A response's meta.mode is not used: a 429 is answered before the API's mock switch, so it says
-  // "live" even for a bot held in mock, and one rate-limited user would turn /demo off for everyone.
+  // `/health` with our key reports `client_mode` (includes MOCK_CLIENTS); a 200 check answer
+  // refreshes it. A 429 is not used: it is answered before the API's mock switch, so it says "live"
+  // even for a bot held in mock, and one rate-limited user would turn /demo off for everyone.
   let mode: { value: "live" | "mock"; at: number } | null = null;
 
   return {
@@ -54,6 +54,11 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
       const v = validateCheckResponse(json);
       if (!v.ok) {
         return { kind: "failure", reason: "invalid_response", detail: `HTTP ${res.status}; ${v.errors.slice(0, 5).join(",")}` };
+      }
+      // A 200 has passed the API's mock/live routing, so its meta.mode is this bot's real mode (a
+      // switch from mock to live shows up here at once). 400/413/429 are answered before routing.
+      if (res.status === 200 && (v.response.meta.mode === "live" || v.response.meta.mode === "mock")) {
+        mode = { value: v.response.meta.mode, at: Date.now() };
       }
       return { kind: "response", response: v.response };
     },

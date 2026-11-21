@@ -40,8 +40,11 @@ export function sanitizeText(input: unknown, maxChars = 600): string {
   s = s.replace(/[*~`|]/g, "").replace(/(?<![\p{L}\p{N}])_+|_+(?![\p{L}\p{N}])/gu, "").replace(/^\s*[#>]+\s*/g, "");
   // Raw URLs → defanged host, then bare domains.
   s = s.replace(URL_RE, (m) => defangHost(m));
-  s = s.replace(BARE_DOMAIN, (m, labels: string, tld: string) =>
-    NOT_DOMAINS.has(m.toLowerCase()) ? m : `${labels.replaceAll(".", "[.]")}${tld}`);
+  s = s.replace(BARE_DOMAIN, (m: string, labels: string, tld: string, offset: number, all: string) => {
+    // "m.in." in prose is an abbreviation; "m.in/x" is a link.
+    const prose = /^(?:\.|\s|,|$)/.test(all.slice(offset + m.length, offset + m.length + 1));
+    return NOT_DOMAINS.has(m.toLowerCase()) && prose ? m : `${labels.replaceAll(".", "[.]")}${tld}`;
+  });
   // Mentions and Discord entity syntax: `@` → fullwidth `＠` (applied after NFKC, so it stays),
   // and angle brackets → look-alikes so `<@id>`, `<#id>` and `<url>` can never form.
   s = s.replace(/@/g, "＠").replace(/</g, "‹").replace(/>/g, "›");
@@ -54,8 +57,8 @@ export function sanitizeText(input: unknown, maxChars = 600): string {
  * by the URL parser (which percent-encodes `<`, `>` and spaces). `@` in the path is encoded too,
  * so it can't read as a mention. Anything else returns null and is not posted.
  */
-export function safeUrl(input: unknown): string | null {
-  if (typeof input !== "string" || input.length > 2000) return null;
+export function safeUrl(input: unknown, maxLength = 2000): string | null {
+  if (typeof input !== "string" || input.length > maxLength) return null;
   let u: URL;
   try {
     u = new URL(input.trim());
