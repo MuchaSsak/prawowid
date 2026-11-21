@@ -2,7 +2,7 @@
  * Long-running Bun server with the same routes as the Vercel entry: local development behind a
  * tunnel, or any container host (the EU fallback in decision 007).   bun run bot:dev
  */
-import { createApp, type WaitUntil } from "./app.js";
+import { createApp, type WaitUntil } from "./routes.js";
 import { createClient } from "./client.js";
 import { loadConfig } from "./config.js";
 import { resolveIdSecret } from "./pseudonym.js";
