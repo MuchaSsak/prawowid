@@ -100,3 +100,4 @@ Format: `- [path](path): one-line summary`
 - [sources/2026-11-21-euvsdisinfo-mcp-api-docs.txt](sources/2026-11-21-euvsdisinfo-mcp-api-docs.txt): EUvsDisinfo MCP API docs (May 2026, new host mcp.euvsd.info, 4 tools, stateless mode)
 - [sources/2026-11-21-euvsdisinfo-mcp-connect-guide.txt](sources/2026-11-21-euvsdisinfo-mcp-connect-guide.txt): EUvsDisinfo claude.ai connector guide (May 2026; key generated on euvsdisinfo.eu)
 - [sources/2026-11-21-czy-we-wloszech-strajk-generalny.docx](sources/2026-11-21-czy-we-wloszech-strajk-generalny.docx): organizer sample chatbot questions and answers per scenario A-J (Piotr Sosnowski)
+- [sources/2026-11-21-pavel-architecture-proposal.txt](sources/2026-11-21-pavel-architecture-proposal.txt): Pavel's architecture draft (corpus, retrieval, outcomes); reviewed in [architecture/pavel-proposal-review.md](architecture/pavel-proposal-review.md)
