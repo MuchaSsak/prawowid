@@ -1,5 +1,5 @@
 # Messaging bot: Discord, WhatsApp and Messenger on the Vercel Chat SDK
-The design of the second channel. One bot service on the [Vercel Chat SDK](https://chat-sdk.dev/docs), hosted on Vercel, serves all three platforms and calls the Prawdowid API over HTTP. **Status: designed, not implemented.** A prototype was built and tested, then removed at the user's request (2026-11-21); its findings are below. The design went through a 3-reviewer council (2026-11-21). Decided in [decision 007](../decisions/007-messaging-bot-chat-sdk.md). Setup, env vars, acceptance tests and the demo runbook: [messaging-bot-runbook.md](messaging-bot-runbook.md). The API: [api-reference.md](api-reference.md). What it renders: [response-contract.md](../product/response-contract.md).
+The design of the second channel. One bot service on the [Vercel Chat SDK](https://chat-sdk.dev/docs), hosted on Vercel, serves all three platforms and calls the Prawdowid API over HTTP. **Status: M1 code written in `apps/bot` (2026-11-21), not deployed yet.** It covers the console channel, Discord `/sprawdz` (text and `obraz`), `/pomoc` and `/usun-dane`, plus WhatsApp and Messenger handlers, the sanitizer, the guaranteed reply and the log line. No Redis yet (M1b). What is built and verified: [Implementation status](#implementation-status-2026-11-21). An earlier prototype was removed at the user's request; its findings are below. The design went through a 3-reviewer council (2026-11-21). Decided in [decision 007](../decisions/007-messaging-bot-chat-sdk.md). Setup, env vars, acceptance tests and the demo runbook: [messaging-bot-runbook.md](messaging-bot-runbook.md). The API: [api-reference.md](api-reference.md). What it renders: [response-contract.md](../product/response-contract.md).
 
 ## Diagram
 ```mermaid
@@ -57,7 +57,7 @@ flowchart TB
 | Render | `CheckResponse` → the short chat form, cut to the platform's limit, in the platform's formatting |
 | Console channel | The same conversation run from a terminal. It is the documented demo adapter the jury runs from the README, with **no client key** (it uses the API's per-IP limit) and no platform account |
 | Consistency script | Measures the "channel consistency" metric (see [Consistency](#consistency-metric)) |
-| Discord command registration | A one-off script that registers `/sprawdz`, `/pomoc`, `/usun-dane` per server, so changes show up instantly |
+| Discord command registration | A one-off script that registers `/sprawdz`, `/demo`, `/pomoc`, `/usun-dane` per server, so changes show up instantly |
 
 ## Message flow
 1. **Webhook in.** The platform calls the webhook. The adapter verifies it: Ed25519 for Discord, `X-Hub-Signature-256` with the app secret for Meta.
@@ -135,7 +135,7 @@ Not in scope:
   - defangs bare domains (`example[.]com`), so WhatsApp doesn't auto-link them;
   - neutralizes mentions (`@everyone`, `@here`, `<@…>`, `<#…>`, `<@&…>`).
   
-  The only links posted are `https:` `citations[].url` and the web app URL. Discord replies also send `allowed_mentions: { parse: [] }`, if the SDK passes it through (verify in M1; the sanitizer covers it if not).
+  The only links posted are `https:` `citations[].url` and the web app URL. The Discord adapter (4.44.0) builds its message payload without `allowed_mentions` and has no option for it (checked in its source, 2026-11-21), so the sanitizer is the only guard against mentions. Replies are ephemeral, which also limits who could be pinged.
 - **Abuse and cost limits.**
   - The API limits 12 checks/min per end user for keyed clients.
   - The bot limits 30 checks/day per pseudonym (Redis, from M1b). Before that, M1 runs in mock mode only, which costs nothing, under the API's 12/min limit.
@@ -162,6 +162,7 @@ Not in scope:
 - **Shutdown after the event** (hard constraint 14): see the runbook checklist.
 
 ## Changes needed in the API (additive, contract v1)
+- **Done (2026-11-21): `MOCK_CLIENTS`** (see below) and `client_mode` in `GET /api/v1/health` for keyed clients, so the `demo:` gate knows the bot's own mode before its first check ([api-reference](api-reference.md)).
 - **Spend limits:** a per-client-key daily cap and a live-mode cost cap. Both count live checks only and are answered as `rate_limited`. They gate going live. Owner: the API owner, by Sun 05:00.
 - **Cache bypass:** honour `Cache-Control: no-cache` from keyed clients, so the consistency script can measure fresh runs. Owner: the API owner, by Sun 01:00.
 - **Per-client mock:** `MOCK_CLIENTS=bot` forces mock answers for that client key while `PRAWDOWID_MODE` is live for the web. Removing it is the bot's live switch. Owner: the API owner, by Sun 01:00.
@@ -183,7 +184,7 @@ The benchmark already measures channel consistency at the API level: G cases re-
 - **Discord first.** It's the only platform the jury can use without our help, and it needs no Meta onboarding.
 
 ## Milestones and cut line
-Nothing is implemented. Times run Saturday night to Sunday 2026-11-22. The Sat 20:00 HackTribe draft needs only the repo and a description, not a working bot.
+M1's code is written and tested offline; no deployment or real platform account yet (see [Implementation status](#implementation-status-2026-11-21)). Times run Saturday night to Sunday 2026-11-22. The Sat 20:00 HackTribe draft needs only the repo and a description, not a working bot.
 
 Owners:
 - **Bot owner:** proposed Fabian, who started the bot track ([decision 006](../decisions/006-api-contract-v1-and-mock.md)). To confirm.
@@ -213,6 +214,32 @@ Owners:
 - The guaranteed reply.
 - The fresh-run consistency metric.
 - The live gate. Without it, the bot stays mock-only, but the jury can still use it.
+
+## Implementation status (2026-11-21)
+Code: `apps/bot` (Bun/Node, Chat SDK 4.44.0 pinned). How to run it: `apps/bot/README.md`.
+
+| Part | State |
+|---|---|
+| Console channel (`bun run bot:console`) | built; ran against a local mock API and the deployed (live, unkeyed) API |
+| Discord `/sprawdz` (`tresc` + `obraz`), `/pomoc` (privacy notice), `/usun-dane` | built; ephemeral + `SUPPRESS_EMBEDS` verified on a signed interaction through the real adapter |
+| WhatsApp, Messenger handlers | built; WhatsApp verified with a signed webhook, the GET handshake and a retried delivery (answered once, in-memory dedupe) |
+| Sanitizer, bundled structural validator, guaranteed reply (45 s deadline), content-free log line + SDK logger | built and unit-tested |
+| Capped image fetch (Discord CDN allowlist, no redirects, streamed 5 MB cap, magic bytes) | built and unit-tested |
+| `demo:` gate | built: keyed `/health` `client_mode` (cached 5 min), refreshed by every HTTP 200 check answer; updates are ordered by request, so a slow older answer can't flip it back. A 429 is ignored (it is answered before the API's mock switch) |
+| Redis (dedupe across instances, 30/day quota, outcome counters), `/health?deep=1`, consistency script | **not built** (M1b) |
+| `/demo` with a dropdown of the 18 mock scenarios (Discord) | built (user feedback: typing `demo:` was not discoverable); same `demo:` gate, so it only runs while the bot gets mock answers |
+| Real Discord app (test server, local bot behind a Cloudflare quick tunnel, local mock API) | **works** (2026-11-21): Interactions Endpoint URL saved (PING + bad-signature check passed), commands registered, `/sprawdz` and `/demo` answered in 1-2 s. The very first reply failed with "Discord interaction API error" (cause not logged then; the SDK logger now passes the HTTP status and Discord's numeric error code, never messages or field names) |
+| Vercel deployment, Meta apps, runbook tests A1-A11 on production | **not done** |
+
+Tests: `bun run bot:test`, 121 tests, no network. They cover every mock scenario rendered on every platform, A2/A3/A6/A7/A9/A10/A11 offline equivalents, and signed Discord and WhatsApp webhooks through the real SDK.
+
+Implementation details worth knowing:
+- WhatsApp turns media into placeholder text (`[Image]`, `[Sticker]`), so the bot reads the raw message `type` and the image caption from `raw.message`, not `message.text`.
+- An empty `/sprawdz` gets a local hint; a WhatsApp video, audio or file gets "we check text, links and screenshots"; stickers get no reply.
+- The bot's limitations line is a fixed template ("sprawdzamy tylko twierdzenia o faktach, nie oceniamy opinii", plus "nie wykrywamy deepfake'ów" for images), not the API's `limitations[]`, which stays on the web.
+- A citation URL longer than 500 characters after encoding is not posted; a claim that doesn't fit the reply first loses its links, then is counted, so escalation, limitations and the footer are never cut. An all-failed `technical_error` shows each claim's system notice.
+- Code review: 5 sol-loop rounds with GPT-6.2 Sol (approved); fixes covered the typing indicator delaying the guaranteed reply, sanitizer gaps, the mode cache, the reply budget and log fields.
+- Sanitizer: `@` becomes a fullwidth `＠` and `< >` become `‹ ›` after NFKC, so no mention or `<url>` can form; underscores are removed only at word edges, so `OPENROUTER_API_KEY` survives.
 
 ## Findings from the prototype (2026-11-21, code removed)
 - Pin the SDK packages (`4.44.0` then). The SDK targets Node ≥ 20; Deno support isn't documented. It ran on Node (the Vercel entry) and on Bun.

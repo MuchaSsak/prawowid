@@ -3,7 +3,8 @@ import { assert, assertEquals } from "jsr:@std/assert@^1";
 import { CheckResponseSchema, MOCK_SCENARIOS } from "@prawdowid/core";
 
 Deno.env.set("MOCK_DELAY_MS", "0");
-Deno.env.set("CLIENT_KEYS", "bot:test-bot-key");
+Deno.env.set("CLIENT_KEYS", "bot:test-bot-key,partner:test-partner-key");
+Deno.env.set("MOCK_CLIENTS", "bot");
 Deno.env.set("WEB_ORIGINS", "https://web.example");
 Deno.env.delete("OPENROUTER_API_KEY");
 Deno.env.delete("GOOGLE_FACT_CHECK_API_KEY");
@@ -157,6 +158,20 @@ Deno.test("keyed bot client: limits are per end user, not per bot IP", async () 
   for (let i = 0; i < 12; i++) await post({ input: { type: "text", value: "x" }, mock: "confirmed" }, { ...ip, "x-end-user": "user-A" });
   assertEquals((await post({ input: { type: "text", value: "x" }, mock: "confirmed" }, { ...ip, "x-end-user": "user-A" })).status, 429);
   assertEquals((await post({ input: { type: "text", value: "x" }, mock: "confirmed" }, { ...ip, "x-end-user": "user-B" })).status, 200);
+});
+
+Deno.test("MOCK_CLIENTS: the bot key gets mock answers in live mode, other clients stay live", async () => {
+  const bot = await (await post({ input: { type: "text", value: "demo:false" } }, { "x-client-key": "test-bot-key", "x-end-user": "u1" })).json();
+  valid(bot);
+  assertEquals(bot.meta.mode, "mock");
+  assertEquals(bot.claims[0].verdict, "false");
+  const partner = await (await post({ input: { type: "text", value: "demo:false" } }, { "x-client-key": "test-partner-key", "x-end-user": "u1" })).json();
+  assertEquals(partner.meta.mode, "live");
+  const anon = await (await post({ input: { type: "text", value: "demo:false" } })).json();
+  assertEquals(anon.meta.mode, "live");
+  assertEquals((await (await get("/api/v1/health", { "x-client-key": "test-bot-key" })).json()).client_mode, "mock");
+  assertEquals((await (await get("/api/v1/health", { "x-client-key": "test-partner-key" })).json()).client_mode, "live");
+  assertEquals((await (await get("/api/v1/health")).json()).client_mode, undefined);
 });
 
 Deno.test("a wrong client key does not get per-user limits (falls back to the IP)", async () => {

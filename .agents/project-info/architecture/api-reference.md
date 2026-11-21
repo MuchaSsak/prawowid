@@ -9,7 +9,7 @@ Every endpoint, header, request field, environment variable and mock scenario of
 | Method + path | Purpose | Response |
 |---|---|---|
 | `GET /` | service info | `{ service, contract_version, mode, docs }` |
-| `GET /api/v1/health` | is it configured? | `{ ok, contract_version, mode: "live"\|"mock", configured: { openrouter, google_fact_check } (booleans only), models, storage }` |
+| `GET /api/v1/health` | is it configured? | `{ ok, contract_version, mode: "live"\|"mock", configured: { openrouter, google_fact_check } (booleans only), models, storage }`; with a valid `X-Client-Key` also `client_mode` (that client's effective mode, see `MOCK_CLIENTS`) |
 | `POST /api/v1/check` | run a check | `CheckResponse` ([shape](../product/response-contract.md#json-shape-contract-v1-post-apiv1check--200)) |
 | `GET /api/v1/schema` | JSON Schema of request and response | `{ contract_version, request, response }` |
 | `GET /api/v1/sources` | the trusted-source allowlist (only these publishers can be evidence) and the statistics we look up; added 2026-11-21, additive to v1 | `{ contract_version, policy, sources: [{ id, name, domains[], kind, tier, country, credentials, access, access_note, terms }], statistics: [{ key, label, unit, definition, sources[] }] }` |
@@ -78,6 +78,7 @@ Pick a scenario (first match wins):
 | `PRAWDOWID_MODE` | no | `mock` makes every check a mock (default `live`) |
 | `MOCK_DELAY_MS` | no | simulated mock latency (default 600) |
 | `CLIENT_KEYS` | no | `name:key,name2:key2` for server clients |
+| `MOCK_CLIENTS` | no | comma-separated client names (from `CLIENT_KEYS`) that always get mock answers, even when `PRAWDOWID_MODE` is live; `bot` holds the messaging bot in mock until its spend caps exist ([messaging-bot](messaging-bot.md)) |
 | `WEB_ORIGINS` | no | comma-separated browser origins for CORS (default localhost:4321) |
 | `MODEL_CLAIM_EXTRACTION`, `MODEL_EVIDENCE_ASSESSMENT`, `MODEL_IMAGE_EXTRACTION` | no | model overrides ([decision 003](../decisions/003-config-in-code.md)) |
 | `PORT` | no | local port (default 8787) |

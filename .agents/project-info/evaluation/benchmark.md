@@ -4,7 +4,7 @@ What is tested, how each metric is computed, the latest results and the known ga
 ## Two layers
 | Layer | Command | Cost | What it proves |
 |---|---|---|---|
-| Deterministic tests (149) | `bun run test` | **free**: model and source APIs are stubbed, zero external calls | the rules: no fabricated sources, the source allowlist, abstention, conflicts, the number check, injection, PII never leaves, missing keys, contract v1, HTTP behaviour |
+| Deterministic tests (150) | `bun run test` | **free**: model and source APIs are stubbed, zero external calls | the rules: no fabricated sources, the source allowlist, abstention, conflicts, the number check, injection, PII never leaves, missing keys, contract v1, HTTP behaviour |
 | Live benchmark (50 cases) | `bun run eval` (full, ~$0.05) · `bun run eval:quick` (6 cases, ~$0.005) · `bun run eval:remote` (deployed URL) | real OpenRouter + Google credits | the jury's metrics on real models and sources |
 | Statistics smoke test | `deno run --allow-net packages/core/test/live/smoke-stats.ts` | **free** (no model, no keys) | every Eurostat indicator, NBP rates/gold/reference rate and GUS answer live |
 
