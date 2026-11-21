@@ -225,18 +225,20 @@ Code: `apps/bot` (Bun/Node, Chat SDK 4.44.0 pinned). How to run it: `apps/bot/RE
 | WhatsApp, Messenger handlers | built; WhatsApp verified with a signed webhook, the GET handshake and a retried delivery (answered once, in-memory dedupe) |
 | Sanitizer, bundled structural validator, guaranteed reply (45 s deadline), content-free log line + SDK logger | built and unit-tested |
 | Capped image fetch (Discord CDN allowlist, no redirects, streamed 5 MB cap, magic bytes) | built and unit-tested |
-| `demo:` gate | built: uses the last `meta.mode`, else `/health` `client_mode` (cached 5 min) |
+| `demo:` gate | built: keyed `/health` `client_mode` (cached 5 min), refreshed by every HTTP 200 check answer; updates are ordered by request, so a slow older answer can't flip it back. A 429 is ignored (it is answered before the API's mock switch) |
 | Redis (dedupe across instances, 30/day quota, outcome counters), `/health?deep=1`, consistency script | **not built** (M1b) |
 | `/demo` with a dropdown of the 18 mock scenarios (Discord) | built (user feedback: typing `demo:` was not discoverable); same `demo:` gate, so it only runs while the bot gets mock answers |
-| Real Discord app (test server, local bot behind a Cloudflare quick tunnel, local mock API) | **works** (2026-11-21): Interactions Endpoint URL saved (PING + bad-signature check passed), commands registered, `/sprawdz` and `/demo` answered in 1-2 s. The very first reply failed with "Discord interaction API error" (cause not logged then; the SDK logger now passes Discord's status and error code, never content) |
+| Real Discord app (test server, local bot behind a Cloudflare quick tunnel, local mock API) | **works** (2026-11-21): Interactions Endpoint URL saved (PING + bad-signature check passed), commands registered, `/sprawdz` and `/demo` answered in 1-2 s. The very first reply failed with "Discord interaction API error" (cause not logged then; the SDK logger now passes the HTTP status and Discord's numeric error code, never messages or field names) |
 | Vercel deployment, Meta apps, runbook tests A1-A11 on production | **not done** |
 
-Tests: `bun run bot:test`, 109 tests, no network. They cover every mock scenario rendered on every platform, A2/A3/A6/A7/A9/A10/A11 offline equivalents, and signed Discord and WhatsApp webhooks through the real SDK.
+Tests: `bun run bot:test`, 121 tests, no network. They cover every mock scenario rendered on every platform, A2/A3/A6/A7/A9/A10/A11 offline equivalents, and signed Discord and WhatsApp webhooks through the real SDK.
 
 Implementation details worth knowing:
 - WhatsApp turns media into placeholder text (`[Image]`, `[Sticker]`), so the bot reads the raw message `type` and the image caption from `raw.message`, not `message.text`.
 - An empty `/sprawdz` gets a local hint; a WhatsApp video, audio or file gets "we check text, links and screenshots"; stickers get no reply.
 - The bot's limitations line is a fixed template ("sprawdzamy tylko twierdzenia o faktach, nie oceniamy opinii", plus "nie wykrywamy deepfake'ów" for images), not the API's `limitations[]`, which stays on the web.
+- A citation URL longer than 500 characters after encoding is not posted; a claim that doesn't fit the reply first loses its links, then is counted, so escalation, limitations and the footer are never cut. An all-failed `technical_error` shows each claim's system notice.
+- Code review: 5 sol-loop rounds with GPT-6.2 Sol (approved); fixes covered the typing indicator delaying the guaranteed reply, sanitizer gaps, the mode cache, the reply budget and log fields.
 - Sanitizer: `@` becomes a fullwidth `＠` and `< >` become `‹ ›` after NFKC, so no mention or `<url>` can form; underscores are removed only at word edges, so `OPENROUTER_API_KEY` survives.
 
 ## Findings from the prototype (2026-11-21, code removed)

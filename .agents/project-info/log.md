@@ -79,3 +79,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | 1 finding fixed: messaging-bot allowed_mentions 'verify in M1' resolved from the adapter source; links (2 format examples only), index, routing, skill parity OK; 1 open question added (bot deploy owner, API env vars)
 ## [2026-11-21] update | bot tested with a real Discord app (local bot + Cloudflare quick tunnel + local mock API): /sprawdz and /demo answer; /demo dropdown added after user feedback; SDK logger now keeps Discord status/error code (no content); messaging-bot status + runbook command list synced
 ## [2026-11-21] lint | clean: messaging-bot and runbook edits only, links and index unchanged
+## [2026-11-21] update | messaging-bot implementation status synced with the code-review fixes (demo: gate ordering, URL cap, reply budget, numeric-only platform error logging, 121 tests)
+## [2026-11-21] lint | clean: one page edited, links unchanged
