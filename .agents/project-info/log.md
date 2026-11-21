@@ -181,3 +181,6 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | web app live at https://prawdomat.vercel.app (Vercel project prawdomat); bot deployed as Vercel project prawdomat-bot (https://prawdomat-bot.vercel.app)
 ## [2026-11-21] update | bot crash on Vercel (ERR_MODULE_NOT_FOUND for .ts specifiers) fixed: relative imports in apps/bot now end in .js; deployment recorded in messaging-bot.md
 ## [2026-11-21] update | messaging-bot-runbook: Vercel Hobby team blocks PR deployments by non-member Git authors (PR #7 checks); not a code failure
+## [2026-11-21] fix | long articles ended in "Nieoczekiwany błąd": an LLM timeout during the response body read escaped as DOMException; openrouter.ts now maps it to LlmError("timeout")
+## [2026-11-21] update | square logo apps/web/public/logo-512.jpg (512 × 512, white bg, navy rosette) added; recorded in pitch/design-system.md
+## [2026-11-21] lint | clean (scope: logo-512.jpg note in pitch/design-system.md; structural checks on the whole wiki)

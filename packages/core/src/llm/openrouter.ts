@@ -60,6 +60,7 @@ async function once<T extends z.ZodType>(opts: ChatJsonOptions<T>): Promise<{ da
   const timeout = AbortSignal.timeout(opts.timeoutMs);
   const signal = opts.signal ? AbortSignal.any([timeout, opts.signal]) : timeout;
   let res: Response;
+  let body: string;
   try {
     res = await fetch(ENDPOINT, {
       method: "POST",
@@ -85,6 +86,9 @@ async function once<T extends z.ZodType>(opts: ChatJsonOptions<T>): Promise<{ da
         usage: { include: true },
       }),
     });
+    // OpenRouter sends headers early and the JSON only when the model finishes, so the timeout
+    // usually fires while reading the body. It must map to LlmError too, not escape as DOMException.
+    body = await res.text();
   } catch (err) {
     if (err instanceof DOMException && (err.name === "TimeoutError" || err.name === "AbortError")) {
       throw new LlmError("timeout", `${opts.schemaName}: model timed out`);
@@ -92,7 +96,6 @@ async function once<T extends z.ZodType>(opts: ChatJsonOptions<T>): Promise<{ da
     throw new LlmError("http", `${opts.schemaName}: network error: ${(err as Error).message}`);
   }
 
-  const body = await res.text();
   if (res.status === 429) throw new LlmError("rate_limited", `${opts.schemaName}: OpenRouter 429`);
   if (!res.ok) throw new LlmError("http", `${opts.schemaName}: OpenRouter ${res.status}: ${body.slice(0, 300)}`);
 
