@@ -5,6 +5,7 @@ The code layout, what each part does today, what was measured, and what is still
 | Path | Role |
 |---|---|
 | `packages/core/src/pipeline/check.ts` | `runCheck`: validate → intake → PII mask + injection scan → 5-min cache → reference date → extract (LLM #1) → per claim in parallel: retrieve → assess (LLM #2) → code verdict → log |
+| `CoreDeps` extension points | `deps.connectors` (evidence routes, default `CONNECTORS`) and `deps.narrativeMatchers` (known-incident matchers, default `NARRATIVE_MATCHERS`); plugin types (`Connector`, `SourceRecord`, `NarrativeMatcher`, `fetchJson`) exported from `@prawdowid/core` ([extensibility](extensibility.md)) |
 | `packages/core/src/intake/` | `url.ts` (SSRF guards, DNS check via host hook, ≤3 revalidated redirects, robots.txt, tracking params stripped, Readability), `image.ts` (EXIF/XMP/IPTC and PNG text chunks stripped, vision call) |
 | `packages/core/src/guard/` | PII rules (e-mail, phone, PESEL with checksum, IBAN, cards with Luhn, ID card, street address, IP), injection patterns (pl/en), quote normalization |
 | `packages/core/src/connectors/` | `google-factcheck.ts`, `sejm-eli.ts`, `eurostat.ts`, `nbp.ts`, `gus.ts`, `corpus.ts` (mock, empty); `stats-catalog.ts` (16 indicators); `mod.ts` = the deployment profile |

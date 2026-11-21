@@ -8,6 +8,10 @@ export { HttpCorpusStore } from "./store/http-corpus.ts";
 export { AUDIT_EVENT, type AuditLine, auditLine, LoggingCheckStore } from "./store/logging.ts";
 export type { CheckLogRow, CheckStore, CorpusStore } from "./store/types.ts";
 export { CONNECTORS } from "./connectors/mod.ts";
+// Everything a new evidence route or known-incident matcher needs (architecture/extensibility.md).
+export type { ClaimQuery, Connector, ConnectorContext, SourceRecord } from "./connectors/types.ts";
+export { ConnectorError, fetchJson, fetchText } from "./connectors/types.ts";
+export type { NarrativeContext, NarrativeMatcher } from "./narratives/types.ts";
 export {
   articleToIncident,
   caseToIncident,

@@ -191,3 +191,10 @@ Deno.test("check log: every saved check is one audit line with time, status, ver
   assertEquals((await store.listRecent(5)).length, 0);
 });
 
+Deno.test("models: MODEL_<STEP> env overrides one step's model; blank or missing keeps the default (constraint 19)", () => {
+  const env: Record<string, string> = { MODEL_EVIDENCE_ASSESSMENT: "example/assessor-b", MODEL_CLAIM_EXTRACTION: "  " };
+  const c = loadConfig({ get: (k) => env[k] });
+  assertEquals(c.models.evidence_assessment, "example/assessor-b");
+  assertEquals(c.models.claim_extraction, loadConfig({ get: () => undefined }).models.claim_extraction);
+});
+

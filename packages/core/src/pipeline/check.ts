@@ -5,7 +5,7 @@
  */
 import { type Config, LIMITS } from "../config.ts";
 import { CONNECTORS, NOT_YET_COVERED } from "../connectors/mod.ts";
-import type { ConnectorContext } from "../connectors/types.ts";
+import type { Connector, ConnectorContext } from "../connectors/types.ts";
 import { scanInjection } from "../guard/injection.ts";
 import { normalizeForMatch, sha256Hex } from "../guard/normalize.ts";
 import { maskPii } from "../guard/pii.ts";
@@ -43,7 +43,7 @@ import {
 import { numericGuard } from "./numeric.ts";
 import { retrieve } from "./retrieve.ts";
 import { type ContextResult, findContextMatches, NARRATIVE_MATCHERS } from "../narratives/mod.ts";
-import type { KnownIncidentStore } from "../narratives/types.ts";
+import type { KnownIncidentStore, NarrativeMatcher } from "../narratives/types.ts";
 import { decideVerdict } from "./verdict.ts";
 
 export interface CoreDeps {
@@ -54,6 +54,13 @@ export interface CoreDeps {
   incidents?: KnownIncidentStore;
   resolveHost?: ResolveHost;
   now?: () => Date;
+  /**
+   * Evidence routes for this deployment. Default: CONNECTORS (connectors/mod.ts). A new source plugs
+   * in here, from any adapter, without touching the pipeline (architecture/extensibility.md).
+   */
+  connectors?: Connector[];
+  /** Known-incident matchers (context, never evidence). Default: NARRATIVE_MATCHERS. */
+  narrativeMatchers?: NarrativeMatcher[];
 }
 
 function llmMessage(err: unknown): string {
@@ -419,8 +426,8 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     };
     // Evidence and known-incident context run side by side; context never feeds the verdict.
     const [r, known] = await Promise.all([
-      retrieve(query, CONNECTORS, ctx),
-      findContextMatches(query, NARRATIVE_MATCHERS, { config: deps.config, signal: deadline.signal, incidents: deps.incidents }),
+      retrieve(query, deps.connectors ?? CONNECTORS, ctx),
+      findContextMatches(query, deps.narrativeMatchers ?? NARRATIVE_MATCHERS, { config: deps.config, signal: deadline.signal, incidents: deps.incidents }),
     ]);
     base.routes = r.routes;
     for (const route of [...r.routes, ...known.routes]) {
