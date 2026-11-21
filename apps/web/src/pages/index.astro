@@ -13,25 +13,31 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
       title="Prawdomat: sprawdź, zanim udostępnisz"
       ogTitle="Prawdomat · Sprawdź, zanim udostępnisz"
       description="Wklej wypowiedź, link, zdjęcie albo nagranie. Prawdomat sprawdza fakty i pokazuje, co mówią o tym wiarygodne źródła. Bezpłatnie."
+      structuredData
     />
+    <!-- The video poster is the largest paint on the first screen: fetch it before anything else. -->
+    <link rel="preload" as="image" href="/video/prawdomat-bg-loop.webp" type="image/webp" fetchpriority="high" />
   </head>
   <body data-api={apiUrl}>
     <div id="test-bar" class="test-bar" role="status" hidden>
-      Dane przykładowe włączone<span class="test-sep">·</span><span id="test-scenario"></span>
+      Dev mode: dane przykładowe<span class="test-sep">·</span><span id="test-scenario"></span>
       <button type="button" id="test-off" class="test-off">Wyłącz</button>
     </div>
     <div class="frame">
       <div class="hero-video" aria-hidden="true">
-        <video id="hero-video" autoplay muted loop playsinline disablepictureinpicture preload="auto" poster="/video/prawdomat-bg-loop.jpg">
+        <video id="hero-video" muted loop playsinline disablepictureinpicture preload="none" poster="/video/prawdomat-bg-loop.webp">
           <source src="/video/prawdomat-bg-loop.webm" type="video/webm" />
         </video>
       </div>
       <header class="top">
         <div class="top-row">
-          <a class="brand" href="/">
-            <svg class="mark" id="mark" data-rosette="mark" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
-            Prawdomat
-          </a>
+          <span class="brand-wrap">
+            <a class="brand" href="/">
+              <svg class="mark" id="mark" data-rosette="mark" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+              Prawdomat
+            </a>
+            <button type="button" id="dev-toggle" class="dev-bubble">Dev mode?</button>
+          </span>
           <div class="top-actions">
             <button type="button" id="new-chat" class="pill-btn" hidden>
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
@@ -108,11 +114,17 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
 
     <script>
       import { initApp } from "../lib/app.ts";
-      import { initBackdrop } from "../lib/backdrop.ts";
       import { initHeroVideo } from "../lib/hero-video.ts";
       initApp();
-      initBackdrop(document.body);
       initHeroVideo(document.getElementById("hero-video") as HTMLVideoElement | null);
+
+      // The WebGL backdrop (and the ogl library) waits until the page has loaded and the main thread
+      // is idle: creating a GL context and compiling the shader is the costliest work on the page, and
+      // the canvas fades in over the CSS gradient anyway, so starting it a moment later looks the same.
+      const startBackdrop = () => import("../lib/backdrop.ts").then((m) => m.initBackdrop(document.body));
+      const whenIdle = () => ("requestIdleCallback" in window ? requestIdleCallback(startBackdrop, { timeout: 1500 }) : setTimeout(startBackdrop, 200));
+      if (document.readyState === "complete") whenIdle();
+      else addEventListener("load", whenIdle, { once: true });
     </script>
   </body>
 </html>

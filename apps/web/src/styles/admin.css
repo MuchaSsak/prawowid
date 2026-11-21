@@ -13,7 +13,7 @@ body.admin.has-test-bar { padding-top: 32px; }
 .has-test-bar .side { top: 32px; height: calc(100vh - 32px); }
 .side .brand { font-size: 1.375rem; padding: 0 8px 22px; }
 .side .mark { width: 26px; height: 26px; }
-.side-label { margin: 8px 8px 6px; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.side-label { margin: 8px 8px 6px; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: rgb(0 12 31 / .6); } /* --ink-3 is 3.2:1 here, too faint for 12 px text; this is 5.2:1 */
 .side-link { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; color: var(--ink-2); text-decoration: none; font-size: .9375rem; font-weight: 500; }
 .side-link:hover { background: var(--tint); color: var(--ink); }
 .side-link[aria-current="page"] { background: var(--tint-2); color: var(--ink); }
@@ -22,7 +22,9 @@ body.admin.has-test-bar { padding-top: 32px; }
 .side-foot { margin-top: auto; display: grid; gap: 2px; }
 
 /* ── header + filters ── */
-.admin-main { padding: 28px 32px 56px; min-width: 0; }
+/* Capped and centred beside the sidebar so ultrawide screens (2560, 3440) don't stretch the table
+   and charts across 3000+ px; up to a 1992 px viewport (1760 + the 232 px sidebar) nothing changes. */
+.admin-main { width: 100%; max-width: 1760px; justify-self: center; padding: 28px 32px 56px; min-width: 0; }
 .admin-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
 .admin-head h1 { margin: 0; font: 400 2.5rem/1 var(--serif); letter-spacing: -.04em; }
 .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
@@ -60,7 +62,9 @@ body.is-locked .admin-shell { display: none; }
 .dash.is-loading { opacity: .5; }
 
 /* ── micro motion: cards, KPI tiles and table rows rise in with a slight stagger ── */
-@keyframes a-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+/* Starts at .01, not 0: Chrome skips fully transparent paints when it picks the Largest Contentful
+   Paint, so a card rising from 0 left the page with no LCP at all (Lighthouse performance 0). */
+@keyframes a-rise { from { opacity: .01; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes a-fade { from { opacity: 0; } to { opacity: 1; } }
 .dash.is-entering > * { animation: a-rise .28s cubic-bezier(.2, .7, .2, 1) both; }
 .dash.is-entering > :nth-child(2) { animation-delay: 40ms; }

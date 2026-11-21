@@ -5,7 +5,7 @@
  */
 import type { CheckRequest, CheckResponse, InputType } from "@prawdowid/core/types";
 import { MEDIA_MIME, type MediaType } from "@prawdowid/core/media";
-import { MOCK_SCENARIOS, type MockScenario, mockResponse, pickScenario } from "@prawdowid/core/mock";
+import type { MockScenario } from "@prawdowid/core/mock";
 import { h } from "./dom.ts";
 import { announce, renderResult, stateCard } from "./render.ts";
 import { drawRosettes } from "./rosette.ts";
@@ -256,11 +256,18 @@ export function initApp() {
   // ── ?test=true: sample data made in the browser, no API calls ──────────────
   // Each plain text send shows the next scenario, so every edge case can be clicked through;
   // `demo:<name>`, a link or a file picks its own scenario.
-  let testMode = new URLSearchParams(location.search).get("test") === "true";
+  // Dev mode: ?dev=true, or the older ?test=true. Also toggled from the bubble on the logo.
+  const params = new URLSearchParams(location.search);
+  let testMode = params.get("dev") === "true" || params.get("test") === "true";
+  const devToggle = $<HTMLButtonElement>("dev-toggle");
   const testBar = $<HTMLDivElement>("test-bar");
   const testScenario = $<HTMLSpanElement>("test-scenario");
   let testIndex = 0;
-  const nextScenario = (req: CheckRequest): MockScenario => {
+  // The fixtures are only needed with ?test=true, so they are fetched on demand, not with the page.
+  let mockModule: Promise<typeof import("@prawdowid/core/mock")> | null = null;
+  const loadMock = () => (mockModule ??= import("@prawdowid/core/mock"));
+  const nextScenario = (mock: typeof import("@prawdowid/core/mock"), req: CheckRequest): MockScenario => {
+    const { MOCK_SCENARIOS, pickScenario } = mock;
     const explicit = /^demo:/i.test(req.input.value.trim()) || req.input.type !== "text";
     const s = explicit ? pickScenario(req) : MOCK_SCENARIOS[testIndex++ % MOCK_SCENARIOS.length];
     testScenario.textContent = `${s} (${MOCK_SCENARIOS.indexOf(s) + 1}/${MOCK_SCENARIOS.length})`;
@@ -270,13 +277,23 @@ export function initApp() {
     testMode = on;
     testBar.hidden = !on;
     document.body.classList.toggle("is-test", on);
+    devToggle.textContent = on ? "Wyłączyć dev mode?" : "Dev mode?";
+    devToggle.setAttribute("aria-pressed", String(on));
+    if (on) loadMock(); // warm it up so the first sample answer does not wait on the network
   };
   setTestMode(testMode);
-  $<HTMLButtonElement>("test-off").addEventListener("click", () => {
-    setTestMode(false);
+  const switchDevMode = (on: boolean) => {
+    setTestMode(on);
     const url = new URL(location.href);
     url.searchParams.delete("test");
+    if (on) url.searchParams.set("dev", "true");
+    else url.searchParams.delete("dev");
     history.replaceState(null, "", url);
+  };
+  $<HTMLButtonElement>("test-off").addEventListener("click", () => switchDevMode(false));
+  devToggle.addEventListener("click", () => {
+    switchDevMode(!testMode);
+    devToggle.blur();
   });
   let busy = false;
   let recording = false;
@@ -739,7 +756,8 @@ export function initApp() {
     let data: CheckResponse;
     try {
       if (testMode) {
-        data = mockResponse(req, nextScenario(req));
+        const mock = await guard(loadMock());
+        data = mock.mockResponse(req, nextScenario(mock, req));
       } else {
         const res = await guard(fetch(`${api}/api/v1/check`, {
           method: "POST",

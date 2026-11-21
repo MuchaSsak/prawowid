@@ -12,5 +12,8 @@ const site = env.PUBLIC_SITE_URL || (vercel ? `https://${vercel}` : undefined) |
 export default defineConfig({
   site,
   server: { port: 4321 },
+  // One small stylesheet per page: inlined, it no longer blocks the first paint (Lighthouse
+  // "render-blocking resources"), and the font files are discovered straight from the HTML.
+  build: { inlineStylesheets: "always" },
   devToolbar: { enabled: false },
 });

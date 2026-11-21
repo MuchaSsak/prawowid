@@ -5,6 +5,48 @@
  * Type: Newsreader (headline, summaries, verbatim source quotes) + Inter Tight (everything else).
  * Verdict colors are reserved for verdicts; system states never borrow them (hard constraint 8).
  */
+/* Metric-matched stand-ins shown only until the web fonts arrive, so the swap moves nothing
+   (Lighthouse CLS "web font" culprit). Widths measured in Chrome against Times New Roman / Arial:
+   Newsreader is 101-110% of Times depending on optical size (104% splits the heading sizes).
+   Inter Tight vs Arial depends on weight (Arial has no medium, so 500 is Arial Regular, 600+ is
+   Arial Bold): 96% at 400, 99.5% at 500, 94% at 600-700, hence three faces by weight range.
+   Overrides = the font's own ascent/descent divided by size-adjust.
+   Each local() list is one metric-compatible family (Liberation / Tinos / Arimo match TNR / Arial). */
+@font-face {
+  font-family: "Newsreader Fallback";
+  src: local("Times New Roman"), local("TimesNewRomanPSMT"), local("Times"), local("Liberation Serif"), local("Tinos");
+  size-adjust: 104%;
+  ascent-override: 70.67%;
+  descent-override: 25.48%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Inter Tight Fallback";
+  font-weight: 100 450;
+  src: local("Arial"), local("ArialMT"), local("Helvetica"), local("Liberation Sans"), local("Arimo");
+  size-adjust: 96%;
+  ascent-override: 100.91%;
+  descent-override: 25.13%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Inter Tight Fallback";
+  font-weight: 451 549;
+  src: local("Arial"), local("ArialMT"), local("Helvetica"), local("Liberation Sans"), local("Arimo");
+  size-adjust: 99.5%;
+  ascent-override: 97.36%;
+  descent-override: 24.24%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Inter Tight Fallback";
+  font-weight: 550 900;
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Helvetica Bold"), local("Liberation Sans Bold"), local("Arimo Bold");
+  size-adjust: 94%;
+  ascent-override: 103.06%;
+  descent-override: 25.66%;
+  line-gap-override: 0%;
+}
 :root {
   --page: #ffffff;
   --panel: #f1f0ee;
@@ -42,8 +84,8 @@
   --backdrop-filter: grayscale(.35);
   --backdrop-shade: transparent;
   --shadow: 0 1px 2px rgb(0 12 31 / .05), 0 14px 44px -14px rgb(0 12 31 / .22);
-  --serif: "Newsreader Variable", "Times New Roman", Times, serif;
-  --sans: "Inter Tight Variable", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --serif: "Newsreader Variable", "Newsreader Fallback", "Times New Roman", Times, serif;
+  --sans: "Inter Tight Variable", "Inter Tight Fallback", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   color-scheme: light;
 }
@@ -140,15 +182,19 @@ button { font-family: inherit; letter-spacing: inherit; }
   z-index: 1;
 }
 /* Film grain over the darkened video: SVG turbulence, jittered a few times a second (still under
-   reduced motion, where the global rule stops animations). */
-.hero-video::before {
+   reduced motion, where the global rule stops animations). Rasterising the turbulence is the
+   costliest paint on the page, so the layer exists only once the page has loaded (.has-grain, set by
+   src/lib/hero-video.ts together with starting the video) and fades in: the first paint is the
+   poster alone, and the finished frame is unchanged. */
+.hero-video.has-grain::before {
   content: ""; position: absolute; inset: -50%; z-index: 2;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='.33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 400px;
   mix-blend-mode: overlay;
   opacity: .5;
-  animation: grain .6s steps(6) infinite;
+  animation: grain .6s steps(6) infinite, grain-in .8s ease-out;
 }
+@keyframes grain-in { from { opacity: 0; } }
 @keyframes grain {
   0% { transform: translate(0, 0); }
   20% { transform: translate(-6%, 4%); }
@@ -557,7 +603,13 @@ body.is-chat .form-error { margin-top: 8px; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 
-/* ── ?test=true bar ─────────────────────────────────────────────────────── */
+/* ── dev mode bubble on the logo ────────────────────────────────────────── */
+.brand-wrap { position: relative; display: inline-flex; }
+.dev-bubble { position: absolute; top: -10px; left: 100%; z-index: 60; margin-left: -6px; padding: 4px 10px; border: 0; border-radius: 999px 999px 999px 4px; background: var(--navy); color: var(--on-navy); font-family: inherit; font-size: .75rem; font-weight: 600; line-height: 1.2; white-space: nowrap; cursor: pointer; box-shadow: 0 4px 14px rgb(0 0 0 / .25); opacity: 0; pointer-events: none; transform: translateY(4px) scale(.6); transform-origin: bottom left; transition: opacity .16s ease, transform .2s cubic-bezier(.3, 1.5, .5, 1); }
+.brand-wrap:hover .dev-bubble, .dev-bubble:focus-visible { opacity: 1; pointer-events: auto; transform: none; }
+@media (hover: none) { .dev-bubble { display: none; } }
+
+/* ── dev mode (?dev=true / ?test=true) bar ──────────────────────────────── */
 .test-bar { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; justify-content: center; align-items: center; gap: 8px; height: 32px; padding: 0 16px; background: var(--navy); color: var(--on-navy); font-size: .875rem; white-space: nowrap; overflow: hidden; }
 #test-scenario { opacity: .8; }
 .test-sep:has(+ #test-scenario:empty) { display: none; }

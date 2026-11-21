@@ -11,12 +11,28 @@ interface Props {
   /** Preview title; defaults to `title`. Kept short: Discord cuts around 70 characters. */
   ogTitle?: string;
   noindex?: boolean;
+  /** Adds schema.org WebApplication JSON-LD (the home page only), so search engines read what the service is. */
+  structuredData?: boolean;
 }
-const { title, description, ogTitle = title, noindex = false } = Astro.props;
+const { title, description, ogTitle = title, noindex = false, structuredData = false } = Astro.props;
 const abs = (path: string) => (Astro.site ? new URL(path, Astro.site).href : path);
 const url = abs(Astro.url.pathname);
 const image = abs("/og.png");
 const imageAlt = "Prawdomat. Sprawdź, zanim udostępnisz. Bezpłatne sprawdzanie faktów ze źródłami.";
+const jsonLd = structuredData
+  ? JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      name: "Prawdomat",
+      description,
+      inLanguage: "pl",
+      applicationCategory: "ReferenceApplication",
+      operatingSystem: "Any",
+      isAccessibleForFree: true,
+      offers: { "@type": "Offer", price: "0", priceCurrency: "PLN" },
+      ...(Astro.site ? { url, image } : {}),
+    })
+  : null;
 ---
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -25,7 +41,9 @@ const imageAlt = "Prawdomat. Sprawdź, zanim udostępnisz. Bezpłatne sprawdzani
 {noindex && <meta name="robots" content="noindex" />}
 {Astro.site && <link rel="canonical" href={url} />}
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/logo-512.jpg" />
 <meta name="theme-color" content="#050d1a" />
+{jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Prawdomat" />
