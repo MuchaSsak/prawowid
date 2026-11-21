@@ -1,5 +1,5 @@
 /**
- * The only place the bot talks to Prawdowid, over the HTTP contract v1 (hard constraint 18: the
+ * The only place the bot talks to Prawdomat, over the HTTP contract v1 (hard constraint 18: the
  * bot never imports the verification core):
  *   POST   /api/v1/check         channel "messaging", X-Client-Key, X-End-User; never sends `mock`
  *   DELETE /api/v1/session/:id   "usuń dane"

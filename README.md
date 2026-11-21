@@ -1,4 +1,4 @@
-# Prawdowid
+# Prawdomat
 
 Free fact-checking for citizens: paste a statement, a link or a screenshot, and get each factual claim checked against real sources, with verbatim quotes and links. A prototype for the MSZ task at HackNation 2026.
 

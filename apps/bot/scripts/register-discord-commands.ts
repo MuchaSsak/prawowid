@@ -38,7 +38,7 @@ const commands = [
       choices: DEMO_SCENARIOS.map((s) => ({ name: s.label, value: s.value })),
     }],
   },
-  { name: "pomoc", description: "Jak działa Prawdowid i jak chronimy Twoje dane" },
+  { name: "pomoc", description: "Jak działa Prawdomat i jak chronimy Twoje dane" },
   { name: "usun-dane", description: "Usuń moje zapisane sprawdzenia" },
 ];
 

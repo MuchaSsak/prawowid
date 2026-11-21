@@ -1,5 +1,5 @@
 # Messaging bot: Discord, WhatsApp and Messenger on the Vercel Chat SDK
-The design of the second channel. One bot service on the [Vercel Chat SDK](https://chat-sdk.dev/docs), hosted on Vercel, serves all three platforms and calls the Prawdowid API over HTTP. **Status: M1 code written in `apps/bot` (2026-11-21), not deployed yet.** It covers the console channel, Discord `/sprawdz` (text and `obraz`), `/pomoc` and `/usun-dane`, plus WhatsApp and Messenger handlers, the sanitizer, the guaranteed reply and the log line. No Redis yet (M1b). What is built and verified: [Implementation status](#implementation-status-2026-11-21). An earlier prototype was removed at the user's request; its findings are below. The design went through a 3-reviewer council (2026-11-21). Decided in [decision 007](../decisions/007-messaging-bot-chat-sdk.md). Setup, env vars, acceptance tests and the demo runbook: [messaging-bot-runbook.md](messaging-bot-runbook.md). The API: [api-reference.md](api-reference.md). What it renders: [response-contract.md](../product/response-contract.md).
+The design of the second channel. One bot service on the [Vercel Chat SDK](https://chat-sdk.dev/docs), hosted on Vercel, serves all three platforms and calls the Prawdomat API over HTTP. **Status: M1 code written in `apps/bot` (2026-11-21), not deployed yet.** It covers the console channel, Discord `/sprawdz` (text and `obraz`), `/pomoc` and `/usun-dane`, plus WhatsApp and Messenger handlers, the sanitizer, the guaranteed reply and the log line. No Redis yet (M1b). What is built and verified: [Implementation status](#implementation-status-2026-11-21). An earlier prototype was removed at the user's request; its findings are below. The design went through a 3-reviewer council (2026-11-21). Decided in [decision 007](../decisions/007-messaging-bot-chat-sdk.md). Setup, env vars, acceptance tests and the demo runbook: [messaging-bot-runbook.md](messaging-bot-runbook.md). The API: [api-reference.md](api-reference.md). What it renders: [response-contract.md](../product/response-contract.md).
 
 ## Diagram
 ```mermaid
@@ -21,7 +21,7 @@ flowchart TB
   R[("Upstash Redis EU · from M1b<br/>dedupe · daily quota · outcome counters<br/>TTL on every key")]
   MON["Uptime monitor<br/>/health?deep=1 + token, every 5 min"]
 
-  subgraph API["Prawdowid API"]
+  subgraph API["Prawdomat API"]
     direction TB
     CHK["Deno Deploy · contract v1<br/>POST /api/v1/check<br/>DELETE /api/v1/session/:id"]
     MODE{"PRAWDOWID_MODE<br/>on the API"}
@@ -125,7 +125,7 @@ Not in scope:
 | Vercel (bot) | log lines without content or ids; request bodies are never logged | Hobby log retention (short) | function in `fra1`; Vercel is a US company |
 | Upstash Redis | dedupe keys (message and thread ids, which contain the phone number or PSID); the daily quota counter per pseudonym | dedupe 10 min, quota 24 h (kept after "usuń dane" for abuse prevention, a legitimate interest; it holds only a pseudonym and a count). No message text, no images | `eu-central-1` |
 | Upstash Redis | per-hour outcome counters (counts only, no ids) | 48 h | `eu-central-1` |
-| Prawdowid API | masked question, verdicts, pseudonym hash ([decision 001](../decisions/001-private-logs-schema.md)) | 30 days; "usuń dane" deletes them | Deno Deploy (EU region if picked), plus the LLM provider ([model-selection](model-selection.md)), which also sees images |
+| Prawdomat API | masked question, verdicts, pseudonym hash ([decision 001](../decisions/001-private-logs-schema.md)) | 30 days; "usuń dane" deletes them | Deno Deploy (EU region if picked), plus the LLM provider ([model-selection](model-selection.md)), which also sees images |
 
 - **Residency.** `fra1` is only the compute region; **it is not EU data residency**. Vercel, Discord, Meta and possibly the LLM provider are US processors.
 - **Output safety** (hard constraints 2 and 10). Every string in the response is untrusted: model fields, `citations[].title`, `excerpt` and `publisher`, `input.title`, `input.description`, warnings. The sanitizer:

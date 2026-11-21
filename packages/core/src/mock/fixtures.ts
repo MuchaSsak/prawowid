@@ -119,7 +119,7 @@ function cite(n: number, stance: Citation["stance"], tier: Citation["tier"], exc
 
 const ROUTES_OK = [
   { route: "google_factcheck", label: "Google Fact Check (ClaimReview)", status: "hits" as const, required: true },
-  { route: "corpus", label: "Korpus źródeł Prawdowidu", status: "skipped" as const, required: false, detail: "tryb demonstracyjny" },
+  { route: "corpus", label: "Korpus źródeł Prawdomatu", status: "skipped" as const, required: false, detail: "tryb demonstracyjny" },
 ];
 
 function claim(

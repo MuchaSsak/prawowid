@@ -67,7 +67,7 @@ async function once<T extends z.ZodType>(opts: ChatJsonOptions<T>): Promise<{ da
       headers: {
         Authorization: `Bearer ${opts.apiKey}`,
         "Content-Type": "application/json",
-        "X-Title": "Prawdowid",
+        "X-Title": "Prawdomat",
       },
       body: JSON.stringify({
         model: opts.model,

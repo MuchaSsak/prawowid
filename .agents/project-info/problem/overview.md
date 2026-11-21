@@ -1,5 +1,5 @@
 # The problem
-Why PRAWDOWID exists: the disinformation and verification problem as MSZ frames it. (source: sources/2026-11-21-msz-pelna-tresc-zadania.pdf, sec. 1-2)
+Why Prawdomat exists: the disinformation and verification problem as MSZ frames it. (source: sources/2026-11-21-msz-pelna-tresc-zadania.pdf, sec. 1-2)
 
 - **FIMI:** foreign information manipulation and interference in Poland's information space. MSZ counters it publicly and must also give citizens reliable, understandable and current information about the international situation.
 - **Citizens lack an easy way to check a rumour.** Verification methods take skill, and fact-checker sites require going and searching. The challenge asks for a check that is **as easy as sending a message**, through a channel people already use, free of charge.

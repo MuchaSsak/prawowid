@@ -7,7 +7,7 @@ import type { Connector } from "./types.ts";
 
 export const corpusSearch: Connector = {
   id: "corpus",
-  label: "Korpus źródeł Prawdowidu",
+  label: "Korpus źródeł Prawdomatu",
   required: false,
   appliesTo: () => true,
   unavailableReason: (ctx) => (ctx.corpus.size() === 0 ? "korpus nie jest jeszcze zasilony" : null),

@@ -23,7 +23,7 @@ if (import.meta.main) {
     console.warn("[bot] no platform configured: set the env vars from apps/bot/README.md (webhooks return 404 until then)");
   }
   Bun.serve({ port: config.port, fetch: app.fetch });
-  console.log(`Prawdowid bot on http://localhost:${config.port}  platforms=${config.enabled.join(",") || "none"}  api=${config.apiUrl}`);
+  console.log(`Prawdomat bot on http://localhost:${config.port}  platforms=${config.enabled.join(",") || "none"}  api=${config.apiUrl}`);
 }
 
 export { app };

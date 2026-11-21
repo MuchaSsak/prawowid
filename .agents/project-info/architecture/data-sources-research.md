@@ -1,6 +1,6 @@
 # Data sources: research and corpus plan
 
-Scope: how practical each candidate source is to ingest for the PRAWDOWID 24h MVP (access, robots/terms, license, dates, fact-checking value), plus a concrete corpus plan that meets ≥100 documents, ≥10 domains and ≥2 source types. Researched 2026-11-21.
+Scope: how practical each candidate source is to ingest for the Prawdomat 24h MVP (access, robots/terms, license, dates, fact-checking value), plus a concrete corpus plan that meets ≥100 documents, ≥10 domains and ≥2 source types. Researched 2026-11-21.
 
 ## Summary table
 

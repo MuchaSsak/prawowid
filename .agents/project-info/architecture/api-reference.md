@@ -1,5 +1,5 @@
 # API reference (contract v1)
-Every endpoint, header, request field, environment variable and mock scenario of the Prawdowid API, for anyone building a channel (web, messaging bot). The response object itself is owned by [product/response-contract.md](../product/response-contract.md). The contract is frozen ([decision 006](../decisions/006-api-contract-v1-and-mock.md)): mock and live return the same structures, and the real backend (RAG, Supabase) will not change them. Code: `apps/api/main.ts`, `packages/core/src/contract.ts`.
+Every endpoint, header, request field, environment variable and mock scenario of the Prawdomat API, for anyone building a channel (web, messaging bot). The response object itself is owned by [product/response-contract.md](../product/response-contract.md). The contract is frozen ([decision 006](../decisions/006-api-contract-v1-and-mock.md)): mock and live return the same structures, and the real backend (RAG, Supabase) will not change them. Code: `apps/api/main.ts`, `packages/core/src/contract.ts`.
 
 ## Base URL
 - Local: `http://localhost:8787` (`bun run api:dev`).

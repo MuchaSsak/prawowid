@@ -237,7 +237,7 @@ export function renderHelp(o: RenderOptions & { mode: "live" | "mock" | "unknown
     : "Wyślij mi tekst, link do artykułu albo zrzut ekranu (JPG, PNG, WebP). Napisz „usuń dane”, żeby usunąć swoje zapisane sprawdzenia.";
   const web = o.webUrl ? safeUrl(o.webUrl) : null;
   return [
-    `👋 ${f.bold("Prawdowid")} sprawdza twierdzenia o faktach w oparciu o prawdziwe źródła i pokazuje linki, żebyś mógł sprawdzić sam.`,
+    `👋 ${f.bold("Prawdomat")} sprawdza twierdzenia o faktach w oparciu o prawdziwe źródła i pokazuje linki, żebyś mógł sprawdzić sam.`,
     how,
     "Nie oceniamy opinii i nie wykrywamy deepfake'ów.",
     ...(o.mode === "mock"
@@ -247,7 +247,7 @@ export function renderHelp(o: RenderOptions & { mode: "live" | "mock" | "unknown
       : []),
     "",
     f.bold("Prywatność"),
-    `• Administrator: ${o.controller ?? "zespół Prawdowid (kontakt zostanie uzupełniony)"}.`,
+    `• Administrator: ${o.controller ?? "zespół Prawdomat (kontakt zostanie uzupełniony)"}.`,
     "• Przetwarzamy treść, którą wysyłasz do sprawdzenia, i pseudonim (skrót Twojego identyfikatora, nie numer ani nazwę). Obrazy analizujemy, ale ich nie zapisujemy.",
     "• Cel i podstawa: sprawdzenie wiadomości na Twoją prośbę, prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO). Dane są ograniczone do minimum.",
     "• Nie wysyłaj danych wrażliwych: o zdrowiu, poglądach politycznych ani danych innych osób.",

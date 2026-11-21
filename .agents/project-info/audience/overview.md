@@ -1,5 +1,5 @@
 # Target audience
-Who uses PRAWDOWID and what each group needs. (source: sources/2026-11-21-msz-pelna-tresc-zadania.pdf, sec. 1, 3, 9)
+Who uses Prawdomat and what each group needs. (source: sources/2026-11-21-msz-pelna-tresc-zadania.pdf, sec. 1, 3, 9)
 
 ## Primary: the citizen
 - Any Polish resident who meets a rumour, post, link or screenshot and wants to know if it's true. **This includes people with low digital skills**, who shouldn't need to learn verification methods or install anything.

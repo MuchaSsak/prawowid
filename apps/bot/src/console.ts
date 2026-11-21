@@ -60,7 +60,7 @@ async function once(text: string, image?: string) {
 if (args.length > 0 || imagePath) {
   await once(args.join(" "), imagePath);
 } else {
-  console.log(`Prawdowid, kanał konsolowy (api=${config.apiUrl}). Wpisz wiadomość, „pomoc” albo Ctrl+D, żeby wyjść.`);
+  console.log(`Prawdomat, kanał konsolowy (api=${config.apiUrl}). Wpisz wiadomość, „pomoc” albo Ctrl+D, żeby wyjść.`);
   process.stdout.write("> ");
   for await (const line of console) {
     if (line.trim()) await once(line);

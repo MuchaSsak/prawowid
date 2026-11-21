@@ -23,7 +23,7 @@ export function createApp(deps: PlatformDeps & { waitUntil: WaitUntil; runtime: 
   app.get("/health", (c) =>
     c.json({
       ok: true,
-      service: "Prawdowid bot",
+      service: "Prawdomat bot",
       runtime,
       platforms: config.enabled,
       api_url: config.apiUrl,

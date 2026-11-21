@@ -10,9 +10,9 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="description" content="Prawdowid: bezpłatne sprawdzanie faktów ze źródłami." />
+    <meta name="description" content="Prawdomat: bezpłatne sprawdzanie faktów ze źródłami." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>Prawdowid: sprawdź, zanim udostępnisz</title>
+    <title>Prawdomat: sprawdź, zanim udostępnisz</title>
   </head>
   <body data-api={apiUrl}>
     <div class="frame">
@@ -20,7 +20,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
         <div class="top-row">
           <a class="brand" href="/">
             <svg class="mark" id="mark" data-rosette="mark" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
-            Prawdowid
+            Prawdomat
           </a>
           <div class="top-actions">
             <button type="button" id="new-chat" class="pill-btn" hidden>
@@ -99,7 +99,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
     </div>
 
     <footer class="foot">
-      <p>Prawdowid nie ocenia opinii i nie zastępuje własnego osądu. Zawsze otwórz cytowane źródła. Twoich plików nie zapisujemy.</p>
+      <p>Prawdomat nie ocenia opinii i nie zastępuje własnego osądu. Zawsze otwórz cytowane źródła. Twoich plików nie zapisujemy.</p>
       <button type="button" id="forget" class="text-link">Usuń dane mojej sesji</button>
     </footer>
 

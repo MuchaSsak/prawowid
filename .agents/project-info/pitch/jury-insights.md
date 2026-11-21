@@ -1,6 +1,6 @@
 # What the jury and MSZ care about
 
-Actionable implications for the PRAWDOWID submission, pitch and demo. Facts and sources are in [../hackathon/event-and-jury.md](../hackathon/event-and-jury.md).
+Actionable implications for the Prawdomat submission, pitch and demo. Facts and sources are in [../hackathon/event-and-jury.md](../hackathon/event-and-jury.md).
 
 ## The format decides the strategy
 
@@ -70,7 +70,7 @@ Actionable implications for the PRAWDOWID submission, pitch and demo. Facts and 
    - privacy (no personal data stored, session deletion)
    - accessibility (plain Polish, WCAG)
    - pilot plan aligned to task section 9
-5. **4:30-5:00, close:** "Prawdowid nie mówi obywatelowi, co ma myśleć; pokazuje mu dowody." ("Prawdowid doesn't tell citizens what to think; it shows them the evidence.") This ties the tool to MSZ's resilience goal.
+5. **4:30-5:00, close:** "Prawdomat nie mówi obywatelowi, co ma myśleć; pokazuje mu dowody." ("Prawdomat doesn't tell citizens what to think; it shows them the evidence.") This ties the tool to MSZ's resilience goal.
 
 Q&A prep. Have one-line answers ready for:
 - hallucinations

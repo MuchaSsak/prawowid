@@ -1,6 +1,6 @@
 # Technical approach: research and recommendations
 
-Scope: research-backed options and **Idea**-level recommendations (nothing decided yet) for building the PRAWDOWID fact-checking MVP in 24 h at HackNation 2026 (written 2026-11-21).
+Scope: research-backed options and **Idea**-level recommendations (nothing decided yet) for building the Prawdomat fact-checking MVP in 24 h at HackNation 2026 (written 2026-11-21).
 
 > Status: everything below is a **proposal**. Decisions go to `../decisions/` once the team agrees. Prices were checked on 2026-11-21 where a source is given; re-check before quoting them in the pitch.
 > Task source: [msz-pelna-tresc-zadania.pdf](../sources/2026-11-21-msz-pelna-tresc-zadania.pdf), [msz-regulamin-zadania.pdf](../sources/2026-11-21-msz-regulamin-zadania.pdf), [euvsdisinfo-mcp-how-to.pdf](../sources/2026-11-21-euvsdisinfo-mcp-how-to.pdf).
@@ -265,7 +265,7 @@ Reproducibility: temperature 0, fixed seeds where supported, response cache on d
 - **IFCN Code of Principles** (Poynter): 1) nonpartisanship and fairness, 2) standards and transparency of sources, 3) transparency of funding and organisation, 4) standards and transparency of methodology, 5) open and honest corrections policy. https://ifcncodeofprinciples.poynter.org/the-commitments, https://www.poynter.org/ifcn/
 - **EFCSN European Code of Standards for Independent Fact-Checking Organisations**: methodological standards, nonpartisanship and independence, transparency (sources, funding, organisation), corrections policy and ethics, with explicit expectations about using the best available primary sources and making them accessible to readers. https://efcsn.com/code-of-standards/
 
-How to reflect them in PRAWDOWID (Idea):
+How to reflect them in Prawdomat (Idea):
 
 | Principle | In the UI | In the docs |
 | --- | --- | --- |

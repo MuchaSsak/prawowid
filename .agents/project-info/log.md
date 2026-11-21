@@ -99,3 +99,7 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | clean: test counts and case totals synced in benchmark and euvsdisinfo-mcp; new known gap 6 (no narrative case in the reference set)
 ## [2026-11-21] lint | merge of origin/main (bot M1 PR #5, web chat redesign PR #4) under the uncommitted EUvsDisinfo work: wiki pages kept both sides (bot status from main, EUvsDisinfo lines from the work), context-matches rendering ported into the redesigned web answer cards as a disclosure, deterministic test count 150 -> 156 (measured after merge: 156 core+API, 129 bot, check 4/4)
 ## [2026-11-21] lint | 1 finding fixed: bot open question no longer says "merge to main" (PR #5 is merged); index, links, sources, routing, skill parity OK
+## [2026-11-21] decide | product renamed to Prawdomat (decision 010): code, packages, env vars, UI and wiki topic pages; PRAWDOWID kept only as the MSZ task name; trademark check and deployed env var rename left as open questions
+## [2026-11-21] lint | clean: decision 010 links resolve, index and open question added, PRAWDOWID left only in hackathon/ (task name), skill parity OK
+## [2026-11-21] update | decision 010 narrowed (user): Prawdomat is the display name only; env vars, packages, cookies, UA, prompts reverted to prawdowid
+## [2026-11-21] lint | clean: no PRAWDOMAT_ / @prawdomat identifiers left in the wiki, decision 010, index and open question agree

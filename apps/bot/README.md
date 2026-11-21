@@ -1,6 +1,6 @@
-# Prawdowid bot
+# Prawdomat bot
 
-One bot for Discord (slash commands), WhatsApp and Messenger on the [Vercel Chat SDK](https://chat-sdk.dev/docs). It is a channel adapter over the Prawdowid HTTP API (`POST /api/v1/check`) and never imports the verification core. The API decides mock vs live. Design: `.agents/project-info/architecture/messaging-bot.md`. Setup, env vars and acceptance tests: `.agents/project-info/architecture/messaging-bot-runbook.md`.
+One bot for Discord (slash commands), WhatsApp and Messenger on the [Vercel Chat SDK](https://chat-sdk.dev/docs). It is a channel adapter over the Prawdomat HTTP API (`POST /api/v1/check`) and never imports the verification core. The API decides mock vs live. Design: `.agents/project-info/architecture/messaging-bot.md`. Setup, env vars and acceptance tests: `.agents/project-info/architecture/messaging-bot-runbook.md`.
 
 ## Try it without any platform account (console channel)
 From the repo root:

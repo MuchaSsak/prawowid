@@ -46,7 +46,7 @@ export const LIMITS = {
 export const DEFAULT_API_URL = "https://prawowid.mateusz.deno.net";
 
 export interface BotConfig {
-  /** Prawdowid API base URL, without a trailing slash. */
+  /** Prawdomat API base URL, without a trailing slash. */
   apiUrl: string;
   /** `X-Client-Key` (must be in the API's CLIENT_KEYS). Optional: without it the bot shares one IP limit. */
   clientKey: string | undefined;

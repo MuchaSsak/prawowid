@@ -1,6 +1,6 @@
 /**
  * Guilloche rosette: the fine-line pattern of security printing (banknotes, ID cards), used as
- * Prawdowid's mark because the product's job is checking whether something is genuine.
+ * Prawdomat's mark because the product's job is checking whether something is genuine.
  * Built from phase-shifted sine rings, so it is pure geometry (no image asset) and scales cleanly.
  */
 export interface RosetteOptions {

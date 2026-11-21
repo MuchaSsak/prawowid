@@ -1,5 +1,5 @@
 # Stack research: Deno Deploy, OpenRouter, Supabase
-Platform-level research (limits, prices, gotchas) for the intended PRAWDOWID stack: Turborepo + Deno API on Deno Deploy + OpenRouter + Supabase. Data sources and generic fact-checking pipeline design are covered elsewhere ([data-sources-research.md](data-sources-research.md), [technical-approach-research.md](technical-approach-research.md)).
+Platform-level research (limits, prices, gotchas) for the intended Prawdomat stack: Turborepo + Deno API on Deno Deploy + OpenRouter + Supabase. Data sources and generic fact-checking pipeline design are covered elsewhere ([data-sources-research.md](data-sources-research.md), [technical-approach-research.md](technical-approach-research.md)).
 
 All facts checked on **2026-11-21** unless marked otherwise. Anything not confirmed in an official source is marked **Assumption**. Every recommendation is an **Idea**: nothing here is decided.
 
@@ -235,7 +235,7 @@ Facts (https://docs.discord.com/developers/interactions/receiving-and-responding
 Setup steps on Deno Deploy:
 1. Create an app in the Discord Developer Portal; copy the Application ID, Public Key and Bot Token into Deploy env vars (`DISCORD_APP_ID`, `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN`).
 2. Implement `POST /discord/interactions` in `apps/discord` (or a route in `apps/api`). Verify Ed25519 with WebCrypto: `crypto.subtle.importKey("raw", hexToBytes(PUBLIC_KEY), { name: "Ed25519" }, false, ["verify"])` then `crypto.subtle.verify("Ed25519", key, sig, enc(timestamp + body))` on the **raw body text** (read `await req.text()` once, verify, then `JSON.parse`). Or use `npm:discord-interactions@4.4.0` `verifyKey`.
-3. Register slash commands once with a script (`PUT /applications/{app_id}/commands`): `/sprawdz tekst:<string>`, `/sprawdz-link url:<string>`, and optionally an attachment option for images. Also a **message context-menu command** ("Sprawdź w PRAWDOWID") so users can check any message with a right-click. That's great for low-skill users.
+3. Register slash commands once with a script (`PUT /applications/{app_id}/commands`): `/sprawdz tekst:<string>`, `/sprawdz-link url:<string>`, and optionally an attachment option for images. Also a **message context-menu command** ("Sprawdź w Prawdomat") so users can check any message with a right-click. That's great for low-skill users.
 4. Install the bot to a demo server via the OAuth2 URL with `applications.commands` scope (+ `bot` if needed). Set the Interactions Endpoint URL to the Deploy URL; Discord PINGs it on save.
 5. On a command: respond `{type: 5}` immediately, then run `core.check()` and PATCH the formatted result (embed with verdict, strength, up to 3 citations with title/publisher/date/link, and a link to the full web result `…/wynik/{check_id}`, which also proves channel consistency).
 

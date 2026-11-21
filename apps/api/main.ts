@@ -1,5 +1,5 @@
 /**
- * Prawdowid API (Deno + Hono). A thin channel adapter over @prawdowid/core: every channel (web
+ * Prawdomat API (Deno + Hono). A thin channel adapter over @prawdowid/core: every channel (web
  * now, a messaging bot next) calls the same runCheck (hard constraint 18).
  * Full reference: .agents/project-info/architecture/api-reference.md
  *
@@ -116,7 +116,7 @@ app.use(
 
 app.get("/", (c) =>
   c.json({
-    service: "Prawdowid API",
+    service: "Prawdomat API",
     contract_version: CONTRACT_VERSION,
     mode: MODE,
     docs: "GET /api/v1/schema, GET /api/v1/sources, GET /api/v1/mock/scenarios, POST /api/v1/check",
@@ -228,7 +228,7 @@ setInterval(() => store.prune(new Date()), 3600_000);
 export { app };
 if (import.meta.main) {
   console.log(
-    `Prawdowid API on http://localhost:${PORT}  mode=${MODE}  openrouter=${config.secrets.openrouterApiKey ? "yes" : "NO"}  google_fact_check=${
+    `Prawdomat API on http://localhost:${PORT}  mode=${MODE}  openrouter=${config.secrets.openrouterApiKey ? "yes" : "NO"}  google_fact_check=${
       config.secrets.googleFactCheckApiKey ? "yes" : "NO"
     }`,
   );
