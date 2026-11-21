@@ -27,13 +27,14 @@ Which models to use per pipeline step: quality, reliability, cost and GDPR compl
 |---|---|---|
 | 1. Claims + types + queries | **mistral-small-2603** via `mistral/eu` | EU, cheap, a structured task |
 | 2. Stance + exact quotes (the critical step) | **mistral-small-2603** first; switch to **mistral-large-2512** if the eval F1 < 0.75 | EU; Large costs only about 3× Small |
+| Independent prose verifier | Configurable, separately evaluated model | Run only when prose interpretation can affect a verdict. Batch eligible passages |
 | Embeddings | **bge-m3** (quality, cross-lingual PL↔EN/RU) on **masked, public** text only, or `mistral-embed` for a strictly EU-vendor path | the corpus is public data; user queries are PII-masked first |
-| Images (OCR) | Local OCR with Polish language data | Raw images stay local and extracted text is redacted before external processing |
+| Images (OCR) | Approved configurable vision LLM | Transcribe eligible public images only. See the [intake rules](verification-pipeline.md#1-validate-and-prepare-input) |
 | Video / YouTube | **gemini-3.1-flash-lite** (optional bonus path) | the only practical video model; **disclose non-EEA processing**, and use it only for public videos |
 | Audio (uploaded) | **voxtral-small** via `mistral/eu` | EU transcription |
 | Benchmark / fallback | claude-haiku-5.5 | evaluate on approved fixtures. Enable live fallback only if it meets the [verification workflow](verification-pipeline.md) deployment policy |
 
-**Cost per check** (≈ 2k in / 0.4k out for step 1 + 5k in / 0.5k out for step 2): all Small ≈ **$0.0014 → about $1.4 per 1,000 checks**. With Large on step 2 ≈ **$4 per 1,000**. Video adds about $0.01-0.02 per 5-minute video. These estimates are to be replaced by the measured `usage.cost`.
+**Cost model.** Count extraction on each uncached check, stance assessment on claims requiring prose, independent verification on material prose, and vision transcription on eligible images. Measure actual billed usage per stage and report cost per 100 checks with the input mix and call counts. Structured evidence can skip both evidence-model calls. Prior two-call text estimates exclude the independent verifier and image processing.
 
 ## GDPR / compliance checklist
 - **Mask private data before outbound search, model calls and logging** according to the [workflow intake rules](verification-pipeline.md#1-validate-and-prepare-input).
