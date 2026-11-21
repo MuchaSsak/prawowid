@@ -5,6 +5,7 @@ import { containsVerbatim } from "../src/guard/normalize.ts";
 import { scanInjection } from "../src/guard/injection.ts";
 import { cleanUrl, isPrivateIp } from "../src/intake/url.ts";
 import { stripMetadata } from "../src/intake/image.ts";
+import { mediaInputError } from "../src/intake/media.ts";
 import { decideVerdict } from "../src/pipeline/verdict.ts";
 import type { VerifiedPassage } from "../src/pipeline/assess.ts";
 import type { SourceTier, Stance } from "../src/types.ts";
@@ -136,4 +137,20 @@ Deno.test("ELI title candidates: literal title fragments, no inflection, no year
   assertEquals(titleCandidates("Konstytucji RP nie uchwalono w 1989 roku.", [])[0], "Konstytucja Rzeczypospolitej Polskiej");
   assertEquals(titleCandidates("Według kodeksu pracy urlop trwa 20 dni.", [])[0], "Kodeks pracy");
   assert(titleCandidates("x", ["ustawa o ochronie danych osobowych 2018"]).includes("ochronie danych osobowych"));
+});
+
+Deno.test("media: data URL format, MIME per type and size cap (no decoding)", () => {
+  assertEquals(mediaInputError("video", "data:video/mp4;base64,AAAA"), null);
+  assertEquals(mediaInputError("audio", "data:audio/webm;codecs=opus;base64,AAAA"), null);
+  assert(mediaInputError("audio", "data:video/mp4;base64,AAAA")?.includes("MP3"));
+  assert(mediaInputError("video", "https://example.com/a.mp4")?.includes("data URL"));
+  assert(mediaInputError("video", "data:video/mp4;base64,")?.includes("pusty"));
+  // Exactly 5 MiB (5,242,880 bytes, one "=" of padding) passes; one byte more does not.
+  assertEquals(mediaInputError("video", "data:video/mp4;base64," + "A".repeat(6_990_507) + "="), null);
+  assert(mediaInputError("video", "data:video/mp4;base64," + "A".repeat(6_990_508))?.includes("za duże"));
+  assert(mediaInputError("video", "data:video/mp4;base64,AAA*")?.includes("uszkodzony"));
+  assert(mediaInputError("audio", "data:audio/mpeg;base64,AAAAA")?.includes("uszkodzony"));
+  // Unpadded base64 is valid (atob accepts it), and image headers take no MIME parameters.
+  assertEquals(mediaInputError("audio", "data:audio/mpeg;base64,AAAAAA"), null);
+  assert(mediaInputError("image", "data:image/png;foo=bar;base64,AAAA")?.includes("nagłówek"));
 });

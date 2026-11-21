@@ -119,7 +119,9 @@ export interface ClaimResult {
   routes: RouteOutcome[];
 }
 
-export type InputType = "text" | "url" | "image";
+export const INPUT_TYPES = ["text", "url", "image", "video", "audio"] as const;
+/** `video` and `audio` (data URLs) are accepted by the contract; for now only mock mode answers them. */
+export type InputType = (typeof INPUT_TYPES)[number];
 export type Channel = "web" | "api" | "messaging";
 
 /** Bumped only for breaking changes; v1 changes are additive (new optional fields, new enum values). */
@@ -157,7 +159,8 @@ export interface CheckResponse {
     title: string | null;
     url: string | null;
     published_at: string | null;
-    /** For images: the vision model's neutral description (context only, never a claim or evidence). */
+    /** Images: the vision model's neutral description. Video/audio: a short description of the recording.
+     * Context only, never a claim or evidence. */
     description: string | null;
   };
   meta: {

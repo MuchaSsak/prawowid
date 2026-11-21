@@ -10,6 +10,7 @@ import { scanInjection } from "../guard/injection.ts";
 import { normalizeForMatch, sha256Hex } from "../guard/normalize.ts";
 import { maskPii } from "../guard/pii.ts";
 import { extractImage } from "../intake/image.ts";
+import { isMediaType, mediaInputError } from "../intake/media.ts";
 import { fetchArticle, IntakeError, type ResolveHost } from "../intake/url.ts";
 import { LlmError, type LlmUsage } from "../llm/openrouter.ts";
 import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v3.ts";
@@ -21,6 +22,7 @@ import {
   type Citation,
   type ClaimResult,
   CONTRACT_VERSION,
+  INPUT_TYPES,
   type RequestStatus,
   VERDICT_LABEL_PL,
   type Warning,
@@ -143,8 +145,20 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
   // ── 1. Validate ────────────────────────────────────────────────────────────
   const value = typeof req.input?.value === "string" ? req.input.value : "";
   const userMessageRaw = (req.user_message ?? "").slice(0, 2000);
-  if (!["text", "url", "image"].includes(inputType) || !value.trim()) {
-    return finish("input_rejected", "Wklej tekst, link albo dodaj obraz.");
+  if (!(INPUT_TYPES as readonly string[]).includes(inputType) || !value.trim()) {
+    return finish("input_rejected", "Wklej tekst, link albo dodaj obraz, wideo lub nagranie audio.");
+  }
+  if (isMediaType(inputType)) {
+    const bad = mediaInputError(inputType, value);
+    if (bad) return finish("input_rejected", bad);
+  }
+  if (inputType === "video" || inputType === "audio") {
+    // The contract accepts recordings now so channels can build on it; transcription is not wired
+    // yet (architecture/multimodal-media.md). A system state, never a verdict (hard constraint 8).
+    return finish(
+      "input_rejected",
+      "Analiza nagrań wideo i audio nie jest jeszcze dostępna. Wklej transkrypcję jako tekst albo użyj trybu demonstracyjnego.",
+    );
   }
   if (inputType === "text" && value.length > 50_000) {
     return finish("input_rejected", "Tekst jest za długi (maks. 50 000 znaków). Wklej najważniejszy fragment.");
