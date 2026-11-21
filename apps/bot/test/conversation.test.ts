@@ -327,18 +327,3 @@ describe("logging (A11)", () => {
     expect(lines).toHaveLength(4);
   });
 });
-
-describe("Discord /demo", () => {
-  test("a listed scenario becomes demo:<scenario>; anything else becomes an empty command", async () => {
-    const { discordDemoToMessage } = await import("../src/platforms.js");
-    const { DEMO_SCENARIOS } = await import("../src/demo.js");
-    const { MOCK_SCENARIOS } = await import("../../../packages/core/src/mock/fixtures.js");
-    const opt = (value: unknown) => ({ data: { options: [{ name: "scenariusz", type: 3, value }] } });
-    expect(discordDemoToMessage(opt("mixed"))).toEqual({ text: "demo:mixed", fromSlashCommand: true });
-    expect(discordDemoToMessage(opt("rm -rf"))).toEqual({ text: "", fromSlashCommand: true });
-    // Every dropdown choice is a real API scenario, and Discord's 25-choice limit holds.
-    for (const s of DEMO_SCENARIOS) expect((MOCK_SCENARIOS as readonly string[]).includes(s.value)).toBe(true);
-    expect(DEMO_SCENARIOS.length).toBeLessThanOrEqual(25);
-    for (const s of DEMO_SCENARIOS) expect(s.label.length).toBeLessThanOrEqual(100);
-  });
-});

@@ -1,12 +1,13 @@
 /**
- * Registers /sprawdz, /demo, /pomoc and /usun-dane on one Discord server (guild commands show up at once;
+ * Registers /sprawdz, /pomoc and /usun-dane on one Discord server (guild commands show up at once;
  * global ones can take up to an hour). Run after creating the app, and after changing a command:
  *
  *   bun run bot:discord:commands
  *
  * Reads DISCORD_APPLICATION_ID, DISCORD_BOT_TOKEN and DISCORD_GUILD_ID from .env. Prints names only.
+ * The PUT replaces the server's whole command list, so a removed command (the old /demo) disappears.
  */
-import { DEMO_SCENARIOS } from "../src/demo.js";
+export {};
 
 const appId = process.env.DISCORD_APPLICATION_ID;
 const token = process.env.DISCORD_BOT_TOKEN;
@@ -26,17 +27,6 @@ const commands = [
       { type: STRING, name: "tresc", description: "Tekst albo link do sprawdzenia", required: false, max_length: 6000 },
       { type: ATTACHMENT, name: "obraz", description: "Zrzut ekranu (JPG, PNG, WebP, maks. 5 MB)", required: false },
     ],
-  },
-  {
-    name: "demo",
-    description: "Pokaż przykładową odpowiedź (działa tylko w trybie demonstracyjnym)",
-    options: [{
-      type: STRING,
-      name: "scenariusz",
-      description: "Który przykład pokazać",
-      required: true,
-      choices: DEMO_SCENARIOS.map((s) => ({ name: s.label, value: s.value })),
-    }],
   },
   { name: "pomoc", description: "Jak działa Prawdomat i jak chronimy Twoje dane" },
   { name: "usun-dane", description: "Usuń moje zapisane sprawdzenia" },

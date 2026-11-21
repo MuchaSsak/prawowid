@@ -57,7 +57,7 @@ flowchart TB
 | Render | `CheckResponse` → the short chat form, cut to the platform's limit, in the platform's formatting |
 | Console channel | The same conversation run from a terminal. It is the documented demo adapter the jury runs from the README, with **no client key** (it uses the API's per-IP limit) and no platform account |
 | Consistency script | Measures the "channel consistency" metric (see [Consistency](#consistency-metric)) |
-| Discord command registration | A one-off script that registers `/sprawdz`, `/demo`, `/pomoc`, `/usun-dane` per server, so changes show up instantly |
+| Discord command registration | A one-off script that registers `/sprawdz`, `/pomoc`, `/usun-dane` per server, so changes show up instantly |
 
 ## Message flow
 1. **Webhook in.** The platform calls the webhook. The adapter verifies it: Ed25519 for Discord, `X-Hub-Signature-256` with the app secret for Meta.
@@ -227,14 +227,14 @@ Code: `apps/bot` (Bun/Node, Chat SDK 4.44.0 pinned). How to run it: `apps/bot/RE
 | WhatsApp, Messenger handlers | built; WhatsApp verified with a signed webhook, the GET handshake and a retried delivery (answered once, in-memory dedupe) |
 | Sanitizer, bundled structural validator, guaranteed reply (45 s deadline), content-free log line + SDK logger | built and unit-tested |
 | Capped image fetch (Discord CDN allowlist, no redirects, streamed 5 MB cap, magic bytes) | built and unit-tested |
-| `demo:` gate | built: keyed `/health` `client_mode` (cached 5 min), refreshed by every HTTP 200 check answer; updates are ordered by request, so a slow older answer can't flip it back. A 429 is ignored (it is answered before the API's mock switch) |
+| `demo:` gate | built: keyed `/health` `client_mode` (cached 5 min), refreshed by every HTTP 200 check answer; updates are ordered by request, so a slow older answer can't flip it back. A 429 is ignored because per-user limits can reject requests before mock/live routing |
 | Redis (dedupe across instances, 30/day quota, outcome counters), `/health?deep=1`, consistency script | **not built** (M1b) |
-| `/demo` with a dropdown of the 18 mock scenarios (Discord) | built (user feedback: typing `demo:` was not discoverable); same `demo:` gate, so it only runs while the bot gets mock answers |
+| `/demo` with a dropdown of the 18 mock scenarios (Discord) | **removed** (2026-11-21, user): the bot gets live answers, so `/demo` only ever replied "demo unavailable". The typed `demo:` gate stays for local mock runs |
 | Real Discord app (test server, local bot behind a Cloudflare quick tunnel, local mock API) | **works** (2026-11-21): Interactions Endpoint URL saved (PING + bad-signature check passed), commands registered, `/sprawdz` and `/demo` answered in 1-2 s. The very first reply failed with "Discord interaction API error" (cause not logged then; the SDK logger now passes the HTTP status and Discord's numeric error code, never messages or field names) |
 | Vercel deployment | **live and healthy** (2026-11-21): Messenger enabled; no `DISCORD_*` env vars yet, so Discord answers 404 "platform not configured". Commits by non-members of the Vercel Hobby team are blocked (runbook), so a team member deploys |
 | Meta apps, runbook tests A1-A11 on production | **not done** |
 
-Tests: `bun run bot:test`, 135 tests, no network. They cover the root, favicon and missing-secret routes, every mock scenario rendered on every platform, A2/A3/A6/A7/A9/A10/A11 offline equivalents, and signed Discord and WhatsApp webhooks through the real SDK.
+Tests: `bun run bot:test`, 134 tests, no network. They cover the root, favicon and missing-secret routes, every mock scenario rendered on every platform, A2/A3/A6/A7/A9/A10/A11 offline equivalents, and signed Discord and WhatsApp webhooks through the real SDK.
 
 Implementation details worth knowing:
 - WhatsApp turns media into placeholder text (`[Image]`, `[Sticker]`), so the bot reads the raw message `type` and the image caption from `raw.message`, not `message.text`.
