@@ -21,7 +21,7 @@ How we turn a linked article's images, YouTube or MP4 videos and audio into text
 
 ## Design: "media → text" first, then the normal pipeline
 1. **Fetch the article** (SSRF-safe). Readability gives the main text + publish date. Collect `<img>` (skip logos and icons by size), `<video>`/`<source>` MP4s, and YouTube `<iframe>` embeds.
-2. **Images:** use [local OCR and redaction](verification-pipeline.md#1-validate-and-prepare-input). Extract visible text and dates within the image processing budget. The raw image stays local.
+2. **Images:** send the top ~3 to the media model → OCR text + a short description + any visible date. Read EXIF with `exifr` (skip GPS). Redact PII in the OCR text before the next step ([intake rules](verification-pipeline.md#1-validate-and-prepare-input)).
 3. **YouTube:** pass the URL to Gemini (provider pinned to Google AI Studio) → a **transcript with timestamps** + on-screen text + a short visual description. We **don't download from YouTube** (its ToS forbids it). Google's own model reads it, which is legitimate.
 4. **MP4 / CDN video:** download with caps (e.g. **≤ 10 min, ≤ 50 MB**, timeout), base64 → Gemini → transcript + on-screen text.
 5. **Other platforms** (TikTok, X, Facebook, Instagram): no legal download, so return the system state **"nie możemy przeanalizować tego wideo"** (not a verdict). A user upload of the file is the alternative.

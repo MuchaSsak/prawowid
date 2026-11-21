@@ -61,7 +61,7 @@ Return only JSON matching the schema.
 
 ## Code after the call (the decision lives here)
 1. **Verify quotes:** normalise whitespace and typographic quotes, then do an exact substring match in the stored passage. A failed quote turns that stance into `irrelevant` and is logged (`quote_rejected`).
-2. **Apply the verdict rules** from [verification-pipeline.md §5](../architecture/verification-pipeline.md#5-verdict-code-rules-not-the-models-free-choice), using only verified stances, `source_tier`, independence (a different publisher) and `data_period` against the claim's `time`.
+2. **Apply the verdict rules** from [verification-pipeline.md §5](../architecture/verification-pipeline.md#5-apply-verdict-rules), using only verified stances, `source_tier`, independence (a different publisher) and `data_period` against the claim's `time`.
 3. **Compare** the code verdict with `proposed_verdict`:
    - **Same:** use the model's `explanation`.
    - **Different:** use the templated explanation for the code verdict, and log `verdict_disagreement`. A frequent disagreement is a signal to fix the rules or the prompt.

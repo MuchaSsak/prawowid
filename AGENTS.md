@@ -43,5 +43,5 @@ This repo works the same in any coding agent (Codex, Claude Code, Cursor, Copilo
 
 - `AGENTS.md` (this file) holds the instructions. `CLAUDE.md` only imports it. Never put content there.
 - `.agents/project-info/` holds the wiki, and `.agents/skills/<name>/SKILL.md` holds the canonical skills (standard frontmatter: `name`, `description`).
-- `.claude/skills/<name>/SKILL.md` contains thin shims for Claude Code that point to the canonical skill. When you add a skill, write it in `.agents/skills/` and add a shim there too.
+- `.claude/skills/<name>/SKILL.md` contains thin shims for Claude Code that point to the canonical skill. **Both folders must always hold the same set of skills:** when you add, rename or delete a skill, do it in `.agents/skills/` (the full skill) and `.claude/skills/` (the shim) in the same change. The `wiki-lint` pass checks this.
 - If your tool doesn't load skills, read the skill file when it's needed and follow it.

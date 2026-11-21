@@ -5,7 +5,11 @@ Format: `- [topic/page or folder] question (raised YYYY-MM-DD, by whom)`
 
 - [team/] Who is on the team, what are their skills, and in which roles? What is the team name? (raised 2026-11-21, setup)
 - [hackathon/resources.md] The organizer's "incident base" JSON/CSV (sec. 7): has it been shared on Discord yet? (raised 2026-11-21, ingest)
-- [architecture/euvsdisinfo-mcp.md] The EUvsDisinfo MCP access token: obtain it from the organizer via Discord DM. (raised 2026-11-21, ingest)
+- [architecture/euvsdisinfo-mcp.md] The EUvsDisinfo token was received (in .env), but the server rejects it: 401 "Unauthorized: Invalid API key" (tested 2026-11-21 with Bearer as in the how-to, plus x-api-key and a raw Authorization header). Ask the organizer whether it is active or was copied in full. (raised 2026-11-21, ingest)
+- [architecture/verification-pipeline.md] Claim cap conflict after merging PR #1: prompts/claim-extraction.md says at most 8 claims, the pipeline says 12. Which one? (raised 2026-11-21, merge)
+- [prompts/evidence-assessment.md] After PR #1 the sufficiency rule differs: the prompt says "one clear official source or a fact-check is enough", the pipeline (section 4-5) says a fact-check counts only through its demonstrated evidence and secondary sources need two independent origins. Align the prompt or the pipeline? (raised 2026-11-21, lint)
+- [product/response-contract.md] Result states differ from the pipeline after PR #1: the contract has `input_rejected`, `not_a_claim`, `rate_limited`, `source_unavailable`; the pipeline has `rejected`, `not_processed` and partial/failed request states, plus a third moderator status ("Moderator przyjął zgłoszenie"). Which set is canonical? (raised 2026-11-21, lint)
+- [decisions/001-private-logs-schema.md] Retention conflict after PR #1: decision 001 says 30 days, verification-pipeline section 7 proposes 7 days for session-linked checks. Which one? (raised 2026-11-21, lint)
 - [architecture/] Which LLM API keys and budget do we have (Mistral, OpenAI, Anthropic, Google)? Is there a Google Cloud key for the Fact Check Tools API? (raised 2026-11-21, ingest)
 - [architecture/stack-direction.md] Final stack still open (Deno Deploy + Turborepo + OpenRouter likely; the retrieval store is undecided). What does "jev" refer to? (raised 2026-11-21, user)
 - [hackathon/event-and-jury.md] The jury is still unpublished. Check the Discord "Prawdowid" channel and the MSZ booth. (raised 2026-11-21, research)

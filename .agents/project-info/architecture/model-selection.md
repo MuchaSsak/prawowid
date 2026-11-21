@@ -28,7 +28,7 @@ Which models to use per pipeline step: quality, reliability, cost and GDPR compl
 | 1. Claims + types + queries | **mistral-small-2603** via `mistral/eu` | EU, cheap, a structured task |
 | 2. Stance + exact quotes (the critical step) | **mistral-small-2603** first; switch to **mistral-large-2512** if the eval F1 < 0.75 | EU; Large costs only about 3× Small |
 | Embeddings | **bge-m3** (quality, cross-lingual PL↔EN/RU) on **masked, public** text only, or `mistral-embed` for a strictly EU-vendor path | the corpus is public data; user queries are PII-masked first |
-| Images (OCR) | Local OCR with Polish language data | Raw images stay local and extracted text is redacted before external processing |
+| Images (OCR) | **mistral-small-2603** (vision, EU) | keeps the image path in the EU; the OCR text is redacted before the next step |
 | Video / YouTube | **gemini-3.1-flash-lite** (optional bonus path) | the only practical video model; **disclose non-EEA processing**, and use it only for public videos |
 | Audio (uploaded) | **voxtral-small** via `mistral/eu` | EU transcription |
 | Benchmark / fallback | claude-haiku-5.5 | evaluate on approved fixtures. Enable live fallback only if it meets the [verification workflow](verification-pipeline.md) deployment policy |

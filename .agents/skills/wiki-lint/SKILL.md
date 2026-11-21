@@ -34,7 +34,8 @@ The wiki's conventions are in `.agents/project-info/README.md`. Lint against the
 7. **Leftovers**: `TODO`, `TBD`, `lorem`, empty sections, or facts with no source or certainty marker that look invented.
 8. **Answered open questions**: an entry in `open-questions.md` that a page or source now answers. Move the answer into the owning page and delete the entry.
 9. **Broken links**: relative links between wiki pages that point to files that don't exist.
-10. **Misplaced knowledge**: content in the wrong folder, or a large topic crammed into an unrelated page. If it can be moved surgically, move it. If not, report it.
+10. **Skill parity**: `.agents/skills/` and `.claude/skills/` hold the same skill names. A canonical skill with no shim gets a shim (the same frontmatter plus a one-line pointer); a shim with no canonical skill is reported.
+11. **Misplaced knowledge**: content in the wrong folder, or a large topic crammed into an unrelated page. If it can be moved surgically, move it. If not, report it.
 
 ## Operating rules
 
@@ -48,5 +49,5 @@ The wiki's conventions are in `.agents/project-info/README.md`. Lint against the
 
 - At most 15 lines: one per finding, `file: problem -> fixed | open-questions | needs restructure`, plus a final summary line.
 - Edits are surgical. Never rewrite whole pages, reword prose, or change style.
-- Touch only `.agents/project-info/` and the routing table in `AGENTS.md`.
+- Touch only `.agents/project-info/`, the routing table in `AGENTS.md` and missing shims in `.claude/skills/`.
 - A folder that holds only its README (no knowledge yet) is not a finding.

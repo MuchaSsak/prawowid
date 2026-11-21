@@ -24,3 +24,9 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | Opus round 4 scored 8.9; addressed its remaining gaps in cross-session result reuse, local OCR and reworded report dedupe
 ## [2026-11-21] lint | checked wiki routing, index, source citations and links; aligned OCR recommendations with local intake
 ## [2026-11-21] update | merged Fabian's PR #1 (hardened workflow) with local prompts/response-contract work; verification-pipeline keeps his structure plus prompt links, balancing principles, claim type/risk fields, official-statement route and decision 001 link
+## [2026-11-21] update | EUvsDisinfo token tested: 401 Invalid API key in every header variant; open question updated
+## [2026-11-21] update | open question: claim cap 8 (prompts/claim-extraction) vs 12 (verification-pipeline) after the merge
+## [2026-11-21] lint | 3 findings: fixed stale anchor in prompts/evidence-assessment; sufficiency rule and result-state set now differ between prompts/response-contract and the merged pipeline (open-questions)
+## [2026-11-21] decision | 002 (user): image OCR back to the vision-model call (no local OCR), PII redaction kept after OCR, no second verifier model; reverted PR #1's local-OCR wording on 6 architecture pages
+## [2026-11-21] update | AGENTS.md: .agents/skills and .claude/skills must always hold the same skills; wiki-lint gained a skill-parity check
+## [2026-11-21] lint | 1 finding: retention 30 days (decision 001) vs 7 days (pipeline) -> open-questions; links, index, routing and skill parity clean
