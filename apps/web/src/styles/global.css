@@ -127,6 +127,48 @@ button { font-family: inherit; letter-spacing: inherit; }
    is the no-WebGL fallback. */
 .backdrop { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
 .backdrop.is-on { opacity: 1; }
+/* The looping video behind the hero text (src/lib/hero-video.ts), darkened so white text reads on
+   it in both themes. Input screen only: hidden in chat, where the backdrop shows through instead. */
+.hero-video { position: absolute; inset: 0; z-index: -1; overflow: hidden; border-radius: inherit; background: #050d1a; pointer-events: none; }
+.hero-video video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.hero-video::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    linear-gradient(rgb(5 13 26 / .1), rgb(5 13 26 / .1)),
+    radial-gradient(90% 70% at 50% 40%, rgb(5 13 26 / .35), rgb(5 13 26 / .7)),
+    linear-gradient(to bottom, rgb(5 13 26 / .25), rgb(5 13 26 / .55));
+  z-index: 1;
+}
+/* Film grain over the darkened video: SVG turbulence, jittered a few times a second (still under
+   reduced motion, where the global rule stops animations). */
+.hero-video::before {
+  content: ""; position: absolute; inset: -50%; z-index: 2;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='.33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 400px;
+  mix-blend-mode: overlay;
+  opacity: .5;
+  animation: grain .6s steps(6) infinite;
+}
+@keyframes grain {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-6%, 4%); }
+  40% { transform: translate(5%, -7%); }
+  60% { transform: translate(-3%, 8%); }
+  80% { transform: translate(7%, 2%); }
+  100% { transform: translate(-4%, -5%); }
+}
+body.is-chat .hero-video { display: none; }
+/* Text that sits on the video takes light tokens; the composer keeps the page's own. */
+body:not(.is-chat) :is(.top, .intro, .form-error, .composer-note) {
+  --ink: #f4f6fa;
+  --ink-2: rgb(244 246 250 / .84);
+  --line: rgb(244 246 250 / .3);
+  --tint-2: rgb(244 246 250 / .14);
+  --navy: #ffffff;
+  --state: #ffd666;
+  --focus: #9db7ff;
+}
+body:not(.is-chat) .intro { text-shadow: 0 1px 24px rgb(5 13 26 / .45); }
 .top { position: relative; z-index: 2; }
 .top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 32px 48px 0; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font: 400 1.625rem/1 var(--serif); letter-spacing: -.03em; color: var(--ink); text-decoration: none; }
