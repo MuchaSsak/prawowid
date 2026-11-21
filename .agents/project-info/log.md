@@ -189,3 +189,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | live check of a fresh onet.pl article: all-abstain is a coverage gap (no news route, empty corpus), not a DB/OpenRouter bug; suspicious implied_warning noted; evaluation/benchmark.md known gaps 3 and 7
 ## [2026-11-21] lint | clean (scope: evaluation/benchmark.md known gaps; no new pages or sources, index and routing unchanged)
 ## [2026-11-21] update | bot live on Vercel: Hono entry must import hono itself (build error fixed in src/index.ts); /health 200 ok, Messenger enabled, Discord vars not set
+## [2026-11-21] update | gov.pl ministry news lists are static HTML (MAP Balczun release found), site search is JS-only; added to architecture/data-sources-research.md
+## [2026-11-21] lint | clean (scope: one bullet in data-sources-research.md; index and routing unchanged)
