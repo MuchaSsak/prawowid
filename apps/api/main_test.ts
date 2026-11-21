@@ -9,6 +9,7 @@ Deno.env.set("WEB_ORIGINS", "https://web.example");
 Deno.env.delete("OPENROUTER_API_KEY");
 Deno.env.delete("GOOGLE_FACT_CHECK_API_KEY");
 Deno.env.delete("PRAWDOWID_MODE");
+Deno.env.set("ADMIN_TOKEN", "test-admin-token");
 const { app } = await import("./main.ts");
 
 let ipCounter = 0;
@@ -204,3 +205,17 @@ Deno.test("unknown and old unversioned routes → 404 JSON", async () => {
   assertEquals(r.status, 404);
   assertEquals((await r.json()).error, "not found");
 });
+
+Deno.test("GET /api/v1/admin/checks: the check log needs the admin token and holds masked questions only", async () => {
+  assertEquals((await get("/api/v1/admin/checks")).status, 401);
+  assertEquals((await get("/api/v1/admin/checks", { Authorization: "Bearer wrong" })).status, 401);
+  await post({ input: { type: "text", value: "Zadzwoń 600 700 800: Przykładowo ma 3 mosty." }, session_id: "admin-log-test" });
+  const res = await get("/api/v1/admin/checks?limit=5", { Authorization: "Bearer test-admin-token" });
+  assertEquals(res.status, 200);
+  const body = await res.json();
+  const row = body.checks.find((x: { masked_input: string }) => x.masked_input.includes("Przykładowo ma 3 mosty"));
+  assert(row, "the live check is in the log");
+  assert(!row.masked_input.includes("600 700 800"), "phone numbers are masked before logging");
+  for (const k of ["check_id", "created_at", "status", "claims"]) assert(k in row, k);
+});
+

@@ -9,7 +9,7 @@ import { mediaInputError } from "../src/intake/media.ts";
 import { decideVerdict } from "../src/pipeline/verdict.ts";
 import type { VerifiedPassage } from "../src/pipeline/assess.ts";
 import type { SourceTier, Stance } from "../src/types.ts";
-import { loadConfig, MemoryCheckStore, MemoryCorpusStore, runCheck } from "../src/mod.ts";
+import { AUDIT_EVENT, loadConfig, LoggingCheckStore, MemoryCheckStore, MemoryCorpusStore, runCheck } from "../src/mod.ts";
 
 Deno.test("PII: masks email, phone, valid PESEL, address; keeps claim numbers", () => {
   const input =
@@ -21,6 +21,10 @@ Deno.test("PII: masks email, phone, valid PESEL, address; keeps claim numbers", 
   assert(!text.includes("Długa 12"));
   assert(text.includes("37 489 087"));
   assert(text.includes("500 000 000 zł"));
+  // "zadzwoń" and other forms of "dzwonić" are phone cues too; a 3-3-3 count of people is not a phone.
+  assert(!maskPii("Zadzwoń 600 700 800 po szczegóły.").text.includes("600 700 800"));
+  assert(!maskPii("Dzwońcie: 600 700 800").text.includes("600 700 800"));
+  assert(maskPii("W marszu wzięło udział 600 700 800 osób.").text.includes("600 700 800"));
 });
 
 Deno.test("PII: an 11-digit number with a bad checksum is not a PESEL", () => {
@@ -154,3 +158,36 @@ Deno.test("media: data URL format, MIME per type and size cap (no decoding)", ()
   assertEquals(mediaInputError("audio", "data:audio/mpeg;base64,AAAAAA"), null);
   assert(mediaInputError("image", "data:image/png;foo=bar;base64,AAAA")?.includes("nagłówek"));
 });
+
+Deno.test("check log: every saved check is one audit line with time, status, verdicts and sources, never the question", async () => {
+  const lines: string[] = [];
+  const inner = new MemoryCheckStore();
+  const store = new LoggingCheckStore(inner, (l) => lines.push(l));
+  const question = "Most w Przykładowie zamknięto [TELEFON] w 2025 roku.";
+  await store.saveCheck({
+    check_id: "chk-1",
+    session_hash: "s1",
+    channel: "web",
+    input_type: "text",
+    masked_input: question,
+    status: "ok",
+    claims: [{ id: "c1", verdict: "false", system_state: null, source_ids: ["gfc:https://fc.example/1"] }],
+    latency_ms: 1200,
+    models: ["m"],
+    prompt_versions: ["claim-extraction@3"],
+    cost_usd: 0.001,
+    created_at: "2026-11-21T12:00:00.000Z",
+  });
+  assertEquals(lines.length, 1);
+  const line = JSON.parse(lines[0]);
+  assertEquals(line.event, AUDIT_EVENT);
+  assertEquals(line.at, "2026-11-21T12:00:00.000Z");
+  assertEquals(line.claims[0].source_ids, ["gfc:https://fc.example/1"]);
+  assertEquals(line.input_chars, question.length);
+  assert(!lines[0].includes("Przykładowie"), "the host log never gets the question text (sessions must stay deletable)");
+  // The full row stays in the wrapped store and goes away with the session.
+  assertEquals((await store.listRecent(5))[0].masked_input, question);
+  assertEquals((await store.deleteSession("s1")).checks, 1);
+  assertEquals((await store.listRecent(5)).length, 0);
+});
+

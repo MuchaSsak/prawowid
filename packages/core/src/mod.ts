@@ -4,6 +4,7 @@ export { type CoreDeps, runCheck } from "./pipeline/check.ts";
 export { isPrivateIp, type ResolveHost } from "./intake/url.ts";
 export { isMediaType, MEDIA_MIME, mediaInputError, type MediaType } from "./intake/media.ts";
 export { MemoryCheckStore, MemoryCorpusStore } from "./store/memory.ts";
+export { AUDIT_EVENT, type AuditLine, auditLine, LoggingCheckStore } from "./store/logging.ts";
 export type { CheckLogRow, CheckStore, CorpusStore } from "./store/types.ts";
 export { CONNECTORS } from "./connectors/mod.ts";
 export {

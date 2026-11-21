@@ -65,7 +65,7 @@ export function maskPii(input: string): { text: string; redactions: Redaction[] 
   text = text.replace(/(?:\+|00)\d{2}[ -]?\d{3}[ -]?\d{3}[ -]?\d{3}\b/g, () => (hit("phone"), "[telefon]"));
   // Phones written 3-3-3 or 9 digits right after a phone cue word.
   text = text.replace(
-    /(\b(?:tel\.?|telefon\w*|nr|numer|dzwoń|dzwon|kontakt|kom\.?|sms)\s*:?\s*)(\d{3}[ -]?\d{3}[ -]?\d{3})\b/gi,
+    /(\b(?:tel\.?|telefon\w*|nr|numer|(?:za)?dzwo[nń]\w*|kontakt|kom\.?|sms)\s*:?\s*)(\d{3}[ -]?\d{3}[ -]?\d{3})\b/gi,
     (_m, cue) => (hit("phone"), `${cue}[telefon]`),
   );
   text = text.replace(/\b\d{3}-\d{3}-\d{3}\b/g, (m, offset: number, whole: string) => {

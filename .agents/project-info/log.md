@@ -109,3 +109,6 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | problem/overview.md: statistics for the submission 'why' section (Digital Poland 2026, NASK 2025, Eurostat 2023 to re-check)
 ## [2026-11-21] update | pitch/blender-scenes-prompt.md: Blender agent prompt for 4 looping background scenes (user brief; Fern style is our Inference, agent must verify)
 ## [2026-11-21] lint | clean: new pitch page indexed, no text/link drift
+## [2026-11-21] update | MVP check (user): compliance-matrix MVP section re-checked against the code (4 items ⚠️: web defaults to mock, bot not deployed, log in memory, no keys on Deno Deploy); check log made durable without question text: LoggingCheckStore audit line per check + GET /api/v1/admin/checks behind ADMIN_TOKEN (api-reference, codebase, .env.example)
+## [2026-11-21] lint | compliance-matrix intro no longer says "nothing is built"; other sections still describe the design (noted on the page)
+## [2026-11-21] update | PII masking: "zadzwoń"/"dzwońcie" (any form of dzwonić) now count as phone cues; found by the new check-log test, a spaced 3-3-3 count of people is still kept

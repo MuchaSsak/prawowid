@@ -1,20 +1,22 @@
 # Compliance matrix: the task's requirements vs our design
-Every requirement from the task PDF checked against our current design (2026-11-21, re-read from sources/2026-11-21-msz-pelna-tresc-zadania.pdf and sources/2026-11-21-msz-regulamin-zadania.pdf). **Nothing is built yet.** "Covered" means *covered by the design*, and every row still has to be shown working in the demo and the eval. Pages: [task-brief.md](task-brief.md), [judging-and-metrics.md](judging-and-metrics.md), [rules/hard-constraints.md](../rules/hard-constraints.md).
+Every requirement from the task PDF checked against our current design (2026-11-21, re-read from sources/2026-11-21-msz-pelna-tresc-zadania.pdf and sources/2026-11-21-msz-regulamin-zadania.pdf). **The MVP section was re-checked against the code on 2026-11-21 18:45** (user request); the other sections still describe the design and need the same pass. Every row still has to be shown working in the demo and the eval. Pages: [task-brief.md](task-brief.md), [judging-and-metrics.md](judging-and-metrics.md), [rules/hard-constraints.md](../rules/hard-constraints.md).
 
 Legend: ✅ covered by design · ⚠️ risk or partly covered · ❌ gap, work needed
 
 ## MVP (sec. 3), the gate
-| Requirement | Our design | Status |
+Legend here: ✅ built and tested · ⚠️ built, not yet ready for the jury · ❌ missing.
+
+| Requirement | State in the code (2026-11-21) | Status |
 |---|---|---|
-| Text or URL input via a responsive web UI | web app → `POST /api/v1/check` | ✅ (UI not designed yet) |
-| A second channel or demo adapter (not Telegram or WeChat) | Bot on the Vercel Chat SDK: Discord (slash commands), WhatsApp, Messenger over the same API ([messaging-bot](../architecture/messaging-bot.md)); M1 code and a console channel in `apps/bot`, tested offline, not deployed | ⏳ |
-| Detect one or more claims | [prompts/claim-extraction.md](../prompts/claim-extraction.md) | ✅ |
-| A described set with ≥2 source types; show the materials used | official APIs + gov.pl/CERT/police/IMGW + ClaimReview + EUvsDisinfo; citations in every answer | ✅ |
-| Result + justification + strength + limitations | [product/response-contract.md](../product/response-contract.md) | ✅ |
-| **Answer in Polish, plain language** | Polish by default; another language only from the user's own message or a UI choice ([language policy](../product/response-contract.md#language-policy)) | ⚠️ the team wants multilingual answers; keep Polish the default so the MVP is never at risk |
-| Log: question, time, sources, verdict | `private.check_logs` ([decisions/001](../decisions/001-private-logs-schema.md)) | ✅ |
-| Abstain without a fake answer | verdict rules in code; outages → system states | ✅ |
-| End-to-end with no manual intervention | one pipeline, async video only | ✅ (to prove in the demo video) |
+| Text or URL input via a responsive web UI | `apps/web` (Astro chat flow, layouts for ≤720 px and ≥1024 px) → `POST /api/v1/check` | ⚠️ the web app opens in **demo (mock) mode by default** ([codebase](../architecture/codebase.md)); the submitted version must default to live and point at the deployed API |
+| A second channel or demo adapter (not Telegram or WeChat) | `apps/bot`: Discord `/sprawdz`, WhatsApp, Messenger and a console channel over the same API; tested with a real Discord app locally ([messaging-bot](../architecture/messaging-bot.md)) | ⚠️ **not deployed** (Vercel planned for M1); the console channel counts as a demo adapter, but the jury needs a channel it can try |
+| Detect one or more claims | `claim-extraction@3`, tests in `pipeline_test.ts` | ✅ |
+| A described set with ≥2 source types; show the materials used | fact-checks (Google Fact Check), legal acts (Sejm ELI), official statistics (Eurostat, NBP, GUS), EUvsDisinfo as context; the list at `GET /api/v1/sources`; verified quotes and links in every answer | ✅ |
+| Result + justification + strength + limitations | contract v1 ([response-contract](../product/response-contract.md)) | ✅ |
+| Answer in Polish, plain language | Polish by default ([language policy](../product/response-contract.md#language-policy)) | ✅ |
+| Log: question, time, sources, verdict | every check is saved (masked question, time, channel, verdicts, source ids) in the in-memory store, readable at `GET /api/v1/admin/checks` (needs `ADMIN_TOKEN`), and written as a JSON audit line to the host log (no question text, so sessions stay deletable) ([api-reference](../architecture/api-reference.md)) | ⚠️ the full rows live in memory per instance until Supabase (`private.check_logs`, [decisions/001](../decisions/001-private-logs-schema.md)); the audit lines survive. Set `ADMIN_TOKEN` on Deno Deploy |
+| Abstain without a fake answer | verdict rules in code; outages and missing keys → system states; tests | ✅ |
+| End-to-end with no manual intervention | one pipeline; local live eval 98% end-to-end (run 3, [benchmark](../evaluation/benchmark.md)) | ⚠️ the deployed API has **no keys set yet**, so live checks there end in `technical_error`; prove it in the demo video after deploying |
 
 ## Behaviour (sec. 2) and technical requirements (sec. 5)
 | Requirement | Our design | Status |
