@@ -99,6 +99,38 @@ describe("conversation", () => {
     expect(await client.mode(signal())).toBe("live");
   });
 
+  test("ordering is by request, not by clock: same-millisecond requests and a stale /health", async () => {
+    const realNow = Date.now;
+    Date.now = () => 1_000_000; // every request in the same millisecond
+    try {
+      let releaseCheck!: () => void;
+      let releaseHealth!: () => void;
+      const checkGate = new Promise<void>((r) => (releaseCheck = r));
+      const healthGate = new Promise<void>((r) => (releaseHealth = r));
+      const client = createClient(config, (async (u: string | URL | Request, init?: RequestInit) => {
+        if (String(u).endsWith("/api/v1/health")) {
+          await healthGate; // asked first, answered last, says mock
+          return Response.json({ mode: "live", client_mode: "mock" });
+        }
+        const req = JSON.parse(String(init?.body)) as CheckRequest;
+        const r = mockResponse(req);
+        if (req.input.value === "slow-mock") await checkGate;
+        else r.meta.mode = "live";
+        return Response.json(r);
+      }) as typeof fetch);
+      const health = client.mode(signal());
+      const slow = client.check({ input: { type: "text", value: "slow-mock" } }, "u", signal());
+      await client.check({ input: { type: "text", value: "fast-live" } }, "u", signal());
+      releaseCheck();
+      await slow;
+      releaseHealth();
+      expect(await health).toBe("live"); // the stale /health answer returns the newer cached mode
+      expect(await client.mode(signal())).toBe("live");
+    } finally {
+      Date.now = realNow;
+    }
+  });
+
   test("a switch from mock to live is picked up from the next 200 answer, so demo: is refused at once", async () => {
     let apiMode: "live" | "mock" = "mock";
     const calls: string[] = [];

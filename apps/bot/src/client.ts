@@ -31,13 +31,20 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
   // `/health` with our key reports `client_mode` (includes MOCK_CLIENTS); a 200 check answer
   // refreshes it. A 429 is not used: it is answered before the API's mock switch, so it says "live"
   // even for a bot held in mock, and one rate-limited user would turn /demo off for everyone.
-  let mode: { value: "live" | "mock"; at: number } | null = null;
+  // `seq` orders requests (timestamps tie within a millisecond); `at` is only for the TTL.
+  let mode: { value: "live" | "mock"; at: number; seq: number } | null = null;
+  let seq = 0;
+  /** Stores a mode seen by request `id` unless a newer request already stored one; returns the current mode. */
+  const observe = (value: "live" | "mock", id: number): "live" | "mock" => {
+    if (!mode || id > mode.seq) mode = { value, at: Date.now(), seq: id };
+    return mode.value;
+  };
 
   return {
     async check(req, endUser, signal) {
       const body: CheckRequest = { ...req, channel: "messaging" };
       delete body.mock; // the API decides mock vs live, never the bot
-      const sentAt = Date.now();
+      const id = ++seq;
       let res: Response;
       try {
         res = await fetchImpl(`${config.apiUrl}/api/v1/check`, {
@@ -58,12 +65,10 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
       }
       // A 200 has passed the API's mock/live routing, so its meta.mode is this bot's real mode (a
       // switch from mock to live shows up here at once). 400/413/429 are answered before routing.
-      // Only a request sent after the cached value may replace it: a slow mock answer that lands
-      // after a newer live one must not bring mock back.
+      // Only a newer request may replace the cached mode: a slow mock answer that lands after a
+      // newer live one must not bring mock back.
       const m = v.response.meta.mode;
-      if (res.status === 200 && (m === "live" || m === "mock") && (!mode || sentAt >= mode.at)) {
-        mode = { value: m, at: sentAt };
-      }
+      if (res.status === 200 && (m === "live" || m === "mock")) observe(m, id);
       return { kind: "response", response: v.response };
     },
 
@@ -86,7 +91,7 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
 
     async mode(signal) {
       if (mode && Date.now() - mode.at < LIMITS.modeCacheMs) return mode.value;
-      const askedAt = Date.now();
+      const id = ++seq;
       try {
         const res = await fetchImpl(`${config.apiUrl}/api/v1/health`, {
           headers: headers(),
@@ -95,10 +100,8 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
         // `client_mode` (sent to keyed clients) includes MOCK_CLIENTS; `mode` is the API-wide mode.
         const json = await res.json() as { mode?: unknown; client_mode?: unknown };
         const m = json.client_mode ?? json.mode;
-        if (m === "live" || m === "mock") {
-          if (!mode || askedAt >= mode.at) mode = { value: m, at: askedAt };
-          return m;
-        }
+        // A superseded answer returns the newer cached mode, not its own stale one.
+        if (m === "live" || m === "mock") return observe(m, id);
       } catch {
         // fall through
       }
