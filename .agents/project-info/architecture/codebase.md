@@ -50,4 +50,4 @@ A required route that is unavailable (e.g. no Google key) gives the claim `sourc
 2. Numeric routes (GUS BDL, NBP, Eurostat) with code-side typed comparison (no LLM).
 3. Our own eval set (≥30 cases) and a metrics script, before tuning prompts further.
 4. Supabase: `private.check_logs` / `check_events` tables, then the corpus with hybrid search.
-5. The messaging-bot adapter over the same `runCheck`.
+5. Messaging bot: designed in [messaging-bot](messaging-bot.md) (Vercel Chat SDK, Vercel hosting), not implemented yet.
