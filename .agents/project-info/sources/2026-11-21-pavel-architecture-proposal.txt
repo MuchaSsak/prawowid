@@ -1,0 +1,285 @@
+PRAWOWID - propozycja architektury, kolejnych kroków i przepływu pracy
+Status: wersja robocza do omówienia z zespołem
+Data: 2026-11-21
+
+CEL MVP
+========
+PRAWOWID ma przyjmować pytanie lub URL, wyodrębniać twierdzenia, wyszukiwać
+właściwe materiały, porównywać dowody i zwracać prostą odpowiedź po polsku.
+Odpowiedź musi zawierać werdykt, krótkie uzasadnienie, siłę dowodów,
+cytowania, datę pobrania i ograniczenia. Nie może udawać pewności, gdy
+dowody są niewystarczające lub sprzeczne.
+
+Przyjmuje się podział odpowiedzi na:
+- potwierdzono,
+- fałszywe,
+- wprowadzające w błąd,
+- brak wystarczających dowodów,
+- nie podlega weryfikacji,
+- awaria / potrzebna doprecyzacja.
+
+DEMAGOG I GOOGLE FACT CHECK
+===============================
+Demagog
+-------
+Na podstawie dostępnej dokumentacji i publicznych kontrolek nie znaleziono
+oficjalnego, publicznego API HTTP podobnego do Google Claims API, które dawałoby
+pełne wyszukiwanie fraz w bazie Demagoga. Należy traktować publikacje
+Demagoga jako zawartość strony i pobierać je zgodnie z jej robots.txt,
+sitemapą i licencją. Strona korzysta z ochrony Cloudflare, dlatego pobieranie
+bezpośrednie może być niestabilne i nie należy próbować obchodzenia zabezpieczeń.
+
+Rekomendowana opcja w MVP:
+1. Sprawdzić oficjalną sitemapę i kanały RSS listy publikacji.
+2. Jeśli brak stabilnego feedu, pobrać tylko publiczne strony z jawnymi
+   linkami do artykułów oraz przeprowadzić audyt robots/licencji.
+3. Zapisz każdy artykuł jako dokument z URL, tytułem, datą, nazwą autora,
+   kategorią oceny i pełnym tekstem lub przechowywanym tylko cytatem
+   zgodnie z licencją.
+4. Aktualizację wykonać cronem, np. raz dziennie.
+5. Jeśli mentor dostarczy Demagog/ClaimReview bezpośrednio, dodać osobnego
+   adaptera w katalogu źródeł. Nie należy mieszać go z Google API.
+
+Google Fact Check Tools
+-----------------------
+Google udostępnia publiczne Claims Search API, ale wymagane jest API key.
+Endpoint służy do wyszukiwania ClaimReview i jest dobrym dodatkowym źródłem,
+nie głównym silnikiem podobieństwa.
+
+Przykład:
+GET https://factchecktools.googleapis.com/v1alpha1/claims:search
+Query:
+- key=<GOOGLE_FACT_CHECK_API_KEY>
+- query=<fraza twierdzenia>
+- languageCode=pl
+- pageSize=100
+
+Google API może zwracać dane publikowane przez organizacje, które oznaczają
+materiały ClaimReview. Mentorzy jasno wskazali, że porównanie z Demagogiem
+poprzez Google nie jest similarity search; API może nie znaleźć prawidłowego
+wyniku, jeśli twierdzenie jest sformowane inaczej lub fraza jest semantycznie
+podobna. Dlatego w MVP:
+- wykonuj zapytanie w Google API,
+- wykonuj osobne semantyczne wyszukiwanie w lokalnym indeksie,
+- jeśli istnieje bezpośrednia baza Demagoga, indeksuj ją osobno,
+- nigdy nie oznaczaj samej obecności autora/domeny jako werdyktu.
+
+WYMAGANIA DO BAZY
+=================
+Do MVP wystarczy PostgreSQL z dwoma warstwami:
+1. PostgreSQL: dokumenty, źródła, fragmenty, przypadki, odpowiedzi i logi.
+2. pgvector: embedding fragmentów wraz z metadanymi.
+
+Dane niepowinny być jedynie dumpem JSON. Każdy dokument musi mieć minimum:
+- source_id
+- source_name
+- source_url
+- publisher
+- title
+- published_at
+- retrieved_at
+- language
+- license/status
+- document_hash
+- raw_hash
+- content_type
+- category
+- chunks[]
+
+Wyszukiwanie powinno być hybrydowe:
+- PostgreSQL full-text / indeks trudnych fraz i nazw własnych,
+- pgvector dla znaczeniowego podobieństwa,
+- filtr po dacie i domenie,
+- re-ranking według aktualności i jakości źródła,
+- ograniczenie do niezależnych źródeł.
+
+ZALECANE ŹRÓDŁA NA START
+======================
+Nie należy pobierać całej listy mentorów na raz.
+Wybierz MVP z 10-20 domenami i co najmniej dwoma typami źródeł:
+
+A. Urzędowe i publiczne:
+- Gov.pl / RSO
+- RCB raport dobowy
+- MSWiA
+- GIS
+- PAA
+- CERT Polska
+- MSZ
+- ISAP
+- EUR-Lex
+- dane.gov.pl
+- IMGW / GIOS, jeśli to pytania o pogodę i powietrze
+
+B. Fact-checking:
+- Google Fact Check ClaimSearch
+- Demagog
+- EUvsDisinfo
+- jeden lub dwa certyfikowane korpusy IFCN/EFCSN
+
+C. Do celów demonstracyjnych, ale nie jako główne źródło FIMI:
+- GDDKiA
+- PAA Monitoring
+- GIOŚ
+- Policja
+- KG PSP
+- MON
+
+Te źródła mogą pokazać szerokie dane publiczne, ale nie zastąpią zestawu
+dokumentów służących weryfikacji twierdzeń politycznych i manipulacji.
+
+PIPELINE CRON
+=============
+Co 15-60 minut dla informacji wysokiej aktualności:
+- RSO
+- CERT
+- raporty RCB
+- ostrzeżenia GIS
+- PAA Monitoring
+
+Raz dziennie:
+- aktualności urzędów
+- fakt-checking
+- Demagog
+- EUvsDisinfo
+
+Raz w tygodniu lub po zmianie schematu:
+- dokumenty archiwalne
+- ISAP
+- EUR-Lex
+- strony informacyjne
+
+Kolektor powinien wykonywać:
+1. pobranie,
+2. kontrolę HTTP i statusu źródła,
+3. ekstrakcję treści,
+4. deduplikację po canonical URL i hash treści,
+5. porównanie ze starą wersją,
+6. zapis nowego lub zaktualizowanego dokumentu,
+7. ponowny odczyt i walidację,
+8. chunking i embedding,
+9. zapis metadanych pobrania i aktualności,
+10. raport zmian, błędów i limitów.
+
+WORKFLOW PRZY PYTANIU UŻYTKOWNIKA
+================================
+1. Użytkownik wysyła tekst, URL, ekran lub drugą wersję kanałową.
+2. Kanał (WWW lub Discord) przekazuje dane do wspólnego API.
+3. Zapis minimalnego pytania i przebiegu sprawdzenia.
+4. Walidacja, maskowanie oczywistych danych osobowych i limit długości.
+5. OCR/URL extraction, jeśli wejście jest złożone.
+6. Ekstrakcja 1-n twierdzeń o charakterze faktograficznym.
+7. Dla każdego twierdzenia:
+   - normalizacja frazy,
+   - wygenerowanie kilku zapytań wyszukiwania,
+   - pełny tekst w PostgreSQL,
+   - pgvector semantycznie,
+   - Google/FactCheck/EGOV live tylko dla tematów wymagających świeżych danych,
+   - ograniczenie do 2-4 niezależnych, istotnych źródeł.
+8. Re-ranking materiałów według:
+   - zgodności treści z twierdzeniem,
+   - daty i aktualności,
+   - typu źródła,
+   - liczby niezależnych potwierdzeń,
+   - sprzeczności.
+9. Wyłuskanie dokładnego fragmentu cytatu i linku.
+10. Porównanie tezy z dowodem.
+11. Przydzielenie werdyktu według jasnych kryteriów.
+12. Jeśli dowody są niewystarczające lub sprzeczne: status brak dowodów
+   / wprowadzające w błąd, bez arbitralnej pewności.
+13. W przypadku prompt injection: zignoruj instrukcje treści, odnotuj próbę
+   i odsyłaj do normalnego pipeline'u dowodowego.
+14. Zapis odpowiedzi, cytatów, czasu, modelu, błędów i kosztu.
+15. Wspólna odpowiedź zostaje zwrócona przez WWW i Discord.
+
+KRYTERIA WERDYKTU
+=================
+Potwierdzono:
+- zgodny cytat z co najmniej jednego lub preferowane 2 niezależnych
+  wiarygodnych źródeł,
+- cytat jest aktualny i dotyczy tego samego twierdzenia.
+
+Fałszywe:
+- źródła bezpośrednio przeczą twierdzeniu,
+- istnieją prawdziwe alternatywne dane,
+- rozbieżność nie wynika jedynie ze starego kontekstu.
+
+Wprowadzające w błąd:
+- część twierdzenia jest prawdziwa,
+- kluczowy kontekst, miejsce, czas lub część całości powoduje fałszywy wniosek.
+
+Brak dowodów:
+- nie znaleziono wystarczającego źródła,
+- źródło nie odpowiada na twierdzenie,
+- tylko jeden mało istotny lub sprzeczny materiał.
+
+Nie podlega weryfikacji:
+- twierdzenie jest opinią, przewidywaniem, metaforą, nieprecyzyjną frazą
+  albo pytaniem bez sprawdzalnego stanu faktycznego.
+
+Źródła, cytaty i metadata zawsze są oddzielone od interpretacji modelu.
+Lokalny model lub LLM nie może tworzyć cytatu; cytat musi pochodzić
+z unikalnego fragmentu przechowywanego w bazie.
+
+CO ZROBIĆ NAJPIERW
+==================
+Krok 1:
+- wybrać 10-20 domen i skonfigurować katalog źródeł,
+- ustalić licencje i retencję,
+- określić priorytet treści urzędowych i fact-checkingowych.
+
+Krok 2:
+- utworzyć PostgreSQL + pgvector,
+- zaimplementować dokument, chunk i provenance record,
+- przenieść istniejące JSON kolektorów do wspólnego schematu.
+
+Krok 3:
+- zbudować hybrydowe wyszukiwanie,
+- dodać re-ranking po aktualności i zgodności,
+- przygotować 30 przykładów testowych.
+
+Krok 4:
+- zbudować API „verify”:
+  POST /verify
+  GET /checks/{id}
+  GET /checks/{id}/evidence
+  POST /moderation-cases
+
+Krok 5:
+- zbudować stronę WWW i demo Discord/adapter,
+- oba kanały muszą wołać ten sam endpoint i logikę.
+
+Krok 6:
+- dodać pełny zapis przebiegu,
+- logowanie czasu, modelu, wyników wyszukiwania i kosztu,
+- maskowanie danych osobowych,
+- retencję i możliwość usunięcia.
+
+Krok 7:
+- uruchomić testy:
+  - 30 przypadków jury,
+  - prompt injection,
+  - cytowanie,
+  - aktualność,
+  - sprzeczne źródła,
+  - konsystencja kanałów,
+  - awarie API i brak klucza,
+  - end-to-end bez ręcznej ingerencji.
+
+PUNKT KOŃCOWY
+=============
+PRAWOWID MVP to jeden API, jedna baza dowodów i dwie warstwy interfejsu.
+Po wysłaniu pytania powinien działać automatycznie:
+
+Pytanie
+  -> ekstrakcja twierdzeń
+  -> wyszukiwanie hybrydowe
+  -> zbiór dowodów
+  -> ocena zgodności i aktualności
+  -> werdykt i cytaty
+  -> odpowiedź WWW i Discord
+  -> zapis przebiegu i opcja sprawy moderacyjnej
+
+To powinno być audytowalne, testowalne i możliwe do uruchomienia przez jury
+na podstawie README i instrukcji startowej. Nie powinno być „chatem z modelem,
+który dostał dostęp do plików JSON”.
