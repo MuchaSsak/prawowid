@@ -86,7 +86,7 @@ Format: `- [path](path): one-line summary`
 - [pitch/README.md](pitch/README.md): scope of the folder; link to the Prawdomat Design System artifact for the deck and PDFs 
 - [pitch/design-system.md](pitch/design-system.md): the Prawdomat Design System for PDFs and decks: values taken from apps/web, Paper/Navy themes, 14 A4 and 16:9 components, the brevity limits, what is not on it yet (explain-flow template, charts)
 - [pitch/jury-insights.md](pitch/jury-insights.md): what the jury and MSZ care about, plus a 5-min pitch script
-- [pitch/blender-scenes-prompt.md](pitch/blender-scenes-prompt.md): agent prompt for the four looping low-poly, Fern-inspired background scenes (armchair, kitchen table, park bench, kiosk); 2.5 s per shot, hard cuts, no text, no render
+- [pitch/blender-scenes-prompt.md](pitch/blender-scenes-prompt.md): agent prompt for the four looping low-poly, Fern-inspired background scenes (armchair, kitchen table, park bench, kiosk); 2.5 s per shot, hard cuts, no text, no render; the rendered loop now plays behind the web hero
 
 ## sources/
 - [sources/README.md](sources/README.md): raw source files 

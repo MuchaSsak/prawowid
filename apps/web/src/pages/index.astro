@@ -21,6 +21,11 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
       <button type="button" id="test-off" class="test-off">Wyłącz</button>
     </div>
     <div class="frame">
+      <div class="hero-video" aria-hidden="true">
+        <video id="hero-video" autoplay muted loop playsinline disablepictureinpicture preload="auto" poster="/video/prawdomat-bg-loop.jpg">
+          <source src="/video/prawdomat-bg-loop.webm" type="video/webm" />
+        </video>
+      </div>
       <header class="top">
         <div class="top-row">
           <a class="brand" href="/">
@@ -104,8 +109,10 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
     <script>
       import { initApp } from "../lib/app.ts";
       import { initBackdrop } from "../lib/backdrop.ts";
+      import { initHeroVideo } from "../lib/hero-video.ts";
       initApp();
       initBackdrop(document.body);
+      initHeroVideo(document.getElementById("hero-video") as HTMLVideoElement | null);
     </script>
   </body>
 </html>
