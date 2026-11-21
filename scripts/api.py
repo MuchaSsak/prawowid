@@ -40,7 +40,7 @@ def _owned_connection(connection):
 
 
 def create_app(connection=None, embedder=None):
-    from fastapi import FastAPI
+    from fastapi import FastAPI, HTTPException
     from fastapi.responses import JSONResponse
 
     app = FastAPI(title="Prawdowid Retrieval API", version="0.1.0")

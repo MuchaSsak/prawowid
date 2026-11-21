@@ -141,3 +141,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | clean: privacy wording consistent across codebase, compliance-matrix and open-questions
 ## [2026-11-21] update | user: the placeholder /prywatnosc is accepted for the hackathon and not counted in compliance; open question removed, compliance-matrix privacy row reworded
 ## [2026-11-21] update | added minimal vector DB integration plan: Python retrieval service behind HttpCorpusStore, existing core and API contract unchanged
+## [2026-11-21] update | implemented local vector DB path: pgvector Docker Compose, HttpCorpusStore wiring, health flag, source catalog entry and end-to-end README commands

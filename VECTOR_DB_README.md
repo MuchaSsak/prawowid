@@ -22,6 +22,27 @@ export POSTGRES_USER=knowledge_base
 export POSTGRES_PASSWORD=knowledge_base_local_only
 ```
 
+## Test z głównym API Prawdomatu
+
+Po uruchomieniu bazy i ingestu uruchom retrieval service:
+
+```bash
+uvicorn scripts.api:create_app --factory --host 127.0.0.1 --port 8000
+```
+
+W drugim terminalu wskaż ten serwis głównemu API:
+
+```bash
+export PRAWDOWID_RETRIEVAL_URL=http://127.0.0.1:8000
+bun run api:dev
+```
+
+`apps/api` użyje wtedy `HttpCorpusStore`. Bez `PRAWDOWID_RETRIEVAL_URL` zachowuje dotychczasowy
+`MemoryCorpusStore`. Stan połączenia można sprawdzić przez `GET /api/v1/health`, a samą bazę przez
+`POST http://127.0.0.1:8000/search`.
+
+Przy zmianie portu użyj jednej wartości we wszystkich procesach, np. `POSTGRES_PORT=55433`.
+
 Na pierwszym uruchomieniu kontener tworzy rozszerzenie `vector` oraz tabele `documents` i `chunks` z `infra/postgres/init.sql`.
 
 ## Wczytanie 21 dokumentów

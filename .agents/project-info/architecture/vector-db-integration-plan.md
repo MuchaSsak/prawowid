@@ -1,6 +1,9 @@
 # Plan integracji bazy wektorowej
 Plan wpięcia istniejącego prototypu PostgreSQL + pgvector do Prawdomatu przy minimalnych zmianach.
 
+Status: Etap 0 i podstawowy Etap 1 są zaimplementowane lokalnie; pełny test wymaga zainstalowania
+zależności Python oraz Deno/Bun zgodnie z README.
+
 ## Stan obecny
 
 - `scripts/ingest_corpus.py` i `scripts/retrieval.py` tworzą oraz przeszukują `documents`/`chunks` w PostgreSQL z `pgvector`.
@@ -10,9 +13,9 @@ Plan wpięcia istniejącego prototypu PostgreSQL + pgvector do Prawdomatu przy m
 - Kontrakt `/api/v1/check` nie wymaga zmiany. Korpus jest trasą opcjonalną, więc brak bazy nie może stać się werdyktem.
 - `docker-compose.yml` nie występuje obecnie w repo, mimo że `VECTOR_DB_README.md` opisuje `docker compose up -d`; trzeba to naprawić przed użyciem instrukcji jako setupu.
 
-## Rekomendowany wariant: cienki adapter HTTP
+## Zrealizowany wariant: cienki adapter HTTP
 
-Na pierwszym etapie zachować Python jako osobny retrieval service i nie przepisywać embeddera do Deno.
+Python pozostaje osobnym retrieval service, a embedder nie został przepisany do Deno.
 
 1. Dodać `HttpCorpusStore` w `packages/core/src/store/` implementujący istniejący `CorpusStore`.
 2. Adapter wysyła `POST {PRAWDOWID_RETRIEVAL_URL}/search` z połączonymi zapytaniami (`claim.text` + `search_queries_pl`), `k=5`.
