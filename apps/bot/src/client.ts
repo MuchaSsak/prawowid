@@ -37,6 +37,7 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
     async check(req, endUser, signal) {
       const body: CheckRequest = { ...req, channel: "messaging" };
       delete body.mock; // the API decides mock vs live, never the bot
+      const sentAt = Date.now();
       let res: Response;
       try {
         res = await fetchImpl(`${config.apiUrl}/api/v1/check`, {
@@ -57,8 +58,11 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
       }
       // A 200 has passed the API's mock/live routing, so its meta.mode is this bot's real mode (a
       // switch from mock to live shows up here at once). 400/413/429 are answered before routing.
-      if (res.status === 200 && (v.response.meta.mode === "live" || v.response.meta.mode === "mock")) {
-        mode = { value: v.response.meta.mode, at: Date.now() };
+      // Only a request sent after the cached value may replace it: a slow mock answer that lands
+      // after a newer live one must not bring mock back.
+      const m = v.response.meta.mode;
+      if (res.status === 200 && (m === "live" || m === "mock") && (!mode || sentAt >= mode.at)) {
+        mode = { value: m, at: sentAt };
       }
       return { kind: "response", response: v.response };
     },
@@ -82,6 +86,7 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
 
     async mode(signal) {
       if (mode && Date.now() - mode.at < LIMITS.modeCacheMs) return mode.value;
+      const askedAt = Date.now();
       try {
         const res = await fetchImpl(`${config.apiUrl}/api/v1/health`, {
           headers: headers(),
@@ -91,7 +96,7 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
         const json = await res.json() as { mode?: unknown; client_mode?: unknown };
         const m = json.client_mode ?? json.mode;
         if (m === "live" || m === "mock") {
-          mode = { value: m, at: Date.now() };
+          if (!mode || askedAt >= mode.at) mode = { value: m, at: askedAt };
           return m;
         }
       } catch {

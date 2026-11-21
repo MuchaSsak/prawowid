@@ -66,5 +66,6 @@ export function safeUrl(input: unknown, maxLength = 2000): string | null {
     return null;
   }
   if (u.protocol !== "https:" || u.username || u.password || !u.hostname.includes(".")) return null;
-  return u.href.replace(/@/g, "%40");
+  const href = u.href.replace(/@/g, "%40");
+  return href.length > maxLength ? null : href; // measured after encoding, which can grow it a lot
 }

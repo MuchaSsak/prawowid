@@ -81,6 +81,24 @@ describe("conversation", () => {
     expect(await live.mode(signal())).toBe("mock");
   });
 
+  test("a slow mock answer landing after a newer live one doesn't bring mock back", async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const client = createClient(config, (async (_u: string | URL | Request, init?: RequestInit) => {
+      const req = JSON.parse(String(init?.body)) as CheckRequest;
+      const r = mockResponse(req);
+      if (req.input.value === "slow-mock") await gate; // sent first, answered last
+      else r.meta.mode = "live";
+      return Response.json(r);
+    }) as typeof fetch);
+    const slow = client.check({ input: { type: "text", value: "slow-mock" } }, "u", signal());
+    await new Promise((r) => setTimeout(r, 5));
+    await client.check({ input: { type: "text", value: "fast-live" } }, "u", signal());
+    release();
+    await slow;
+    expect(await client.mode(signal())).toBe("live");
+  });
+
   test("a switch from mock to live is picked up from the next 200 answer, so demo: is refused at once", async () => {
     let apiMode: "live" | "mock" = "mock";
     const calls: string[] = [];

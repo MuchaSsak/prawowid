@@ -176,6 +176,8 @@ describe("sanitize", () => {
     expect(safeUrl("javascript:alert(1)")).toBeNull();
     expect(safeUrl("https://user:pw@a.example/")).toBeNull();
     expect(safeUrl("https://a.example/<x>@everyone")).toBe("https://a.example/%3Cx%3E%40everyone");
+    // The cap applies to the encoded URL: 300 Polish letters become ~1800 characters.
+    expect(safeUrl(`https://a.example/${"ż".repeat(300)}`, 500)).toBeNull();
   });
 });
 
