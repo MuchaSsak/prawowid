@@ -52,6 +52,7 @@ Client (web / Discord adapter)
 9. Log the check (masked question, sources, verdicts, latency, model, usage.cost); moderator case if needed
   ← 200 { status, claims:[{text, verdict|null, strength, explanation, citations[], warnings[]}],
           limitations[], system_messages[], check_id }
+  (full shape and all response types: product/response-contract.md)
 ```
 
 ## Ingestion jobs (separate script, plus Deno.cron for increments)

@@ -30,6 +30,7 @@ All paths are relative to `.agents/project-info/`.
 | Product: vision, features, scope, MVP, user flows, ideas               | `product/`                        |
 | Architecture, tech stack, data, integrations, infrastructure           | `architecture/`                   |
 | Team: members, roles, availability, contacts                           | `team/`                           |
+| LLM system prompts, their patterns, anti-patterns and edge cases       | `prompts/`                        |
 | Decisions already made, and why (don't re-argue these)                 | `decisions/`                      |
 | Pitch, demo, presentation, submission materials                        | `pitch/`                          |
 | Unresolved questions, unknowns, things waiting on the user             | `open-questions.md`               |

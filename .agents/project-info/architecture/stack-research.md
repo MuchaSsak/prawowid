@@ -205,7 +205,7 @@ Token assumptions per text query (**Assumption**, to be replaced by measured `us
 - Most of EUvsDisinfo is in English (with translations). Store the `english` config tsvector for EN text and `pl_simple`/lemmas for PL text, chosen by a `lang` column.
 
 ### 5.3 Logs and RLS
-- Put check logs in `public.checks`, `public.check_events` (injection detected, retrieval errors, system states), `public.moderator_cases`. **Enable RLS on every table with no policies for `anon`/`authenticated`**, and write only from the API with the **service-role key kept server-side** (Deno env var, never in the web bundle). The web app never talks to Supabase directly. Masked PII only. A retention job (`pg_cron` or Deploy cron) deletes rows older than N days. A `session_id` lets a demo session delete itself (`DELETE ... WHERE session_id = $1`) via an API endpoint.
+- **Superseded by [decisions/001-private-logs-schema.md](../decisions/001-private-logs-schema.md)** (a non-exposed `private` schema). Original suggestion: put check logs in `public.checks`, `public.check_events` (injection detected, retrieval errors, system states), `public.moderator_cases`. **Enable RLS on every table with no policies for `anon`/`authenticated`**, and write only from the API with the **service-role key kept server-side** (Deno env var, never in the web bundle). The web app never talks to Supabase directly. Masked PII only. A retention job (`pg_cron` or Deploy cron) deletes rows older than N days. A `session_id` lets a demo session delete itself (`DELETE ... WHERE session_id = $1`) via an API endpoint.
 
 ### 5.4 Alternatives that fit Deno Deploy
 | Store | Vector | Keyword/hybrid | EU | Free tier | Verdict |

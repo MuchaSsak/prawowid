@@ -19,6 +19,7 @@ Format: `- [path](path): one-line summary`
 - [hackathon/deliverables.md](hackathon/deliverables.md): submission checklist
 - [hackathon/regulamin.md](hackathon/regulamin.md): prize 30k PLN, jury rules, copyright transfer to MSZ
 - [hackathon/resources.md](hackathon/resources.md): organizer resources, the Discord source list, mentors
+- [hackathon/compliance-matrix.md](hackathon/compliance-matrix.md): **every task requirement vs our design**: covered, risks and gaps (corpus archiving policy, eval set, deliverables)
 - [hackathon/event-and-jury.md](hackathon/event-and-jury.md): HackNation timeline and deadlines (draft Sat 20:00, final Sun 11:00), two-stage judging, past editions, mentors
 
 ## problem/
@@ -31,6 +32,7 @@ Format: `- [path](path): one-line summary`
 
 ## product/
 - [product/README.md](product/README.md): scope of the folder 
+- [product/response-contract.md](product/response-contract.md): verdicts vs system states, warnings, escalation, **language policy**, tone, the JSON response shape
 
 ## architecture/
 - [architecture/README.md](architecture/README.md): scope of the folder 
@@ -44,11 +46,18 @@ Format: `- [path](path): one-line summary`
 - [architecture/euvsdisinfo-mcp.md](architecture/euvsdisinfo-mcp.md): EUvsDisinfo MCP how-to and data shape
 - [architecture/technical-approach-research.md](architecture/technical-approach-research.md): pipeline best practice, models, retrieval, injection defense, eval harness, IFCN/EFCSN
 
+## prompts/
+- [prompts/README.md](prompts/README.md): how prompts are used in code, patterns and anti-patterns, the change procedure
+- [prompts/claim-extraction.md](prompts/claim-extraction.md): LLM call #1: atomic claims, common sense, classes, types, risk (draft v1)
+- [prompts/evidence-assessment.md](prompts/evidence-assessment.md): LLM call #2: stance + verbatim quote, fair-not-suspicious, code-decided verdict (draft v1)
+- [prompts/media-extraction.md](prompts/media-extraction.md): image OCR + description, video/audio transcripts (draft v1)
+
 ## team/
 - [team/README.md](team/README.md): scope of the folder 
 
 ## decisions/
 - [decisions/README.md](decisions/README.md): scope and format of decision records 
+- [decisions/001-private-logs-schema.md](decisions/001-private-logs-schema.md): logs and the corpus in a non-exposed Postgres schema, no public CRUD, 30-day retention
 
 ## pitch/
 - [pitch/README.md](pitch/README.md): scope of the folder 

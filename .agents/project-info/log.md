@@ -11,6 +11,10 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | stack-direction: recommendation for hybrid retrieval in Supabase + cost plan (≤$1-2 per 1,000 checks)
 ## [2026-11-21] update | added api-endpoints-verified (curl-tested endpoints + flow), multimodal-media, model-selection (EU/ZDR Mistral path, GDPR checklist)
 ## [2026-11-21] lint | clean: all index links resolve, all pages indexed, routing folders exist
-- 2026-11-21 | verification-pipeline: added claim-splitting philosophy + NBP/TK worked example; gap: nbp.pl press releases not yet a source
-- 2026-11-21 | verification-pipeline: added worked example 2 (opinion piece, Trump/Asia); foreign-politics source gap noted
-- 2026-11-21 | repo: added root .gitignore (env/secrets/keys, Supabase/Deno/Turbo/Node/Python artifacts, local data dumps); .env.example stays tracked per rule 11
+## [2026-11-21] update | verification-pipeline: added claim-splitting philosophy + NBP/TK worked example; gap: nbp.pl press releases not yet a source
+## [2026-11-21] update | verification-pipeline: added worked example 2 (opinion piece, Trump/Asia); foreign-politics source gap noted
+## [2026-11-21] update | repo: added root .gitignore (env/secrets/keys, Supabase/Deno/Turbo/Node/Python artifacts, local data dumps); .env.example stays tracked per rule 11
+## [2026-11-21] decision | 001 private logs schema (user): logs + corpus in a non-exposed schema, RLS with no policies, server-only access
+## [2026-11-21] update | added prompts/ (claim extraction, evidence assessment, media extraction + README), product/response-contract.md (language policy: Polish default per the MVP), hackathon/compliance-matrix.md (re-read the PDFs); pipeline: common sense + fair-not-suspicious, refined verdict rules, risk field; routing row for prompts/
+## [2026-11-21] update | skill explain-flow added (.agents/skills + Claude shim)
+## [2026-11-21] lint | clean: all index and cross-page links resolve (only the format examples in README/index), all pages indexed, prompts/ routed in AGENTS.md
