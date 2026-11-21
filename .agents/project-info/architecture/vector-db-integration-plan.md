@@ -9,9 +9,31 @@ zależności Python oraz Deno/Bun zgodnie z README.
 - `scripts/ingest_corpus.py` i `scripts/retrieval.py` tworzą oraz przeszukują `documents`/`chunks` w PostgreSQL z `pgvector`.
 - `scripts/api.py` wystawia `/health` i `/search`; zwraca literalny fragment tekstu, offsety, URL, tytuł, daty i score.
 - `packages/core` ma już właściwy punkt rozszerzenia: `CorpusStore.search()` i `CorpusStore.upsert()`.
-- `corpusSearch` jest już podłączony do `CONNECTORS`, ale obecnie dostaje `MemoryCorpusStore`, który używa prostego overlapu słów.
+- `corpusSearch` jest już podłączony do `CONNECTORS`. Bez skonfigurowanego adresu serwisu używa `MemoryCorpusStore`, który wyszukuje po wspólnych słowach.
 - Kontrakt `/api/v1/check` nie wymaga zmiany. Korpus jest trasą opcjonalną, więc brak bazy nie może stać się werdyktem.
-- `docker-compose.yml` nie występuje obecnie w repo, mimo że `VECTOR_DB_README.md` opisuje `docker compose up -d`; trzeba to naprawić przed użyciem instrukcji jako setupu.
+
+## Propozycja: dobór źródeł do twierdzenia i mały korpus
+
+**Idea.** Wyodrębnij z wiadomości osobne twierdzenia. Każde skieruj do istniejących konektorów na podstawie rodzaju twierdzenia, podmiotu, miejsca i okresu. Katalog w kodzie może opisać, jakie dane zwraca każde źródło i kiedy je wywołać. Na przykład dla kursu waluty z danego dnia pobierz odpowiedni rekord z NBP. Wyszukiwanie wektorowe po opisach źródeł warto sprawdzić, gdy katalog urośnie. Może podpowiadać dodatkowe źródła. Reguły w kodzie wciąż uruchamiają wymagane konektory.
+
+W pgvector indeksuj wybrane komunikaty, dokumenty i fact-checki, dla których potrzebujemy wyszukiwania po treści i mamy prawo do przechowywania. Zapisuj fragmenty wraz z adresem, wydawcą i datą. Oceniaj twierdzenie na podstawie pobranego rekordu lub fragmentu. Zakres korpusu demonstracyjnego wynika z [wymagań organizatora](../hackathon/task-brief.md).
+
+```mermaid
+flowchart TD
+    Input[Wiadomość] --> Claim[Wyodrębnij i sklasyfikuj każde twierdzenie]
+    Claim --> Routes[Wybierz trasy na podstawie typu i zakresu]
+    Routes --> Live[Konektory live: pobierz rekord dla daty, miejsca i wskaźnika]
+    Routes --> Corpus[CorpusStore: wyszukaj fragmenty po słowach i znaczeniu]
+    Live --> Evidence[SourceRecord: połącz wyniki i sprawdź zakres oraz pochodzenie]
+    Corpus --> Evidence
+    Evidence --> Result[Werdykt z cytatami lub stan systemowy]
+```
+
+Przykład. Wiadomość „Euro kosztowało 4,50 zł tego dnia, a NBP zapowiedział zmianę zasad” daje dwa twierdzenia. Konektor NBP pobiera kurs EUR z odpowiedniego dnia. `CorpusStore` szuka komunikatu NBP, a ocena sprawdza cytat i datę. Gdy obie trasy pasują do jednego twierdzenia, uruchom je równolegle i usuń powtórzenia tego samego materiału przed oceną. Gdy wymagany konektor jest niedostępny, zastosuj reguły [obsługi awarii tras](verification-pipeline.md#3-run-relevant-evidence-routes).
+
+### API Anything jako pomoc przy budowie konektora
+
+**Idea.** [API Anything](https://github.com/goodnight000/api-anything/tree/cd8d773d6617df07dc473598b67dec4d612276bc) odtwarza wybrane zapytania używane przez frontend witryny. Może pomóc przy budowie konektora do zatwierdzonego źródła, które zezwala na automatyczny odczyt i nie ma udokumentowanego API. Wdrożenie powinno używać sprawdzonego, wersjonowanego odczytu. Konektor waliduje pola odpowiedzi i mapuje je na `SourceRecord` z publicznym linkiem. [Interfejs hosta](https://github.com/goodnight000/api-anything/blob/cd8d773d6617df07dc473598b67dec4d612276bc/docs/HOST.md) opisuje schemat wyniku, ale go nie egzekwuje. Dobór źródła i indeksowanie dokumentów pozostają po stronie Prawdomatu. Ocena opiera się na dokumentacji i kodzie interfejsu hosta. Nie wykonano prób na źródłach projektu.
 
 ## Zrealizowany wariant: cienki adapter HTTP
 
@@ -28,7 +50,7 @@ Python pozostaje osobnym retrieval service, a embedder nie został przepisany do
 
 ### Etap 0 — uruchamialność prototypu
 
-- Uzupełnić brakujący `docker-compose.yml` albo skorygować README do faktycznego sposobu uruchamiania PostgreSQL.
+- `docker-compose.yml` jest już w repozytorium.
 - Naprawić test/ścieżkę health w Python API (`HTTPException` nie jest importowane).
 - Uruchomić ingest 21 dokumentów i test kontraktu `/search`.
 

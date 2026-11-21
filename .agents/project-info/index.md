@@ -50,11 +50,12 @@ Format: `- [path](path): one-line summary`
 - [architecture/messaging-bot.md](architecture/messaging-bot.md): **the bot channel**: Discord + WhatsApp + Messenger on the Vercel Chat SDK: Mermaid diagram, components, message flow, platforms, security and privacy, milestones and cut line, implementation status (M1 code in apps/bot, deployed as Vercel project prawdomat-bot), prototype findings
 - [architecture/messaging-bot-runbook.md](architecture/messaging-bot-runbook.md): bot setup checklists per platform, env vars, acceptance tests (A1-A11), demo-day steps, post-event shutdown
 - [architecture/api-reference.md](architecture/api-reference.md): **for channel builders**: every endpoint, header, request field, env var (incl. `MOCK_CLIENTS`), mock scenario, Deno Deploy setup, versioning rules
-- [architecture/extensibility.md](architecture/extensibility.md): **bonus: swappable channels, models and sources**: the seams (API, MODEL_<STEP>, `deps.connectors`, `deps.narrativeMatchers`), step-by-step recipes, the proving tests, swapping storage behind a route (vector DB via the plan), what is deliberately not swappable
+- [architecture/extensibility.md](architecture/extensibility.md): extension points for channels, models, evidence sources and storage
+- [architecture/source-platform.md](architecture/source-platform.md): proposed private source registry, activation without deployments, and shared access to live and indexed evidence
 - [architecture/codebase.md](architecture/codebase.md): **what is built**: code layout, evidence routes (Google Fact Check, ELI, Eurostat, NBP, GUS), the number check, interim verdict choices, measured latency/cost, next steps
 - [architecture/web-performance.md](architecture/web-performance.md): Lighthouse scores before/after for every web page, what changed and why (inlined CSS, poster preload, video/grain after load, WebGL backdrop in a worker, pinned and Polish-subset fonts, CLS/LCP fixes, SEO files), deliberate ceilings, how to re-check
 - [architecture/technical-approach-research.md](architecture/technical-approach-research.md): pipeline best practice, models, retrieval, injection defense, eval harness, IFCN/EFCSN
-- [architecture/vector-db-integration-plan.md](architecture/vector-db-integration-plan.md): minimalny plan wpięcia istniejącego PostgreSQL + pgvector przez `CorpusStore`, plus lista braków (hosting, korpus 21 dok., adapter, polityka, eval)
+- [architecture/vector-db-integration-plan.md](architecture/vector-db-integration-plan.md): integracja PostgreSQL + pgvector przez `CorpusStore`, propozycja doboru źródeł i zakresu korpusu, lista braków
 
 ## prompts/
 - [prompts/README.md](prompts/README.md): how prompts are used in code, patterns and anti-patterns, the change procedure

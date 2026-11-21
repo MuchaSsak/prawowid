@@ -35,6 +35,10 @@ Every seam is a typed interface; the verification rules in between (quote check,
 
 `GET /api/v1/sources` now also lists the routes the deployment runs (`routes`, `context_routes`). Proof: `pipeline_test.ts` "extensibility: a new evidence route plugs in through deps.connectors…" injects a route the core has never seen and gets a verdict and a citation from it, with no built-in source called.
 
+### Proposed source activation
+
+See the [source registry and evidence access proposal](source-platform.md) for activation without a deploy and shared access to live and indexed records.
+
 ### Swapping storage behind an existing route
 A source can also change one level lower, without a new connector: the `corpus` route reads through the `CorpusStore` interface (`search`, `upsert`), so a different store (e.g. a vector index) replaces `MemoryCorpusStore` in `apps/api/main.ts` and the pipeline stays as it is. The vector DB is connected this way: `HttpCorpusStore` over the Python `/search` service, chosen in `apps/api/main.ts` when `PRAWDOWID_RETRIEVAL_URL` is set, route stays `corpus`: see [vector-db-integration-plan](vector-db-integration-plan.md), which owns that design.
 

@@ -214,3 +214,15 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | clean: pitch/deck.md indexed and linked, all links resolve (only README/index format examples), routing and skill parity ok
 ## [2026-11-21] update | web Lighthouse pass with no visual change: architecture/web-performance.md added (scores before/after: home mobile 83 -> 98, admin analytics 0 -> 99, docs CLS 0.17 -> 0; inlined CSS, poster preload, video + grain after load, ogl dropped for plain WebGL in a worker, Newsreader pinned at 400 + Polish font subsets, fallback font metrics, SEO files); codebase web row, ui-conventions (supported widths 320 px to ultrawide, user), index, open question on the cost sheet's sharing
 ## [2026-11-21] lint | clean (scope: web-performance, codebase web row, ui-conventions, index; links resolve except the intentional index format example; no OGL mentions left outside the log; routing and skill parity unchanged)
+## [2026-11-21] update | Proposed per-claim routing through live connectors and a curated pgvector corpus in vector-db-integration-plan.
+## [2026-11-21] lint | Corrected the stale Compose and default store notes in the vector plan. Checked routing, index, source citations, internal links and skill parity. The README and index link examples are intentional.
+## [2026-11-21] update | Added the proposed hybrid retrieval flow and a two-claim example to the vector database plan.
+## [2026-11-21] lint | Clean for the hybrid sketch. Checked routing, index, source references, internal links, the new anchor and skill parity.
+## [2026-11-21] update | Reviewed API Anything as a tool for building a live connector and recorded the proposal in the vector database plan.
+## [2026-11-21] lint | Clean for API Anything review. Checked routing, index, raw source references, internal links, skill parity and consistency with the allowlist decision.
+## [2026-11-21] update | Proposed a versioned deployment profile to activate sources across live and corpus routes.
+## [2026-11-21] lint | Clean for the source activation proposal. Checked routing, index, raw source references, internal links and skill parity.
+## [2026-11-21] update | Proposed a private source registry and common evidence access for live and indexed data.
+## [2026-11-21] lint | Clean for the source registry design. Checked routing, index, source references, links and skill parity. The proposal marks the code allowlist decision for revision before rollout.
+## [2026-11-21] update | Defined snapshot freshness and document replacement in the source registry proposal.
+## [2026-11-21] lint | Clean for the freshness update. Checked routing, index, source references, links and skill parity.
