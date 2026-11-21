@@ -70,7 +70,8 @@ Fixes between runs 1 and 2: Sejm ELI title search on literal title fragments, ba
 ## Known gaps (ranked by impact on the score)
 1. **True claims abstain too often** (confirmed recall 0.50): A08, A10, A11, E03, F02 and S05. In S05 the model labelled the exact NBP line (4,2578 vs claim 4,26) as context. Code never upgrades a stance on purpose (a same-named statistic with another definition must not become a verdict), so the fix belongs in the prompt or the model.
 2. **Misleading inference** (B01, B03: true premise + wrong conclusion) still abstains: needs the explicit "misleading inference" handling from pipeline §2.
-3. No route yet for MSZ's Odyseusz, news agencies' own text, regional statistics or Sejm votings. Organizer sample A (Italian strike) can only be answered by abstaining.
+3. No route yet for MSZ's Odyseusz, news agencies' own text, regional statistics or Sejm votings. Organizer sample A (Italian strike) can only be answered by abstaining. Same for fresh news and quotes ("X said Y"): a live onet.pl article of 2026-11-21 on Zelensky and the E5 format gave 5 × `brak wystarczających dowodów` with zero records on every route (routes ran fine, nothing in Fact Check yet, no news route, corpus empty), shown as 5 identical cards.
 4. Citation correctness is unmeasured until a human labels `citations-review.csv`.
 5. The gold labels are single-annotator.
 6. **No reference case covers a known narrative**, so EUvsDisinfo match quality (precision of the "known narrative" note) is not measured by the benchmark; only the live smoke test checked it (2 of 2 matches correct for one query).
+7. **`implied_warnings` can turn suspicious**: on that article extraction warned "Zełenski nie przedstawił dowodów, że bez Polski negocjacje nie będą możliwe", demanding evidence for a stated political position (against "fair, not suspicious" in [verification-pipeline](../architecture/verification-pipeline.md)). Prompt fix pending.
