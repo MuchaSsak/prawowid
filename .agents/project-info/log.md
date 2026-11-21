@@ -191,3 +191,7 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | bot live on Vercel: Hono entry must import hono itself (build error fixed in src/index.ts); /health 200 ok, Messenger enabled, Discord vars not set
 ## [2026-11-21] update | gov.pl ministry news lists are static HTML (MAP Balczun release found), site search is JS-only; added to architecture/data-sources-research.md
 ## [2026-11-21] lint | clean (scope: one bullet in data-sources-research.md; index and routing unchanged)
+## [2026-11-21] update | mobile pass on the web app and admin: phone composer as a card with buttons under the text, hints measured to fit one line, admin key lock no longer overflows, /admin/dokumenty gap fixed; architecture/codebase.md
+## [2026-11-21] lint | clean (scope: mobile line in architecture/codebase.md; index, routing and skill parity unchanged)
+## [2026-11-21] update | themes hard-set: public site always dark, admin always light, OS setting ignored (white landing seen on a light-OS machine); architecture/codebase.md
+## [2026-11-21] lint | clean (scope: theme sentence in architecture/codebase.md; index, routing and skill parity unchanged)

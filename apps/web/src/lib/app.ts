@@ -241,19 +241,40 @@ export function initApp() {
 
   // ── input type the request will use ────────────────────────────────────────
   const inputType = (): InputType => attachment?.kind ?? (isUrl(text.value.trim()) ? "url" : "text");
+  // The hint must fit on one line of the field: a placeholder never scrolls and browsers clip it
+  // mid-word, so the long version is used only when it measures shorter than the field.
+  const measure = document.createElement("canvas").getContext("2d");
+  const fits = (hint: string) => {
+    if (!measure || !text.clientWidth) return false;
+    const cs = getComputedStyle(text);
+    measure.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const room = text.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    return measure.measureText(hint).width <= room;
+  };
+  const pick = (long: string, short: string) => (fits(long) ? long : short);
+  const refreshHint = () => {
+    const chat = document.body.classList.contains("is-chat");
+    text.placeholder = attachment
+      ? pick("Co sprawdzić w tym pliku? Możesz zostawić puste", "Pytanie (opcjonalnie)")
+      : chat
+      ? pick("Kolejne pytanie lub link", "Kolejne pytanie")
+      : pick("Spróbuj: „Czy płaca minimalna wzrosła w 2025 roku?”", "Wklej tekst lub link");
+  };
   /** The line under the input is used only by the recorder; otherwise only the placeholder changes. */
   const refreshSendAs = () => {
     if (recording) return; // the recorder owns the line while it runs
     sendAs.textContent = "";
-    const chat = document.body.classList.contains("is-chat");
-    text.placeholder = attachment
-      ? "Co sprawdzić w tym pliku? Możesz zostawić puste"
-      : chat
-      ? window.matchMedia("(max-width: 720px)").matches ? "Kolejne pytanie" : "Kolejne pytanie lub link"
-      : window.matchMedia("(max-width: 720px)").matches
-      ? "Wklej tekst lub link"
-      : "Spróbuj: „Czy płaca minimalna wzrosła w 2025 roku?”";
+    refreshHint();
   };
+  // Re-pick the hint when the field's width changes (rotation, resized window, chat layout).
+  let hintWidth = 0;
+  new ResizeObserver(() => {
+    if (text.clientWidth === hintWidth) return; // height changes from autoGrow don't matter
+    hintWidth = text.clientWidth;
+    refreshHint();
+  }).observe(text);
+  // Web fonts change the measured width once they load.
+  document.fonts?.ready.then(refreshHint);
 
   const showError = (msg: string | null) => {
     formError.hidden = !msg;

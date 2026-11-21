@@ -42,12 +42,13 @@ body.admin.has-test-bar { padding-top: 32px; }
 
 /* ── token gate ── */
 /* Full-page lock screen: until the key (or sample data) opens the panel, nothing else shows. */
-.gate { display: grid; place-items: center; min-height: 100vh; padding: 24px 16px; }
+/* minmax(0, 1fr) gives the card a definite track, so its max width can shrink on a phone. */
+.gate { display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; min-height: 100vh; padding: 24px 16px; }
 .gate[hidden] { display: none; }
 body.is-locked .admin-shell { display: none; }
 .gate-card .brand { font-size: 1.375rem; margin-bottom: 6px; }
 .gate-card .mark { width: 26px; height: 26px; }
-.gate-card { display: grid; gap: 14px; width: min(100%, 26rem); padding: 28px; border-radius: 20px; background: var(--page); border: 1px solid var(--line); }
+.gate-card { display: grid; gap: 14px; width: 100%; max-width: 26rem; padding: 28px; border-radius: 20px; background: var(--page); border: 1px solid var(--line); }
 .gate-card h2 { margin: 0; font: 400 1.5rem/1.2 var(--serif); letter-spacing: -.02em; }
 .gate-row { display: flex; gap: 8px; }
 .gate-row input { flex: 1; min-width: 0; height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel-hi); color: var(--ink); font: inherit; }
@@ -173,7 +174,8 @@ a.doc-thumb:hover { opacity: .92; }
 .doc-links a { color: var(--navy); text-underline-offset: 3px; }
 
 @media (max-width: 860px) {
-  .admin-shell { grid-template-columns: 1fr; }
+  /* Rows: the top bar hugs its content, the page takes the rest (no empty band on short pages). */
+  .admin-shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
   .side { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 14px 16px; border-right: 0; border-bottom: 1px solid var(--line); }
   .has-test-bar .side { height: auto; }
   .side .brand { padding: 0 8px 0 0; }
@@ -185,6 +187,11 @@ a.doc-thumb:hover { opacity: .92; }
   .admin-head h1 { font-size: 2rem; }
 }
 @media (max-width: 520px) {
+  /* Phone lock screen: key field on its own row, the button full width under it. */
+  .gate-card { padding: 22px 20px; }
+  .gate-row { flex-direction: column; }
+  .gate-row input { flex: none; }
+  .gate-row .pill-btn { width: 100%; }
   .kpis { grid-template-columns: 1fr; gap: 10px; }
   .kpi { padding: 14px; }
   .kpi-value { font-size: 1.5rem; }

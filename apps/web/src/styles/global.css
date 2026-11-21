@@ -45,48 +45,48 @@
   --serif: "Newsreader Variable", "Times New Roman", Times, serif;
   --sans: "Inter Tight Variable", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
-/* Pages with <html data-theme="light"> (the admin panel) stay light: no dark mode there. */
-:root[data-theme="light"] { color-scheme: light; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --page: #050d1a;
-    --panel: #0e1a2d;
-    --panel-hi: #14233a;
-    --ink: #eef1f6;
-    --ink-2: rgb(238 241 246 / .82);
-    --ink-3: rgb(238 241 246 / .5);
-    --line: rgb(238 241 246 / .12);
-    --navy: #9db7ff;
-    --navy-hover: #c0d0ff;
-    --on-navy: #050d1a;
-    --tint: rgb(157 183 255 / .08);
-    --tint-2: rgb(157 183 255 / .16);
-    --focus: #9db7ff;
-    --ok: #6fd39d;
-    --bad: #ff8f85;
-    --mis: #ffc46b;
-    --neutral: #c1c8d0;
-    --opinion: #b9bcf2;
-    --state: #ffd666;
-    --state-bg: #2c2510;
-    --mis-bg: #2e2210;
-    --rec: #ff6b6b;
-    --ok-bg: #10291c; --ok-fg: #8be3b3; --ok-bar: #4cc286;
-    --bad-bg: #2e1412; --bad-fg: #ffa198; --bad-bar: #ff6f63;
-    --mis2-bg: #2e1a08; --mis2-fg: #ffb066; --mis2-bar: #ff8f2e;
-    --unk-bg: #1b2230; --unk-fg: #d6dce5; --unk-bar: #9aa5b5;
-    --op-bg: #1c1d36; --op-fg: #c9ccff; --op-bar: #9ea2f0;
-    --state-line: #e0b84a;
-    --demo-fg: #ffd666;
-    --glyph: #050d1a;
-    --backdrop-opacity: .5;
-    --backdrop-filter: saturate(.85) brightness(.75);
-    --backdrop-shade: linear-gradient(to bottom, rgb(5 13 26 / .2), rgb(5 13 26 / .55));
-    --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 14px 44px -14px rgb(0 0 0 / .7);
-  }
+/* Fixed themes, never the OS setting: the public site (landing, chat, /prywatnosc) is always dark,
+   pages with <html data-theme="light"> (the admin panel) are always light. The light values above
+   are the admin's; the public pages override them here. */
+:root:not([data-theme="light"]) {
+  color-scheme: dark;
+  --page: #050d1a;
+  --panel: #0e1a2d;
+  --panel-hi: #14233a;
+  --ink: #eef1f6;
+  --ink-2: rgb(238 241 246 / .82);
+  --ink-3: rgb(238 241 246 / .5);
+  --line: rgb(238 241 246 / .12);
+  --navy: #9db7ff;
+  --navy-hover: #c0d0ff;
+  --on-navy: #050d1a;
+  --tint: rgb(157 183 255 / .08);
+  --tint-2: rgb(157 183 255 / .16);
+  --focus: #9db7ff;
+  --ok: #6fd39d;
+  --bad: #ff8f85;
+  --mis: #ffc46b;
+  --neutral: #c1c8d0;
+  --opinion: #b9bcf2;
+  --state: #ffd666;
+  --state-bg: #2c2510;
+  --mis-bg: #2e2210;
+  --rec: #ff6b6b;
+  --ok-bg: #10291c; --ok-fg: #8be3b3; --ok-bar: #4cc286;
+  --bad-bg: #2e1412; --bad-fg: #ffa198; --bad-bar: #ff6f63;
+  --mis2-bg: #2e1a08; --mis2-fg: #ffb066; --mis2-bar: #ff8f2e;
+  --unk-bg: #1b2230; --unk-fg: #d6dce5; --unk-bar: #9aa5b5;
+  --op-bg: #1c1d36; --op-fg: #c9ccff; --op-bar: #9ea2f0;
+  --state-line: #e0b84a;
+  --demo-fg: #ffd666;
+  --glyph: #050d1a;
+  --backdrop-opacity: .5;
+  --backdrop-filter: saturate(.85) brightness(.75);
+  --backdrop-shade: linear-gradient(to bottom, rgb(5 13 26 / .2), rgb(5 13 26 / .55));
+  --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 14px 44px -14px rgb(0 0 0 / .7);
 }
 
 * { box-sizing: border-box; }
@@ -475,9 +475,20 @@ body.is-chat .form-error { margin-top: 8px; }
 }
 
 @media (max-width: 720px) {
-  /* Tall phones: sit the hero in the optical centre instead of leaving the bottom half empty. */
-  body:not(.is-chat) main { justify-content: center; padding-bottom: 6vh; }
   body:not(.is-chat) .intro { padding-top: 24px; }
+  /* First screen on a phone: the text gets the whole width on its own row, the attach and mic
+     buttons sit bottom left and send bottom right (the label is absolutely positioned, so it takes
+     no grid cell). */
+  body:not(.is-chat) .composer { border-radius: 28px; padding: 8px 8px 8px; }
+  body:not(.is-chat) .pill-row { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: 2px 0; }
+  body:not(.is-chat) .composer textarea { grid-column: 1 / -1; min-height: 56px; padding: 12px 12px 6px; }
+  body:not(.is-chat) .send { grid-column: 4; }
+}
+/* Hints stay on one line (app.ts picks a version that fits the field). */
+.composer textarea::placeholder { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 1023px) {
+  /* Phones and tablets: sit the first screen in the optical centre, not at the top of an empty panel. */
+  body:not(.is-chat) .frame > main { justify-content: center; padding-bottom: 6vh; }
 }
 
 @media (max-width: 400px) {

@@ -1,7 +1,7 @@
 /**
  * The living backdrop: the dark page around the hero panel on the input screen, redrawn by an OGL
  * fragment shader as a faint blue haze that drifts slowly on its own (no pointer input). Low
- * contrast by design. Colors come from the CSS tokens (--page, --navy), so it follows light/dark.
+ * contrast by design. Colors come from the CSS tokens (--page, --navy), so it follows the page theme.
  * In chat it stays behind the whole thread, a little fainter.
  * Cheap on phones: device-pixel-ratio capped at 1, ~30 fps, paused when the tab is hidden, one
  * static frame under prefers-reduced-motion, and the plain CSS gradient stays as the fallback.
@@ -105,7 +105,8 @@ export function initBackdrop(host: HTMLElement): void {
   const mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
 
   const probe = document.createElement("canvas").getContext("2d")!;
-  const dark = matchMedia("(prefers-color-scheme: dark)");
+  // Fixed per page, not the OS setting: only the admin panel (data-theme="light") is light.
+  const dark = { matches: document.documentElement.dataset.theme !== "light" };
   const still = matchMedia("(prefers-reduced-motion: reduce)");
 
   const readColors = () => {
@@ -159,7 +160,6 @@ export function initBackdrop(host: HTMLElement): void {
 
   new ResizeObserver(refresh).observe(canvas);
   new MutationObserver(refresh).observe(document.body, { attributes: true, attributeFilter: ["class"] });
-  dark.addEventListener("change", refresh);
   still.addEventListener("change", run);
   document.addEventListener("visibilitychange", () => (document.hidden ? cancelAnimationFrame(raf) : run()));
   canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); cancelAnimationFrame(raf); canvas.remove(); });
