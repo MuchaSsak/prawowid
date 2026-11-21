@@ -38,6 +38,9 @@
   --state-line: #8a6500;
   --demo-fg: #5c4300;
   --glyph: #ffffff;
+  --backdrop-opacity: .16;
+  --backdrop-filter: grayscale(.35);
+  --backdrop-shade: transparent;
   --shadow: 0 1px 2px rgb(0 12 31 / .05), 0 14px 44px -14px rgb(0 12 31 / .22);
   --serif: "Newsreader Variable", "Times New Roman", Times, serif;
   --sans: "Inter Tight Variable", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -79,6 +82,9 @@
     --state-line: #e0b84a;
     --demo-fg: #ffd666;
     --glyph: #050d1a;
+    --backdrop-opacity: .5;
+    --backdrop-filter: saturate(.85) brightness(.75);
+    --backdrop-shade: linear-gradient(to bottom, rgb(5 13 26 / .2), rgb(5 13 26 / .55));
     --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 14px 44px -14px rgb(0 0 0 / .7);
   }
 }
@@ -117,10 +123,10 @@ button { font-family: inherit; letter-spacing: inherit; }
   isolation: isolate;
 }
 /* The living backdrop (src/lib/backdrop.ts): the dark page behind the hero panel on the input
-   screen. The panel keeps its own CSS gradient on top; the plain page color is the no-WebGL fallback. */
+   screen and behind the thread in chat. The panel keeps its own CSS gradient on top; the plain page color
+   is the no-WebGL fallback. */
 .backdrop { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
 .backdrop.is-on { opacity: 1; }
-body.is-chat .backdrop { display: none; }
 .top { position: relative; z-index: 2; }
 .top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 32px 48px 0; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font: 400 1.625rem/1 var(--serif); letter-spacing: -.03em; color: var(--ink); text-decoration: none; }
@@ -167,6 +173,11 @@ main { flex: 1; display: flex; flex-direction: column; }
 .send { background: var(--navy); color: var(--on-navy); }
 .send:hover { background: var(--navy-hover); }
 .send:disabled { opacity: .45; cursor: progress; }
+/* While a check runs the send button is a stop button (red, square icon), like ChatGPT. */
+.send.is-stop { background: var(--rec); color: var(--glyph); }
+.send.is-stop:hover { background: color-mix(in srgb, var(--rec) 85%, #000); }
+.send.is-stop svg rect { fill: currentColor; stroke: none; }
+.stopped { margin: 0; font-size: .9375rem; color: var(--ink-3); font-style: italic; }
 .icon-btn svg, .send svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 .mic.is-recording { background: var(--rec); color: #fff; box-shadow: 0 0 0 0 color-mix(in srgb, var(--rec) 45%, transparent); animation: rec 1.4s ease-out infinite; }
 @keyframes rec { to { box-shadow: 0 0 0 12px transparent; } }
@@ -199,7 +210,7 @@ main { flex: 1; display: flex; flex-direction: column; }
 /* ── conversation ───────────────────────────────────────────────────────── */
 .thread { display: none; }
 body.is-chat .intro, body.is-chat .foot { display: none; }
-body.is-chat .frame { margin: 0; min-height: 100vh; border-radius: 0; background: var(--page); }
+body.is-chat .frame { margin: 0; min-height: 100vh; border-radius: 0; background: transparent; } /* the backdrop shows through */
 body.is-chat .top { position: sticky; top: 0; z-index: 5; background: var(--page); border-bottom: 1px solid var(--line); }
 body.is-chat .top-row { max-width: 54rem; margin: 0 auto; padding: 10px 24px; }
 body.is-chat .pill-btn { height: 48px; padding: 0 20px 0 16px; font-size: 1.0625rem; letter-spacing: -.01em; }
@@ -243,6 +254,16 @@ body.is-chat .thread { display: grid; gap: 32px; width: 100%; max-width: 54rem; 
 
 /* ── the answer: one card per sentence, verdict first ───────────────────── */
 .sheet { display: grid; gap: 20px; font-size: 1rem; line-height: 1.6; }
+/* The checked photo or video frame behind the top of the answer: dimmed, fading out to nothing. */
+.sheet.has-backdrop { position: relative; isolation: isolate; padding-top: 28px; }
+.answer-backdrop {
+  position: absolute; inset: 0 -12px auto; z-index: -1; height: min(360px, 100%);
+  border-radius: 20px; overflow: hidden; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / .55) 45%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / .55) 45%, transparent 100%);
+}
+.answer-backdrop img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; opacity: var(--backdrop-opacity); filter: var(--backdrop-filter); }
+.answer-backdrop::after { content: ""; position: absolute; inset: 0; background: var(--backdrop-shade); }
 :where(.sheet p) { margin: 0; }
 .sheet :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
 /* Headings get focus only so screen readers start at the result; no ring around plain text. */
@@ -281,8 +302,18 @@ body.is-chat .thread { display: grid; gap: 32px; width: 100%; max-width: 54rem; 
 /* A card: hairline frame; the verdict is a small status pill above the sentence it rates. */
 .card { display: grid; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; scroll-margin-top: 84px; min-width: 0; overflow-wrap: anywhere; }
 .card-head { display: grid; gap: 10px; padding: 18px 22px 0; }
-.card-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.card-eyebrow { font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+/* The verdict pill and the strength meter share one row (no empty row above a card without an eyebrow). */
+.verdict-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; }
+.card-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.share-btn { display: inline-grid; place-items: center; width: 40px; height: 40px; margin: -6px -10px -6px 0; padding: 0; border: 0; border-radius: 999px; background: transparent; color: var(--ink-2); cursor: pointer; transition: background .15s, color .15s; }
+.share-btn:hover { background: var(--tint-2); color: var(--ink); }
+.share-btn { position: relative; }
+.share-btn.is-done { color: var(--ok-fg); }
+/* "Skopiowano do schowka": a small visible note under the icon for 2 s (desktop copies instead of sharing). */
+.share-tip { position: absolute; top: calc(100% + 4px); right: 0; z-index: 2; padding: 4px 10px; border-radius: 8px; background: var(--ink); color: var(--page); font-size: .8125rem; font-weight: 600; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s; }
+.share-btn.is-done .share-tip { opacity: 1; }
+.share-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.card-eyebrow { margin: 0; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
 .verdict { justify-self: start; display: inline-flex; align-items: center; gap: 7px; margin: 0; padding: 4px 12px 4px 7px; border-radius: 999px; background: var(--t-bg); color: var(--t-fg); font: 600 .9375rem/1.3 var(--sans); letter-spacing: 0; }
 .claim-text { margin: 2px 0 0; font: 400 1.3125rem/1.35 var(--serif); letter-spacing: -.015em; color: var(--ink); }
 .verdict-meaning { font-size: .9375rem; color: var(--ink-2); }
@@ -291,9 +322,19 @@ body.is-chat .thread { display: grid; gap: 32px; width: 100%; max-width: 54rem; 
 .meter-bars { display: inline-flex; gap: 2px; }
 .bar { width: 4px; height: 12px; border-radius: 1px; background: color-mix(in srgb, var(--t-bar) 25%, transparent); }
 .bar.on { background: var(--t-bar); }
-.card-body { display: grid; gap: 16px; padding: 14px 22px 20px; }
+.card-body { display: grid; gap: 18px; padding: 18px 22px 22px; }
+/* Reading rhythm: the sentence sits a little apart from its pill, its plain meaning hugs it like a
+   subtitle; body text is a touch larger and kept to a comfortable line length. */
+.verdict-row + .claim-text { margin-top: 4px; }
+.claim-text { text-wrap: pretty; }
+.claim-text + .verdict-meaning { margin-top: -4px; }
+.explanation { font-size: 1.0625rem; line-height: 1.6; color: var(--ink); }
+.claim-text, .verdict-meaning, .explanation, .card-body .section > p, .cite blockquote, .note p, .escalation p, .input-meta p { max-width: 68ch; text-wrap: pretty; }
+.advice { text-wrap: pretty; }
+/* Over the photo, cards and the overview become frosted panels so their text stays easy to read. */
+.has-backdrop .card, .has-backdrop .overview { background: color-mix(in srgb, var(--page) 74%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 
-.label { margin: 0 0 6px; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+.label { margin: 0 0 10px; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
 .cites { list-style: none; margin: 0; padding: 0; display: grid; }
 .cite { padding: 12px 0; border-top: 1px solid var(--line); }
 .cite:first-child { padding-top: 2px; border-top: 0; }
@@ -302,13 +343,27 @@ body.is-chat .thread { display: grid; gap: 32px; width: 100%; max-width: 54rem; 
 .cite.stance-supports blockquote { border-left-color: var(--ok-bar); }
 .cite.stance-refutes blockquote { border-left-color: var(--bad-bar); }
 .cite.stance-misleading blockquote { border-left-color: var(--mis2-bar); }
-.cite-meta { margin-top: 8px; padding-left: 16px; font-size: .8125rem; line-height: 1.5; color: var(--ink-2); }
+/* Quote icons on both sides of a source excerpt instead of „ ” characters; tinted by the source's stance. */
+.quote { --q: var(--ink-3); }
+.quote::before, .quote::after {
+  content: ""; display: inline-block; width: .8em; height: .8em; background: var(--q);
+  -webkit-mask: var(--q-icon) center / contain no-repeat; mask: var(--q-icon) center / contain no-repeat;
+  --q-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 6 16 12'%3E%3Cpath d='M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z'/%3E%3C/svg%3E");
+}
+.quote::before { margin-right: .3em; vertical-align: .05em; transform: rotate(180deg); }
+.quote::after { margin-left: .3em; vertical-align: .05em; }
+.stance-supports .quote { --q: var(--ok-bar); }
+.stance-refutes .quote { --q: var(--bad-bar); }
+.stance-misleading .quote { --q: var(--mis2-bar); }
+.cite-meta { margin-top: 10px; padding-left: 16px; font-size: .875rem; line-height: 1.5; color: var(--ink-2); }
 .cite-meta .publisher { font-weight: 600; color: var(--ink); }
 .cite-stance { font-weight: 600; }
 .stance-supports .cite-stance { color: var(--ok-fg); }
 .stance-refutes .cite-stance { color: var(--bad-fg); }
 .stance-misleading .cite-stance { color: var(--mis2-fg); }
 .cite-link { display: inline-block; padding: 4px 0; color: var(--navy); font-weight: 600; text-decoration: none; }
+/* The site's icon in front of a source link; the white chip keeps dark icons visible in dark mode. */
+.favicon { display: inline-block; width: 14px; height: 14px; padding: 1px; margin-right: 6px; vertical-align: -3px; border-radius: 4px; background: #fff; object-fit: contain; }
 .cite-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 .no-source { font-size: .9375rem; color: var(--ink-2); }
 
@@ -382,7 +437,7 @@ body.is-chat .form-error { margin-top: 8px; }
   body:not(.is-chat) .composer { padding: 24px 24px 24px 16px; }
   body:not(.is-chat) .pill-row { align-items: center; }
   .card-head { padding: 22px 28px 0; }
-  .card-body { padding: 16px 28px 24px; }
+  .card-body { padding: 20px 28px 26px; }
   .claim-text { font-size: 1.4375rem; }
   .cite blockquote { font-size: 1.125rem; }
 }
@@ -410,8 +465,10 @@ body.is-chat .form-error { margin-top: 8px; }
   .bot-avatar { display: none; }
   .turn-bot.is-waiting .bot-avatar { display: block; }
   .bubble { max-width: 90%; }
-  .card-head { padding: 16px 16px 0; }
-  .card-body { padding: 12px 16px 16px; gap: 14px; }
+  .card-head { padding: 18px 18px 0; }
+  .card-body { padding: 16px 18px 20px; gap: 16px; }
+  .meter-word { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .explanation { font-size: 1rem; }
   .claim-text { font-size: 1.1875rem; }
   .vicon-lg { width: 30px; height: 30px; }
   .answer-title { font-size: 1.375rem; }

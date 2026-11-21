@@ -158,6 +158,20 @@ body.is-locked .admin-shell { display: none; }
 .data-table th[scope="row"], .data-table thead th:first-child { text-align: left; }
 .data-table thead th { color: var(--ink-3); position: sticky; top: 0; background: var(--page); }
 
+/* ── documents page: cards with a scaled-down live preview ── */
+.doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.doc-card { display: flex; flex-direction: column; min-width: 0; overflow: hidden; border-radius: 18px; background: var(--page); border: 1px solid var(--line); }
+.doc-thumb { position: relative; display: block; aspect-ratio: 16 / 10; overflow: hidden; background: var(--panel-hi); border-bottom: 1px solid var(--line); }
+/* Render at 4x the box and scale down, so the thumbnail shows the page as it looks at full size. */
+.doc-thumb iframe { position: absolute; top: 0; left: 0; width: 400%; height: 400%; border: 0; background: #fff; transform: scale(.25); transform-origin: 0 0; pointer-events: none; }
+.doc-thumb-empty { display: grid; place-items: center; height: 100%; padding: 16px; text-align: center; color: var(--ink-3); font-size: .8125rem; }
+a.doc-thumb:hover { opacity: .92; }
+.doc-body { display: grid; gap: 4px; padding: 14px 18px 16px; }
+.doc-body h2 { margin: 0; font: 400 1.25rem/1.25 var(--serif); letter-spacing: -.015em; }
+.doc-desc { margin: 0; font-size: .8125rem; color: var(--ink-2); }
+.doc-links { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0 0; font-size: .875rem; }
+.doc-links a { color: var(--navy); text-underline-offset: 3px; }
+
 @media (max-width: 860px) {
   .admin-shell { grid-template-columns: 1fr; }
   .side { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 14px 16px; border-right: 0; border-bottom: 1px solid var(--line); }

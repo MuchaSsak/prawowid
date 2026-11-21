@@ -1,7 +1,7 @@
 # Plan integracji bazy wektorowej
 Plan wpięcia istniejącego prototypu PostgreSQL + pgvector do Prawdomatu przy minimalnych zmianach.
 
-Status: Etap 0 i podstawowy Etap 1 są zaimplementowane lokalnie; pełny test wymaga zainstalowania
+Status: Etap 0 i podstawowy Etap 1 są zaimplementowane lokalnie (tylko localhost); lista braków w [Co zostało](#co-zostało-stan-2026-11-21). Pełny test wymaga zainstalowania
 zależności Python oraz Deno/Bun zgodnie z README.
 
 ## Stan obecny
@@ -64,3 +64,15 @@ Jeżeli osobny Python service będzie problemem operacyjnym, przenieść tabele 
 - Czy publiczny corpus może przechowywać pełne teksty przy obecnym `license_status: conditional` i jaką przyjąć retencję?
 - Czy po benchmarku wdrażamy samo vector search, czy hybrydę FTS + vector/RRF?
 
+
+## Co zostało (stan 2026-11-21)
+
+Przegląd kodu po commicie `2e32f15` (Fakt = sprawdzone w repo).
+
+1. **Hosting** (Fakt): serwis działa tylko na `127.0.0.1:8000`, więc API na Deno Deploy go nie osiągnie. Trzeba wystawić Postgres + FastAPI (np. Postgres w Supabase w schemacie `corpus`, FastAPI w małym kontenerze) albo przejść od razu do Etapu 3.
+2. **Rozmiar korpusu** (Fakt): 21 dokumentów z 1 domeny (`policja.pl`; 2 kanały RSS, 2026-07-01..2026-11-21, ~82 tys. znaków, głównie komunikaty PR: turnieje, kampanie, zatrzymania, więc mała wartość dla fact-checkingu) wobec wymogu ≥100 dokumentów, ≥10 domen, ≥2 typów ([compliance-matrix](../hackathon/compliance-matrix.md)). W repo nie ma kolektorów (scraper/RSS), które wyprodukowały `data/corpus/policja-clean.jsonl`; brakują źródła z [planu korpusu](data-sources-research.md#recommended-corpus-plan-24h-mvp): CERT, gov.pl RCB/GIS/MSZ, IMGW, ELI, EUR-Lex, Odyseusz, ClaimReview z Google FCT.
+3. **EUvsDisinfo osobno** (Fakt): `euvsdisinfo-pull.ts` istnieje, ale `KnownIncidentStore` nie ma backendu w bazie. Sprawy EUvsDisinfo nie mogą trafić do tabeli `chunks`, bo `corpusSearch` cytowałby je jako dowód (kontekst, nie dowód: [euvsdisinfo-mcp](euvsdisinfo-mcp.md)).
+4. **Adapter `HttpCorpusStore`** (Fakt): `tier: "official"` jest zaszyty dla każdego trafienia (brak mapowania przez `sources/catalog.ts`, Etap 2); brak timeoutu i `ctx.signal` (krok 5 nie zrobiony); zapytania sklejane w jeden string zamiast osobnych wyszukiwań i scalenia; `/api/v1/health` publicznie zwraca `retrieval_url`.
+5. **Polityka korpusu** (Fakt): pełne teksty z `license_status: conditional` bez spisanej podstawy prawnej i retencji: pozycja ❌ w compliance-matrix.
+6. **Ewaluacja** (Fakt): brak przypadków w `eval/` zależnych od korpusu i brak porównania keyword vs vector; próg `0.82` dla `multilingual-e5-small` nie był strojony.
+7. **Odświeżanie** (Idea): jednorazowy snapshot z `retrieved_at` wystarczy na hackathon; codzienny re-ingest RSS później.

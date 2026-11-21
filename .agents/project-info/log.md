@@ -149,3 +149,20 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | new page indexed and linked from codebase, api-reference, compliance-matrix and README
 ## [2026-11-21] update | rebased the extensibility commit onto origin/main (admin analytics, vector DB plan): conflicts in log, compliance-matrix privacy row (kept the newer delete-button text, added the masking detail) and main_test (kept both tests); extensibility.md vector-DB example replaced by a pointer to vector-db-integration-plan (store swap behind the corpus route, no new connector)
 ## [2026-11-21] update | rebased the extensibility commit onto 2e32f15 (HttpCorpusStore wired): main.ts imports both HttpCorpusStore and NARRATIVE_MATCHERS; compliance-matrix corpus row no longer says the vector DB is unwired or docker-compose is missing; extensibility.md says the store swap is built
+## [2026-11-21] update | vector-db-integration-plan: 'Co zostało' gap list after 2e32f15 (localhost-only hosting, 21 docs/1 domain, no collectors, EUvsDisinfo store, adapter tier/timeout, corpus policy, eval)
+## [2026-11-21] lint | 1 finding: index summary of vector-db-integration-plan lacked the new gap list -> fixed; routing table and skill parity intact
+## [2026-11-21] update | vector-db-integration-plan: corpus content profile (2 policja.pl RSS feeds, mostly PR news); lint clean
+## [2026-11-21] update | web backdrop restored to the committed version (hero panel + chat screen) after the user clarified; the page-background variant was dropped
+## [2026-11-21] update | web: backdrop on the dark outer edge of the landing page and behind the chat (user clarified), stop button (red square, Escape) that cancels a running check; codebase web row updated
+## [2026-11-21] lint | clean: one-row edit in codebase.md, no new pages, routing/index/skills unchanged
+## [2026-11-21] update | cost sheet for the deliverable 'cost of 1,000 queries, channel maintenance, behaviour under load' (apps/web/public/dokumenty/prawdomat-koszty-1000-sprawdzen.xlsx; Google Sheets connector not authorized, so upload by hand); /admin/dokumenty page (decision 011); deliverables + compliance-matrix updated; pitch/README links the user's Prawdomat Design System artifact
+## [2026-11-21] lint | clean: cost sheet + /admin/dokumenty edits (011, deliverables, compliance-matrix, pitch/README, index); routing, index, links and skill parity intact
+## [2026-11-21] update | Prawdomat Design System filled (artifact JoqhxzNKkfsTALddYMMckr): tokens from apps/web, fonts, rosette assets, 14 A4/16:9 components, brand book with brevity limits; new page pitch/design-system.md
+## [2026-11-21] lint | clean: new pitch/design-system.md (links resolve, indexed), pitch/README link, routing and skill parity intact
+## [2026-11-21] update | user: no uppercase eyebrow labels above titles; removed the "Arkusz" label (and the `kind` field) from /admin/dokumenty; new page rules/ui-conventions.md
+## [2026-11-21] lint | clean: new rules/ui-conventions.md (links resolve, indexed, rules/ routed), skill parity unchanged
+
+## [2026-11-21] update | web answers: photo/video-frame backdrop (public-domain samples in ?test=true), favicons on source links, share button (native on touch, clipboard on desktop), meter on the pill row, quote icons, no confirmed advice/stance label, spacing pass; codebase web row updated
+## [2026-11-21] lint | clean: one-row edit in codebase.md (web answer extras); routing, index, links and skill parity intact
+## [2026-11-21] update | cost sheet now the hosted Google Sheet (card on /admin/dokumenty, local xlsx removed) and cut down to costs, assumptions and 3 load lines at the user's request; deliverables + decision 011 updated
+## [2026-11-21] lint | clean: two one-line edits (deliverables, 011); no links or index entries affected

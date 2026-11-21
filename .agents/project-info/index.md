@@ -11,6 +11,7 @@ Format: `- [path](path): one-line summary`
 ## rules/
 - [rules/README.md](rules/README.md): scope of the folder 
 - [rules/hard-constraints.md](rules/hard-constraints.md): 21 non-negotiable rules from the task and the organizers (no fabricated sources, verdicts vs system states, security, eval integrity, facts not opinions)
+- [rules/ui-conventions.md](rules/ui-conventions.md): user's UI style rules (no uppercase eyebrow labels above titles, less text)
 
 ## hackathon/
 - [hackathon/README.md](hackathon/README.md): scope of the folder 
@@ -51,7 +52,7 @@ Format: `- [path](path): one-line summary`
 - [architecture/extensibility.md](architecture/extensibility.md): **bonus: swappable channels, models and sources**: the seams (API, MODEL_<STEP>, `deps.connectors`, `deps.narrativeMatchers`), step-by-step recipes, the proving tests, swapping storage behind a route (vector DB via the plan), what is deliberately not swappable
 - [architecture/codebase.md](architecture/codebase.md): **what is built**: code layout, evidence routes (Google Fact Check, ELI, Eurostat, NBP, GUS), the number check, interim verdict choices, measured latency/cost, next steps
 - [architecture/technical-approach-research.md](architecture/technical-approach-research.md): pipeline best practice, models, retrieval, injection defense, eval harness, IFCN/EFCSN
-- [architecture/vector-db-integration-plan.md](architecture/vector-db-integration-plan.md): minimalny plan wpięcia istniejącego PostgreSQL + pgvector przez `CorpusStore`
+- [architecture/vector-db-integration-plan.md](architecture/vector-db-integration-plan.md): minimalny plan wpięcia istniejącego PostgreSQL + pgvector przez `CorpusStore`, plus lista braków (hosting, korpus 21 dok., adapter, polityka, eval)
 
 ## prompts/
 - [prompts/README.md](prompts/README.md): how prompts are used in code, patterns and anti-patterns, the change procedure
@@ -72,7 +73,7 @@ Format: `- [path](path): one-line summary`
 - [decisions/007-messaging-bot-chat-sdk.md](decisions/007-messaging-bot-chat-sdk.md): one bot service on the Vercel Chat SDK for Discord, WhatsApp and Messenger, calling the HTTP API (mock by default), hosted on Vercel Hobby (fra1) with Discord slash commands only
 - [decisions/008-trusted-source-allowlist.md](decisions/008-trusted-source-allowlist.md): evidence only from an allowlist of publishers (`GET /api/v1/sources`), tier by credentials (PAP, Sprawdzam To = media), one publisher = one origin, no bypassing robots/terms
 - [decisions/009-video-audio-input-and-web-composer.md](decisions/009-video-audio-input-and-web-composer.md): `video`/`audio` inputs added to contract v1 (data URLs, 5 MB, mock only for now), one shared media validator, single-composer web app on mock data (demo switch later removed: web is live-only)
-- [decisions/011-admin-analytics.md](decisions/011-admin-analytics.md): admin panel with one analytics page: 3 stat tiles (checks, false-or-misleading share, median time), most checked claims with verdict and trend, heatmap + traffic; full-screen key lock; aggregates only, sample switch, light only, browser token auth
+- [decisions/011-admin-analytics.md](decisions/011-admin-analytics.md): admin panel: analytics page (3 stat tiles (checks, false-or-misleading share, median time), most checked claims with verdict and trend, heatmap + traffic; full-screen key lock; aggregates only, sample switch, light only, browser token auth); plus `/admin/dokumenty`, cards with iframe previews of our files (cost sheet first)
 - [decisions/003-config-in-code.md](decisions/003-config-in-code.md): `.env` holds only secrets; models, routing and limits are code defaults, models overridable by optional env vars
 - [decisions/010-product-name-prawdomat.md](decisions/010-product-name-prawdomat.md): display name is **Prawdomat**; technical identifiers (env vars, packages, cookies, UA) keep `prawdowid`; PRAWDOWID = the MSZ task
 
@@ -81,7 +82,8 @@ Format: `- [path](path): one-line summary`
 - [evaluation/benchmark.md](evaluation/benchmark.md): **tests and benchmark**: 156 free deterministic tests, 50-case live reference set (A-J + statistics + organizer-style), metric definitions, results (run 3: macro-F1 0.71, misleading 0.50, abstention 88%, robustness/consistency 100%, $0.10 per 100), known gaps
 
 ## pitch/
-- [pitch/README.md](pitch/README.md): scope of the folder 
+- [pitch/README.md](pitch/README.md): scope of the folder; link to the Prawdomat Design System artifact for the deck and PDFs 
+- [pitch/design-system.md](pitch/design-system.md): the Prawdomat Design System for PDFs and decks: values taken from apps/web, Paper/Navy themes, 14 A4 and 16:9 components, the brevity limits, what is not on it yet (explain-flow template, charts)
 - [pitch/jury-insights.md](pitch/jury-insights.md): what the jury and MSZ care about, plus a 5-min pitch script
 - [pitch/blender-scenes-prompt.md](pitch/blender-scenes-prompt.md): agent prompt for the four looping low-poly, Fern-inspired background scenes (armchair, kitchen table, park bench, kiosk); 2.5 s per shot, hard cuts, no text, no render
 

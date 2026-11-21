@@ -30,8 +30,8 @@ const VERDICT_MEANING: Record<Verdict, string> = {
   insufficient_evidence: "Nie wiemy. Nie znaleźliśmy dość dowodów ani za, ani przeciw.",
   not_verifiable: "To opinia albo przewidywanie, a nie fakt. Nie da się tego sprawdzić.",
 };
-const VERDICT_ADVICE: Record<Verdict, string> = {
-  confirmed: "Możesz to przekazać dalej. Dołącz link do źródła, żeby inni też mogli sprawdzić.",
+/** No "Co teraz" line for confirmed claims (user's choice, 2026-11-21): the sources say enough. */
+const VERDICT_ADVICE: Partial<Record<Verdict, string>> = {
   false: "Nie przekazuj tego dalej. Jeśli ktoś Ci to wysłał, pokaż mu źródło.",
   misleading: "Nie przekazuj tego w tej formie. Przeczytaj, co dokładnie mówi źródło.",
   insufficient_evidence: "Wstrzymaj się z przekazywaniem dalej. Poczekaj na komunikat urzędu lub zaufanych mediów.",
@@ -143,14 +143,79 @@ export function icon(tone: Tone, size = "lg"): SVGSVGElement {
   return svg;
 }
 
+/** What the share sheet gets for one rated sentence: the sentence, our verdict, the first source. */
+function shareText(c: ClaimResult, v: Verdict): string {
+  const src = c.citations.find((x) => hostname(x.url));
+  return [
+    `„${c.text}”`,
+    `Prawdomat: ${VERDICT_TITLE[v]}. ${VERDICT_MEANING[v]}`,
+    src ? `Źródło: ${src.publisher}, ${src.url}` : null,
+  ].filter(Boolean).join("\n");
+}
+
+/** The common "share" glyph: three dots joined by two lines. */
+const SHARE_ICON =
+  "M18 2a3 3 0 110 6 3 3 0 010-6zM6 9a3 3 0 110 6 3 3 0 010-6zM18 16a3 3 0 110 6 3 3 0 010-6zM8.6 13.5l6.8 4M15.4 6.5l-6.8 4";
+
+/**
+ * Icon-only share button. Phones and tablets get the system share sheet; computers copy the text to
+ * the clipboard, because Chrome's desktop share sheet (Windows) is unreliable and crashed a browser
+ * in testing (2026-11-21). The link goes inside the text: some share targets drop a separate url.
+ */
+function shareButton(c: ClaimResult, v: Verdict): HTMLElement {
+  const svg = document.createElementNS(SVG, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  const p = document.createElementNS(SVG, "path");
+  p.setAttribute("d", SHARE_ICON);
+  svg.append(p);
+  const LABEL = "Udostępnij wynik";
+  const tip = h("span", { class: "share-tip", "aria-hidden": "true" });
+  const btn = h("button", { type: "button", class: "share-btn", "aria-label": LABEL, title: LABEL }, svg, tip);
+  let resetTimer = 0;
+  const flash = (label: string) => {
+    btn.setAttribute("aria-label", label);
+    btn.title = label;
+    tip.textContent = label;
+    btn.classList.add("is-done");
+    clearTimeout(resetTimer);
+    resetTimer = window.setTimeout(() => {
+      btn.setAttribute("aria-label", LABEL);
+      btn.title = LABEL;
+      btn.classList.remove("is-done");
+    }, 2000);
+  };
+  btn.addEventListener("click", async () => {
+    const text = `${shareText(c, v)}\nSprawdzono w Prawdomacie: ${location.origin}/`;
+    const data = { title: "Prawdomat", text };
+    const touch = window.matchMedia("(pointer: coarse)").matches;
+    if (touch && navigator.share && (!navigator.canShare || navigator.canShare(data))) {
+      try {
+        await navigator.share(data);
+      } catch {
+        // Closed by the person (AbortError) or blocked: nothing to say.
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      flash("Skopiowano do schowka");
+    } catch {
+      flash("Nie udało się udostępnić");
+    }
+  });
+  return btn;
+}
+
 function meter(level: keyof typeof STRENGTH): HTMLElement {
   const s = STRENGTH[level];
   const bars = h("span", { class: "meter-bars", "aria-hidden": "true" });
   for (let i = 1; i <= 3; i++) bars.append(h("span", { class: i <= s.bars ? "bar on" : "bar" }));
-  return h("p", { class: "meter", title: s.text }, bars, "Pewność ", h("strong", {}, s.word));
+  return h("p", { class: "meter", title: s.text }, bars, h("span", { class: "meter-word" }, "Pewność "), h("strong", {}, s.word));
 }
 
-/** The card's header: a quiet top line, the verdict as a status pill, the sentence, what it means. */
+/** The card's header: a quiet top line, the verdict pill (with the strength meter on the same row,
+ * so a card without a top line has no empty row), the sentence, what it means. */
 function cardHead(
   tone: Tone,
   title: string,
@@ -160,10 +225,13 @@ function cardHead(
   return h(
     "header",
     { class: "card-head" },
-    opts.kicker || opts.side
-      ? h("div", { class: "card-top" }, h("span", { class: "card-eyebrow" }, opts.kicker ?? ""), opts.side ?? null)
-      : null,
-    h("h3", { class: "verdict", id: opts.id, tabindex: "-1" }, icon(tone, "sm"), h("span", {}, title)),
+    opts.kicker ? h("p", { class: "card-eyebrow" }, opts.kicker) : null,
+    h(
+      "div",
+      { class: "verdict-row" },
+      h("h3", { class: "verdict", id: opts.id, tabindex: "-1" }, icon(tone, "sm"), h("span", {}, title)),
+      opts.side ?? null,
+    ),
     opts.claim ? h("p", { class: "claim-text" }, opts.claim) : null,
     h("p", { class: "verdict-meaning" }, meaning),
   );
@@ -181,12 +249,35 @@ export function stateCard(title: string, lines: string[], extra: HTMLElement | n
   );
 }
 
+/**
+ * The site's small icon in front of a link, so a list of sources doesn't read as one grey block.
+ * Fetched from DuckDuckGo's icon service: it receives only the publisher's domain (already public),
+ * never the user's text, and no referrer. Unknown sites get a 404, so the icon is simply removed
+ * (no blank placeholder). Decorative: hidden from screen readers.
+ */
+function favicon(host: string): HTMLElement {
+  const img = h("img", {
+    class: "favicon",
+    src: `https://icons.duckduckgo.com/ip3/${encodeURIComponent(host)}.ico`,
+    alt: "",
+    width: "16",
+    height: "16",
+    loading: "lazy",
+    decoding: "async",
+    referrerpolicy: "no-referrer",
+    "aria-hidden": "true",
+  });
+  img.addEventListener("error", () => img.remove(), { once: true });
+  return img;
+}
+
 function sourceLink(c: Citation): HTMLElement | null {
   const host = hostname(c.url);
   if (!host) return null;
   return h(
     "a",
     { class: "cite-link", href: c.url, target: "_blank", rel: "noopener noreferrer nofollow" },
+    favicon(host),
     host,
     h("span", { "aria-hidden": "true" }, " ↗"),
     h("span", { class: "sr-only" }, " (otworzy się w nowej karcie)"),
@@ -198,12 +289,15 @@ function citation(c: Citation): HTMLElement {
   return h(
     "li",
     { class: `cite stance-${c.stance}` },
-    h("blockquote", {}, `„${c.excerpt}”`),
+    h("blockquote", { class: "quote" }, c.excerpt),
     h(
       "p",
       { class: "cite-meta" },
-      h("span", { class: "cite-stance" }, STANCE[c.stance].text),
-      " · ",
+      // "To źródło potwierdza" is left out (user's choice, 2026-11-21): the green quote says it.
+      // A refuting or different-context source keeps its words, so meaning never rests on color alone.
+      c.stance === "supports" ? h("span", { class: "sr-only" }, `${STANCE.supports.text}: `) : null,
+      c.stance !== "supports" ? h("span", { class: "cite-stance" }, STANCE[c.stance].text) : null,
+      c.stance !== "supports" ? " · " : null,
       h("span", { class: "publisher" }, c.publisher),
       c.published_at ? ` · ${date(c.published_at)}` : "",
       link ? " · " : "",
@@ -246,7 +340,7 @@ function contextMatches(c: ClaimResult): HTMLElement | null {
         return h(
           "li",
           {},
-          m.excerpt ? h("blockquote", {}, `„${m.excerpt}”`) : null,
+          m.excerpt ? h("blockquote", { class: "quote" }, m.excerpt) : null,
           h(
             "p",
             { class: "cite-meta" },
@@ -254,7 +348,13 @@ function contextMatches(c: ClaimResult): HTMLElement | null {
             m.published_at ? `, ${date(m.published_at)}` : "",
             ": ",
             hostname(m.url)
-              ? h("a", { href: m.url, target: "_blank", rel: "noopener noreferrer nofollow" }, title, h("span", { class: "sr-only" }, " (otworzy się w nowej karcie)"))
+              ? h(
+                "a",
+                { href: m.url, target: "_blank", rel: "noopener noreferrer nofollow" },
+                favicon(hostname(m.url)!),
+                title,
+                h("span", { class: "sr-only" }, " (otworzy się w nowej karcie)"),
+              )
               : title,
           ),
         );
@@ -303,7 +403,12 @@ function claimCard(c: ClaimResult, index: number, total: number, uid: string): H
     cardHead(v, VERDICT_TITLE[v], VERDICT_MEANING[v], {
       kicker,
       id,
-      side: c.strength && SHOWS_STRENGTH.includes(v) ? meter(c.strength.level) : null,
+      side: h(
+        "div",
+        { class: "card-actions" },
+        c.strength && SHOWS_STRENGTH.includes(v) ? meter(c.strength.level) : null,
+        shareButton(c, v),
+      ),
       claim: c.text,
     }),
     h(
@@ -314,7 +419,7 @@ function claimCard(c: ClaimResult, index: number, total: number, uid: string): H
     ...c.warnings.map(warningBox),
     sources,
     contextMatches(c),
-    h("p", { class: "advice" }, h("strong", {}, "Co teraz: "), VERDICT_ADVICE[v]),
+    VERDICT_ADVICE[v] ? h("p", { class: "advice" }, h("strong", {}, "Co teraz: "), VERDICT_ADVICE[v]) : null,
     ),
   );
 }
@@ -368,7 +473,20 @@ export function announce(r: CheckResponse): string {
   return `Gotowe. ${n} ${plural(n, "zdanie", "zdania", "zdań")}: ${parts.join(", ")}.`;
 }
 
-export function renderResult(root: HTMLElement, r: CheckResponse) {
+/**
+ * A picture of the checked material (the attached photo or one frame of the attached video) laid
+ * behind the top of the answer: dimmed, fading to nothing toward the bottom. Purely decorative:
+ * the bubble above already shows the file, so it is hidden from screen readers.
+ */
+function backdropImage(src: string): HTMLElement {
+  return h(
+    "div",
+    { class: "answer-backdrop", "aria-hidden": "true" },
+    h("img", { src, alt: "", decoding: "async" }),
+  );
+}
+
+export function renderResult(root: HTMLElement, r: CheckResponse, opts: { backdrop?: string | null } = {}) {
   const parts: (HTMLElement | null)[] = [];
   // The demo_data warning is not shown (user's choice, 2026-11-21); mock texts from the API still
   // carry [DEMO] and point to example.org, which the source button shows as the address.
@@ -443,5 +561,10 @@ export function renderResult(root: HTMLElement, r: CheckResponse) {
 
   claims.forEach((c, i) => parts.push(claimCard(c, i, claims.length, uid)));
 
-  root.replaceChildren(h("div", { class: "sheet" }, ...parts.filter((p): p is HTMLElement => p !== null)));
+  const sheet = h("div", { class: "sheet" }, ...parts.filter((p): p is HTMLElement => p !== null));
+  if (opts.backdrop) {
+    sheet.classList.add("has-backdrop");
+    sheet.prepend(backdropImage(opts.backdrop));
+  }
+  root.replaceChildren(sheet);
 }

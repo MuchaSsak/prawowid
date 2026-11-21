@@ -101,6 +101,61 @@ function formatSize(bytes: number): string {
 
 const isUrl = (s: string) => /^https?:\/\/\S+$/i.test(s);
 
+/**
+ * ?test=true only: pictures behind the sample answers for a link, photo or video, so the backdrop
+ * can be seen without a file. Public domain (White House photos via Wikimedia Commons), see
+ * public/sample/README.md.
+ */
+const SAMPLE_BACKDROP: Partial<Record<InputType, string>> = {
+  url: "/sample/trump-speech.jpg",
+  image: "/sample/trump-oval-office.jpg",
+  video: "/sample/trump-video-frame.jpg",
+};
+
+/**
+ * One still frame of a video (about a quarter in, at most 1 s), as an object URL of a JPEG, for the
+ * answer's backdrop. Resolves null if the browser cannot decode the video or takes over 4 s.
+ */
+function videoFrame(file: File): Promise<string | null> {
+  return new Promise((resolve) => {
+    const src = URL.createObjectURL(file);
+    const video = document.createElement("video");
+    let done = false;
+    const finish = (url: string | null) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      video.removeAttribute("src");
+      video.load();
+      URL.revokeObjectURL(src);
+      resolve(url);
+    };
+    const timer = setTimeout(() => finish(null), 4000);
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = "auto";
+    video.addEventListener("loadedmetadata", () => {
+      video.currentTime = Math.min(1, (video.duration || 0) / 4);
+    }, { once: true });
+    video.addEventListener("seeked", () => {
+      const w = video.videoWidth, hgt = video.videoHeight;
+      if (!w || !hgt) return finish(null);
+      const scale = Math.min(1, 960 / w);
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(w * scale);
+      canvas.height = Math.round(hgt * scale);
+      try {
+        canvas.getContext("2d")!.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((b) => finish(b ? URL.createObjectURL(b) : null), "image/jpeg", 0.8);
+      } catch {
+        finish(null);
+      }
+    }, { once: true });
+    video.addEventListener("error", () => finish(null), { once: true });
+    video.src = src;
+  });
+}
+
 export function initApp() {
   drawRosettes();
   const api = (document.body.dataset.api ?? "http://localhost:8787").replace(/\/$/, "");
@@ -498,6 +553,40 @@ export function initApp() {
     return { el, body, status };
   };
 
+  // ── Stop (like ChatGPT): while a check runs, the send button turns into a red stop button;
+  // a click on it or Escape cancels the request and leaves a quiet "Zatrzymano" line. ──────────
+  let abort: AbortController | null = null;
+  const sendChildren = [...submit.childNodes];
+  const stopIcon = (() => {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    const sq = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    for (const [k, v] of Object.entries({ x: "7", y: "7", width: "10", height: "10", rx: "2" })) sq.setAttribute(k, v);
+    svg.append(sq);
+    return svg;
+  })();
+  const stopLabel = h("span", { class: "send-label", "aria-hidden": "true" }, "Zatrzymaj");
+  const setStopMode = (on: boolean) => {
+    submit.classList.toggle("is-stop", on);
+    submit.replaceChildren(...(on ? [stopLabel, stopIcon] : sendChildren));
+    const label = on ? "Zatrzymaj sprawdzanie (Esc)" : "Sprawdź";
+    submit.setAttribute("aria-label", label);
+    submit.title = label;
+  };
+  const stop = () => abort?.abort(new DOMException("Zatrzymano", "AbortError"));
+  submit.addEventListener("click", (e) => {
+    if (!busy) return;
+    e.preventDefault(); // a click while busy is "stop", never a new send
+    stop();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && busy) {
+      e.preventDefault();
+      stop();
+    }
+  });
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (busy) return;
@@ -520,6 +609,14 @@ export function initApp() {
       channel: "web",
     };
     if (att && typed) req.user_message = typed.slice(0, 2000);
+    // The picture behind the answer: the photo itself, or a frame of the video (captured now,
+    // in parallel with the check). Object URLs are revoked on "Nowe pytanie".
+    const keep = (url: string | null) => (url && bubbleUrls.push(url), url);
+    const backdropReady: Promise<string | null> = att?.kind === "image"
+      ? Promise.resolve(keep(URL.createObjectURL(att.file)))
+      : att?.kind === "video"
+      ? videoFrame(att.file).then(keep)
+      : Promise.resolve(null);
 
     // Post the user's message, clear the composer and dock it at the bottom.
     enterChat();
@@ -531,8 +628,17 @@ export function initApp() {
     requestAnimationFrame(scrollToEnd);
 
     busy = true;
-    submit.disabled = true;
+    const controller = new AbortController();
+    abort = controller;
+    setStopMode(true);
     form.classList.add("is-busy");
+    const timeoutId = setTimeout(() => controller.abort(new DOMException("Timeout", "TimeoutError")), 40_000);
+    // Rejects as soon as the request is stopped or times out, so every wait below ends at once.
+    const aborted = new Promise<never>((_, reject) => {
+      controller.signal.addEventListener("abort", () => reject(controller.signal.reason), { once: true });
+    });
+    aborted.catch(() => {});
+    const guard = <T>(p: Promise<T>) => Promise.race([p, aborted]);
     const stages = STAGES[type];
     let stage = 0;
     bot.status.textContent = stages[0];
@@ -552,18 +658,25 @@ export function initApp() {
       if (testMode) {
         data = mockResponse(req, nextScenario(req));
       } else {
-        const res = await fetch(`${api}/api/v1/check`, {
+        const res = await guard(fetch(`${api}/api/v1/check`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(req),
-          signal: AbortSignal.timeout(40_000),
-        });
-        data = (await res.json()) as CheckResponse;
+          signal: controller.signal,
+        }));
+        data = (await guard(res.json())) as CheckResponse;
       }
-      await settle();
-      renderResult(bot.body, data);
+      await guard(settle());
+      const backdrop = (await guard(backdropReady)) ?? (testMode ? SAMPLE_BACKDROP[data.input.type] ?? null : null);
+      renderResult(bot.body, data, { backdrop });
       srStatus.textContent = announce(data);
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        // Stopped by the person: not an answer and not an error, just a quiet line.
+        bot.body.replaceChildren(h("p", { class: "stopped" }, "Zatrzymano"));
+        srStatus.textContent = "Sprawdzanie zatrzymane.";
+        return;
+      }
       const timeout = err instanceof DOMException && err.name === "TimeoutError";
       await settle();
       bot.body.replaceChildren(
@@ -574,12 +687,18 @@ export function initApp() {
       );
       srStatus.textContent = "Nie udało się uzyskać odpowiedzi.";
     } finally {
+      clearTimeout(timeoutId);
       clearInterval(timer);
+      abort = null;
+      setStopMode(false);
       bot.status.remove();
       bot.el.classList.remove("is-waiting");
       busy = false;
-      submit.disabled = false;
       form.classList.remove("is-busy");
+      if (controller.signal.reason?.name === "AbortError") {
+        text.focus({ preventScroll: true });
+        return;
+      }
       // Show the answer from its top and move focus to its heading (screen readers read the
       // result next; on phones no keyboard pops up), unless the person already started typing
       // the next question: then leave their focus and scroll alone.

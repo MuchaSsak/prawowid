@@ -1,0 +1,80 @@
+---
+import "@fontsource-variable/newsreader/opsz.css";
+import "@fontsource-variable/inter-tight";
+import "../../styles/global.css";
+import "../../styles/admin.css";
+import { documents, embedUrl } from "../../lib/admin/documents.ts";
+
+const cards = documents.map((d) => ({ ...d, embed: embedUrl(d.url) }));
+---
+<!doctype html>
+<html lang="pl" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Dokumenty · Panel Prawdomat</title>
+  </head>
+  <body class="admin">
+    <div class="admin-shell">
+      <aside class="side">
+        <a class="brand" href="/">
+          <svg class="mark" data-rosette="mark" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+          Prawdomat
+        </a>
+        <p class="side-label">Panel</p>
+        <nav aria-label="Panel">
+          <a class="side-link" href="/admin/analityka">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>
+            Analityka
+          </a>
+          <a class="side-link" href="/admin/dokumenty" aria-current="page">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5" /></svg>
+            Dokumenty
+          </a>
+        </nav>
+        <div class="side-foot">
+          <a class="side-link" href="/">← Strona główna</a>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+        <header class="admin-head">
+          <h1>Dokumenty</h1>
+        </header>
+
+        <div class="doc-grid">
+          {cards.map((d) => (
+            <article class="doc-card">
+              {d.url ? (
+                <a class="doc-thumb" href={d.url} target="_blank" rel="noopener" aria-label={`Otwórz: ${d.title}`}>
+                  {d.embed ? (
+                    <iframe src={d.embed} title={`Podgląd: ${d.title}`} loading="lazy" tabindex="-1"></iframe>
+                  ) : (
+                    <span class="doc-thumb-empty">Brak podglądu</span>
+                  )}
+                </a>
+              ) : (
+                <div class="doc-thumb"><span class="doc-thumb-empty">Podgląd pojawi się po dodaniu linku</span></div>
+              )}
+              <div class="doc-body">
+                <h2>{d.title}</h2>
+                <p class="doc-desc">{d.description}</p>
+                <p class="doc-links">
+                  {d.url && <a href={d.url} target="_blank" rel="noopener">Otwórz ↗</a>}
+                  {d.download && <a href={d.download.href} download>{d.download.label}</a>}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </main>
+    </div>
+
+    <script>
+      import { drawRosettes } from "../../lib/rosette.ts";
+      drawRosettes();
+    </script>
+  </body>
+</html>
