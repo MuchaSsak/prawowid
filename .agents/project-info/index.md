@@ -80,6 +80,7 @@ Format: `- [path](path): one-line summary`
 ## pitch/
 - [pitch/README.md](pitch/README.md): scope of the folder 
 - [pitch/jury-insights.md](pitch/jury-insights.md): what the jury and MSZ care about, plus a 5-min pitch script
+- [pitch/blender-scenes-prompt.md](pitch/blender-scenes-prompt.md): agent prompt for the four looping low-poly, Fern-inspired background scenes (armchair, kitchen table, park bench, kiosk); 2.5 s per shot, hard cuts, no text, no render
 
 ## sources/
 - [sources/README.md](sources/README.md): raw source files 

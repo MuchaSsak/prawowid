@@ -15,3 +15,8 @@ Why Prawdomat exists: the disinformation and verification problem as MSZ frames 
 - **The service itself is a target:** adversaries may plant instructions in content (prompt injection) or abuse the service.
 
 Who we build for: [audience/overview.md](../audience/overview.md). Requirements: [hackathon/task-brief.md](../hackathon/task-brief.md).
+
+## Statistics that show the problem (for the submission and pitch)
+- **77%** of Poles say they have met false information; **91%** believed at least one of 30 tested fake news items (up from 55% in 2024); an average fake reached **34%**. (Digital Poland, "Dezinformacja oczami Polaków", 3rd ed., June 2026, with NASK and Demagog: https://digitalpoland.org/assets/publications/dezinformacja_oczami_polakow_edycja_2026_.pdf)
+- In 2025 NASK reported **46,000+** disinformation items to social platforms; platforms removed **12%** and ignored **20%**. (gov.pl, NASK report: https://www.gov.pl/web/cyfryzacja/platformy-spolecznosciowe-a-dezinformacja-w-2025-roku--nowy-raport-nask)
+- About **44%** of Polish adults have at least basic digital skills vs ~56% EU average (Eurostat/DESI 2023; from memory, re-check before quoting on slides).
