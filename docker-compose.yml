@@ -11,7 +11,8 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - prawowid-vector-data:/var/lib/postgresql/data
-      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro,z
+      - ./infra/postgres/migrations/002-versioned-corpus.sql:/docker-entrypoint-initdb.d/002-versioned-corpus.sql:ro,z
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-knowledge_base} -d ${POSTGRES_DB:-knowledge_base_main}"]
       interval: 5s

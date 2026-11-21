@@ -14,6 +14,8 @@ bun run web:dev             # web app on http://localhost:4321 (second terminal)
 ```
 Or both at once: `bun run dev`. Check the setup: `curl http://localhost:8787/api/v1/health`.
 
+Source registry prototype (branch `t3/test-source-registry`): operators add, test and disable evidence sources at `/admin/zrodla` without a deploy. Localhost steps, with or without Docker, and a 5-minute test script: [docs/source-registry-prototype.md](docs/source-registry-prototype.md).
+
 ### Messaging bot (console channel, no account needed)
 `bun run bot:console "tekst do sprawdzenia"` runs the bot's real conversation in the terminal against the deployed API (add `--as discord` or `--as whatsapp` to see that platform's reply). For synthetic demo answers start the API with `PRAWDOWID_MODE=mock bun run api:dev` and add `PRAWDOWID_API_URL=http://localhost:8787`. Discord, WhatsApp and Messenger setup: `apps/bot/README.md`.
 

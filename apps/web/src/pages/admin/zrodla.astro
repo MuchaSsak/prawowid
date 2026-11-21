@@ -1,0 +1,269 @@
+---
+import "@fontsource-variable/inter-tight";
+import "../../styles/global.css";
+import "../../styles/admin.css";
+
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
+const tabs = [
+  ["zrodla", "Źródła"],
+  ["dodaj", "Dodaj źródło"],
+  ["dokumenty", "Dokumenty"],
+  ["sprawdz", "Test wyszukiwania"],
+  ["dziennik", "Historia zmian"],
+];
+const claimTypes = [
+  ["", "Dowolny"],
+  ["numeric", "Liczby"],
+  ["legal", "Prawo"],
+  ["parliamentary", "Parlament"],
+  ["official_statement", "Komunikat urzędowy"],
+  ["event", "Wydarzenie"],
+  ["narrative", "Narracja"],
+];
+---
+<!doctype html>
+<html lang="pl" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex" />
+    <meta name="description" content="Panel Prawdomatu: rejestr źródeł." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Źródła · Panel Prawdomat</title>
+  </head>
+  <body class="admin" data-api={apiUrl}>
+    <section id="gate" class="gate" hidden>
+      <form id="gate-form" class="gate-card">
+        <a class="brand" href="/">
+          <svg class="mark" data-rosette="mark" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+          Prawdomat
+        </a>
+        <h2>Klucz administratora</h2>
+        <label class="sr-only" for="gate-operator">Twoje imię (do dziennika)</label>
+        <input id="gate-operator" name="operator" class="gate-input" type="text" autocomplete="nickname" maxlength="60" placeholder="Twoje imię (do dziennika)" />
+        <label class="sr-only" for="token">Klucz administratora</label>
+        <div class="gate-row">
+          <input id="token" name="token" type="password" autocomplete="current-password" placeholder="Klucz" required />
+          <button type="submit" class="pill-btn">Otwórz</button>
+        </div>
+        <p id="gate-error" class="gate-error" role="alert" hidden></p>
+      </form>
+    </section>
+
+    <div class="admin-shell">
+      <aside class="side">
+        <a class="brand" href="/">
+          <svg class="mark" data-rosette="mark" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+          Prawdomat
+        </a>
+        <p class="side-label">Panel</p>
+        <nav aria-label="Panel">
+          <a class="side-link" href="/admin/analityka">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>
+            Analityka
+          </a>
+          <a class="side-link" href="/admin/dokumenty">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5" /></svg>
+            Dokumenty
+          </a>
+          <a class="side-link" href="/admin/zrodla" aria-current="page">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3zM4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6" /></svg>
+            Źródła
+          </a>
+        </nav>
+        <div class="side-foot">
+          <button type="button" id="logout" class="side-link side-btn" hidden>Wyloguj</button>
+          <a class="side-link" href="/">← Strona główna</a>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+        <header class="admin-head">
+          <h1>Źródła</h1>
+          <div class="filters">
+            <label class="op-field">
+              Operator
+              <input id="operator" type="text" autocomplete="nickname" maxlength="60" placeholder="operator" />
+            </label>
+            <button type="button" id="refresh" class="icon-btn" aria-label="Odśwież">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" /></svg>
+            </button>
+          </div>
+        </header>
+
+        <p id="notice" class="notice" role="status" hidden></p>
+
+        <div id="content" class="reg-page" hidden>
+          <p id="summary" class="reg-summary"></p>
+          <nav class="reg-tabs" role="tablist" aria-label="Sekcje">
+            {tabs.map(([id, label]) => (
+              <button type="button" role="tab" id={`tab-${id}`} data-tab={id} aria-controls={id} aria-selected="false">{label}</button>
+            ))}
+          </nav>
+
+          <section id="zrodla" class="reg-panel" role="tabpanel" aria-labelledby="tab-zrodla" hidden>
+            <p class="tab-hint">Prawdomat szuka dowodów tylko we włączonych źródłach. Wyłączenie działa od razu, bez wdrożenia.</p>
+            <div id="sources"></div>
+          </section>
+
+          <section id="dodaj" class="reg-panel" role="tabpanel" aria-labelledby="tab-dodaj" hidden>
+            <p class="tab-hint">Zapisz źródło, przetestuj je na prawdziwych danych i dopiero wtedy włącz.</p>
+            <div id="drafts-card" class="a-card" hidden>
+              <div class="card-title"><h2>Czeka na aktywację</h2></div>
+              <div id="drafts"></div>
+            </div>
+            <div class="a-card">
+              <div class="card-title"><h2>Nowe źródło</h2></div>
+              <form id="add-form" class="r-form">
+                <fieldset class="r-group">
+                  <legend>1. Skąd pobierać</legend>
+                  <div class="r-fields">
+                    <div class="field">
+                      <label for="add-adapter">Typ</label>
+                      <select id="add-adapter" name="adapter"></select>
+                    </div>
+                  </div>
+                  <div id="adapter-fields" class="r-fields"></div>
+                </fieldset>
+
+                <fieldset class="r-group">
+                  <legend>2. Kto publikuje</legend>
+                  <div class="r-fields">
+                    <div class="field">
+                      <label for="add-publisher">Wydawca</label>
+                      <select id="add-publisher" name="publisher_pick"><option value="">Nowy wydawca</option></select>
+                    </div>
+                  </div>
+                  <div id="new-publisher" class="r-fields">
+                    <div class="field"><label for="p-name">Nazwa</label><input id="p-name" name="p_name" maxlength="200" placeholder="np. CERT Polska" /></div>
+                    <div class="field"><label for="p-host">Domena</label><input id="p-host" name="p_host" placeholder="np. cert.pl" /></div>
+                  </div>
+                </fieldset>
+
+                <details class="r-more">
+                  <summary>Więcej opcji</summary>
+                  <div class="r-fields">
+                    <div class="field new-pub-only"><label for="p-id">ID wydawcy</label><input id="p-id" name="p_id" pattern="[a-z0-9][a-z0-9_]{1,62}" placeholder="z nazwy" /></div>
+                    <div class="field new-pub-only">
+                      <label for="p-tier">Waga dowodu</label>
+                      <select id="p-tier" name="p_tier">
+                        <option value="official">Urzędowe</option>
+                        <option value="factcheck">Fact-checking</option>
+                        <option value="media">Media</option>
+                        <option value="other">Inne</option>
+                      </select>
+                    </div>
+                    <div class="field new-pub-only">
+                      <label for="p-kind">Rodzaj wydawcy</label>
+                      <select id="p-kind" name="p_kind">
+                        <option value="official">Instytucja publiczna</option>
+                        <option value="fact_checker">Fact-checker</option>
+                        <option value="news_agency">Agencja informacyjna</option>
+                        <option value="public_media">Media publiczne</option>
+                      </select>
+                    </div>
+                    <div class="field new-pub-only"><label for="p-path">Tylko ścieżka</label><input id="p-path" name="p_path" placeholder="np. /web/zdrowie" /></div>
+                    <div class="field"><label for="b-id">ID źródła</label><input id="b-id" name="b_id" pattern="[a-z0-9][a-z0-9_]{1,62}" placeholder="z nazwy" /></div>
+                    <div class="field"><label for="b-label">Nazwa źródła</label><input id="b-label" name="b_label" maxlength="200" placeholder="z nazwy wydawcy" /></div>
+                    <div class="field"><label for="b-hosts">Dozwolone serwery</label><input id="b-hosts" name="b_hosts" placeholder="z adresu" /></div>
+                    <div class="field corpus-only">
+                      <label for="b-kind">Rodzaj dokumentów</label>
+                      <select id="b-kind" name="b_kind">
+                        <option value="dated_statement">Komunikaty z datą</option>
+                        <option value="standing_state">Stan obowiązujący</option>
+                      </select>
+                    </div>
+                    <div class="field corpus-only"><label for="b-fresh">Ważność (dni)</label><input id="b-fresh" name="b_fresh" type="number" min="1" inputmode="numeric" /></div>
+                    <label class="check"><input type="checkbox" name="b_required" /> Wymagane</label>
+                  </div>
+                </details>
+
+                <ul id="add-errors" class="r-errors" role="alert" hidden></ul>
+                <div class="r-actions"><button type="submit" class="pill-btn">Zapisz</button></div>
+              </form>
+            </div>
+          </section>
+
+          <section id="dokumenty" class="reg-panel" role="tabpanel" aria-labelledby="tab-dokumenty" hidden>
+            <p class="tab-hint">Teksty z kanałów RSS i dodane ręcznie. Prawdomat przeszukuje je przy każdym sprawdzeniu.</p>
+            <div class="a-card">
+              <form id="corpus-form" class="r-form">
+                <div class="r-fields">
+                  <div class="field"><label for="c-q">Szukaj</label><input id="c-q" name="q" type="search" /></div>
+                  <div class="field"><label for="c-pub">Wydawca</label><select id="c-pub" name="publisher_id"><option value="">Wszyscy</option></select></div>
+                  <div class="field"><label for="c-bind">Źródło</label><select id="c-bind" name="binding_id"><option value="">Wszystkie</option></select></div>
+                  <div class="field"><label for="c-date">Ważne w dniu</label><input id="c-date" name="date" type="date" /></div>
+                </div>
+                <div class="r-actions">
+                  <label class="check"><input type="checkbox" name="include_superseded" /> Pokaż stare wersje</label>
+                  <button type="submit" class="pill-btn">Szukaj</button>
+                </div>
+              </form>
+              <div id="corpus-out" class="r-out"></div>
+              <div id="corpus-history" class="r-out" aria-live="polite"></div>
+            </div>
+
+            <details id="doc-card" class="a-card r-fold">
+              <summary><h2>Dodaj lub zastąp dokument</h2></summary>
+              <form id="doc-form" class="r-form">
+                <div class="r-fields">
+                  <div class="field is-wide"><label for="d-binding">Źródło</label><select id="d-binding" name="binding" required></select></div>
+                  <div class="field is-wide"><label for="d-title">Tytuł</label><input id="d-title" name="title" maxlength="400" required /></div>
+                  <div class="field is-wide"><label for="d-url">Adres u wydawcy</label><input id="d-url" name="canonical_url" type="url" placeholder="https://…" required /></div>
+                  <div class="field"><label for="d-date">Opublikowano</label><input id="d-date" name="published_at" type="date" /></div>
+                  <div class="field">
+                    <label for="d-kind">Rodzaj</label>
+                    <select id="d-kind" name="kind">
+                      <option value="">Jak w źródle</option>
+                      <option value="dated_statement">Komunikat z datą</option>
+                      <option value="standing_state">Stan obowiązujący</option>
+                    </select>
+                  </div>
+                  <div class="field"><label for="d-from">Obowiązuje od</label><input id="d-from" name="effective_from" type="date" /></div>
+                  <div class="field"><label for="d-to">Obowiązuje do</label><input id="d-to" name="effective_to" type="date" /></div>
+                  <div class="field is-wide"><label for="d-text">Treść</label><textarea id="d-text" name="text" rows="6" required></textarea></div>
+                  <div class="field is-wide"><label for="d-docid">Zastępuje dokument (ID)</label><input id="d-docid" name="document_id" placeholder="puste = nowy dokument" /></div>
+                </div>
+                <ul id="doc-errors" class="r-errors" role="alert" hidden></ul>
+                <p id="doc-result" class="r-ok" role="status" hidden></p>
+                <div class="r-actions"><button type="submit" class="pill-btn">Zapisz dokument</button></div>
+              </form>
+            </details>
+          </section>
+
+          <section id="sprawdz" class="reg-panel" role="tabpanel" aria-labelledby="tab-sprawdz" hidden>
+            <p class="tab-hint">Wpisz twierdzenie i zobacz, co znajdą włączone źródła. Bez modelu AI i bez werdyktu.</p>
+            <div class="a-card">
+              <form id="probe-form" class="r-form">
+                <div class="r-fields">
+                  <div class="field is-wide"><label for="pr-text">Twierdzenie</label><textarea id="pr-text" name="text" rows="3" maxlength="2000" required></textarea></div>
+                  <div class="field">
+                    <label for="pr-type">Typ</label>
+                    <select id="pr-type" name="type">
+                      {claimTypes.map(([v, l]) => <option value={v}>{l}</option>)}
+                    </select>
+                  </div>
+                  <div class="field"><label for="pr-time">Kiedy</label><input id="pr-time" name="time" pattern="\d{4}(-\d{2}){0,2}" placeholder="2024 lub 2024-03" /></div>
+                </div>
+                <div class="r-actions"><button type="submit" class="pill-btn">Szukaj dowodów</button></div>
+              </form>
+              <div id="probe-out" class="r-out" aria-live="polite"></div>
+            </div>
+          </section>
+
+          <section id="dziennik" class="reg-panel" role="tabpanel" aria-labelledby="tab-dziennik" hidden>
+            <p class="tab-hint">Kto, kiedy i co zmienił. Każda zmiana źródeł ma swój numer.</p>
+            <div class="a-card"><div id="audit"></div></div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <p id="toast" class="r-toast" role="status" hidden></p>
+
+    <script>
+      import { initSources } from "../../lib/admin/sources.ts";
+      initSources();
+    </script>
+  </body>
+</html>

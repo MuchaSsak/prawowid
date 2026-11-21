@@ -29,3 +29,5 @@ export { MOCK_SCENARIO_DESCRIPTIONS, MOCK_SCENARIOS, type MockScenario, mockResp
 export { publicCatalog, type TrustedSource, TRUSTED_SOURCES, trustedSourceFor } from "./sources/catalog.ts";
 export * from "./analytics/mod.ts";
 export { INDICATORS } from "./connectors/stats-catalog.ts";
+// Source registry prototype (architecture/source-platform.md).
+export * from "./registry/mod.ts";

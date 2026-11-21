@@ -121,7 +121,7 @@ function parseRobots(txt: string): string[] {
   return disallow;
 }
 
-async function robotsAllows(url: URL): Promise<boolean> {
+export async function robotsAllows(url: URL): Promise<boolean> {
   const origin = url.origin;
   let entry = robotsCache.get(origin);
   if (!entry || Date.now() - entry.at > 3600_000) {

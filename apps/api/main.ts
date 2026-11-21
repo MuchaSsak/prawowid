@@ -13,6 +13,12 @@
  *                                    needs Authorization: Bearer <ADMIN_TOKEN>, 404 when no token is set
  *   GET    /api/v1/admin/analytics   ?range=24h|7d|30d|90d|1y aggregates for the admin page (same token)
  *
+ * Source registry prototype (only when REGISTRY_PATH is set; architecture/source-platform.md):
+ *   GET    /api/v1/sources           then built from the active registry revision
+ *   /api/v1/admin/registry, /admin/registry/drafts[/:id/sample|/activate], /admin/{publishers,bindings}/:id/active,
+ *   /admin/links/:binding/:publisher/active, /admin/bindings/:id/{sync,documents}, /admin/corpus[/versions],
+ *   /admin/evidence/probe: full list in registry-routes.ts (same admin token; operator name from X-Operator)
+ *
  * Env (all optional except the LLM key in live mode):
  *   OPENROUTER_API_KEY, GOOGLE_FACT_CHECK_API_KEY   secrets (live mode)
  *   PRAWDOWID_MODE=live|mock                        mock = every check returns fixtures (default live)
@@ -22,6 +28,11 @@
  *                                                   mode (holds the bot in mock until its spend caps exist)
  *   WEB_ORIGINS=https://…,…                         browser origins allowed by CORS
  *   ADMIN_TOKEN=<secret>                            enables GET /api/v1/admin/checks (the check log)
+ *   REGISTRY_PATH=<file>|memory                     enables the source registry prototype; a JSON file
+ *                                                   (e.g. ../../data/registry/registry.json) or in-memory
+ *   PRAWDOWID_RETRIEVAL_URL=http://127.0.0.1:8000   pgvector retrieval service; without it the registry
+ *                                                   corpus is the in-memory keyword store
+ *   REGISTRY_SYNC_TICK_MS=60000                     how often the RSS scheduler looks for due bindings
  */
 import { type Context, Hono } from "hono";
 import { cors } from "hono/cors";
@@ -48,8 +59,19 @@ import {
   NARRATIVE_MATCHERS,
   publicCatalog,
   runCheck,
+  type DocumentInput,
+  EvidenceAccess,
+  FileRegistryStore,
+  isCoverageGap,
+  Ingestor,
+  MemoryRegistryStore,
+  MemoryVersionedCorpus,
+  type RegistryStore,
+  seedRegistry,
+  type VersionedCorpusStore,
 } from "@prawdowid/core";
 import { type Decision, ipKey, RateLimiter, waitText } from "./rate-limit.ts";
+import { mountRegistryRoutes } from "./registry-routes.ts";
 
 const config = loadConfig({ get: (k) => Deno.env.get(k) });
 // Every saved check also becomes one JSON audit line in the host's log (no question text), so the
@@ -57,7 +79,75 @@ const config = loadConfig({ get: (k) => Deno.env.get(k) });
 const store = new LoggingCheckStore(new MemoryCheckStore());
 const ADMIN_TOKEN = Deno.env.get("ADMIN_TOKEN") ?? "";
 const retrievalUrl = Deno.env.get("PRAWDOWID_RETRIEVAL_URL")?.trim() ?? "";
-const corpus = retrievalUrl ? new HttpCorpusStore(retrievalUrl) : new MemoryCorpusStore();
+const legacyCorpus = retrievalUrl ? new HttpCorpusStore(retrievalUrl) : new MemoryCorpusStore();
+
+// ── Source registry prototype: on only when REGISTRY_PATH is set (file path or "memory") ──
+const REGISTRY_PATH = Deno.env.get("REGISTRY_PATH")?.trim() ?? "";
+let registry: { access: EvidenceAccess; ingestor: Ingestor; ready: Promise<void> } | null = null;
+if (REGISTRY_PATH) {
+  const inMemory = REGISTRY_PATH === "memory";
+  const regStore: RegistryStore = inMemory ? new MemoryRegistryStore() : new FileRegistryStore(REGISTRY_PATH);
+  const versioned: VersionedCorpusStore = retrievalUrl
+    ? (legacyCorpus as HttpCorpusStore)
+    : new MemoryVersionedCorpus(inMemory ? undefined : REGISTRY_PATH.replace(/[^/]*$/, "corpus.json"));
+  const access = new EvidenceAccess(regStore, versioned, { config, fetch: { resolveHost } });
+  const ingestor = new Ingestor(regStore, versioned, { resolveHost });
+  const ready = (async () => {
+    // Seeds only when no registry exists. A corrupt file is left alone: checks then get a retryable state.
+    try {
+      const { seeded } = await regStore.init(seedRegistry, "seed");
+      if (seeded) console.log(`registry: seeded ${REGISTRY_PATH}`);
+    } catch (err) {
+      console.error(`registry: not initialised (${(err as Error).message}); checks will return a retryable state`);
+      return;
+    }
+    // The retrieval service may still be loading its embedding model: retry for about a minute.
+    for (let attempt = 1; attempt <= 12; attempt++) {
+      try {
+        await seedPolicjaCorpus(versioned);
+        break;
+      } catch (err) {
+        console.error(`registry: corpus seed attempt ${attempt} failed (${(err as Error).message})`);
+        await new Promise((r) => setTimeout(r, 5_000));
+      }
+    }
+  })();
+  registry = { access, ingestor, ready };
+}
+const corpus = registry ? registry.access.corpusView() : legacyCorpus;
+
+/**
+ * The 21 policja.pl documents in data/corpus go into the corpus through the same replace() path in both
+ * backends (memory and pgvector), on the policja publisher and its upload binding. Idempotent.
+ */
+async function seedPolicjaCorpus(store: VersionedCorpusStore) {
+  let raw: string;
+  try {
+    raw = await Deno.readTextFile(new URL("../../data/corpus/policja-clean.jsonl", import.meta.url));
+  } catch {
+    return; // no sample data in this deployment
+  }
+  const docs: DocumentInput[] = raw.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l))
+    .filter((r) => r.content_status === "usable" && r.normalized_text && r.test_fixture !== true)
+    .map((r) => ({
+      document_id: r.document_id,
+      publisher_id: "policja",
+      binding_id: "policja_upload",
+      kind: "dated_statement",
+      title: r.title,
+      canonical_url: r.canonical_url,
+      published_at: r.published_at,
+      retrieved_at: r.retrieved_at,
+      effective_from: null,
+      effective_to: null,
+      text: r.normalized_text,
+      language: r.language ?? "pl",
+      license_status: r.license_status ?? "conditional",
+    }));
+  const res = await store.replace(docs);
+  const changed = res.results.filter((r) => r.status !== "unchanged").length;
+  console.log(`registry: policja corpus seed via ${store.backend}: ${docs.length} documents, ${changed} written, revision ${res.corpus_revision}`);
+}
 const PORT = Number(Deno.env.get("PORT") ?? 8787);
 const MODE: "live" | "mock" = Deno.env.get("PRAWDOWID_MODE") === "mock" ? "mock" : "live";
 const MOCK_DELAY_MS = Number(Deno.env.get("MOCK_DELAY_MS") ?? 600);
@@ -146,7 +236,7 @@ app.use(
     origin: (o) => (ALLOWED_ORIGINS.includes(o) ? o : null),
     allowMethods: ["GET", "POST", "DELETE"],
     // Authorization: the admin page sends ADMIN_TOKEN; origins stay limited to WEB_ORIGINS.
-    allowHeaders: ["Content-Type", "X-Client-Key", "X-End-User", "Authorization"],
+    allowHeaders: ["Content-Type", "X-Client-Key", "X-End-User", "Authorization", "X-Operator"],
   }),
 );
 
@@ -173,6 +263,9 @@ app.get("/api/v1/health", (c) => {
     models: config.models,
     storage: "memory (mock, lost on restart)",
     corpus: retrievalUrl ? { configured: true, retrieval_url: retrievalUrl } : { configured: false },
+    registry: registry
+      ? { enabled: true, store: registry.access.store.kind, corpus_backend: registry.access.corpus.backend }
+      : { enabled: false },
   });
 });
 
@@ -180,13 +273,28 @@ app.get("/api/v1/schema", (c) => c.json(contractJsonSchema()));
 
 // Open source catalog: the only publishers whose material can become evidence, and the statistics
 // we look up. Additive to contract v1 (decision 006).
-app.get("/api/v1/sources", (c) =>
-  c.json({
+app.get("/api/v1/sources", async (c) => {
+  // With the registry: the active revision is the public view (disabled sources disappear at once).
+  let fromRegistry: { revision: number; sources: unknown[]; routes: unknown[] } | null = null;
+  if (registry) {
+    try {
+      const reg = await registry.access.store.read();
+      fromRegistry = {
+        revision: reg.revision,
+        sources: registry.access.publicSources(reg),
+        routes: registry.access.connectors(reg).filter((r) => !isCoverageGap(r)).map((r) => ({ id: r.id, label: r.label, required: r.required })),
+      };
+    } catch {
+      return c.json({ error: "registry_unavailable", message: "Lista źródeł jest chwilowo niedostępna." }, 503);
+    }
+  }
+  return c.json({
     contract_version: CONTRACT_VERSION,
     policy: "Dowodem może być tylko materiał z tej listy. Nie przeszukujemy otwartej sieci.",
-    sources: publicCatalog(config.trustedSources),
+    ...(fromRegistry ? { registry_revision: fromRegistry.revision } : {}),
+    sources: fromRegistry?.sources ?? publicCatalog(config.trustedSources),
     // The routes this deployment runs (architecture/extensibility.md); context routes never decide a verdict.
-    routes: CONNECTORS.map((r) => ({ id: r.id, label: r.label, required: r.required })),
+    routes: fromRegistry?.routes ?? CONNECTORS.map((r) => ({ id: r.id, label: r.label, required: r.required })),
     context_routes: NARRATIVE_MATCHERS.map((m) => ({ id: m.id, label: m.label, catalog: m.catalog })),
     statistics: INDICATORS.map((i) => ({
       key: i.key,
@@ -195,7 +303,8 @@ app.get("/api/v1/sources", (c) =>
       definition: i.definition,
       sources: [i.eurostat && "eurostat", i.nbp && "nbp", i.gus_var && "gus"].filter(Boolean),
     })),
-  }));
+  });
+});
 
 app.get("/api/v1/mock/scenarios", (c) =>
   c.json({
@@ -262,7 +371,9 @@ app.post(
       return limitedResponse(c, total, "Chwilowo nie przyjmujemy nowych sprawdzeń", "Osiągnęliśmy limit sprawdzeń usługi.");
     }
     if (client) perClientLive.hit(`client:${client}`);
-    return c.json(await runCheck({ ...body, channel }, { config, store, corpus, resolveHost }));
+    return c.json(
+      await runCheck({ ...body, channel }, { config, store, corpus, resolveHost, ...(registry ? { registry: registry.access } : {}) }),
+    );
   },
 );
 
@@ -316,6 +427,8 @@ app.get("/api/v1/admin/analytics", async (c) => {
   return c.json(buildAnalytics(checks, events, { range: range as AnalyticsRange, now }));
 });
 
+if (registry) mountRegistryRoutes(app, { access: registry.access, ingestor: registry.ingestor, adminDenied });
+
 app.delete("/api/v1/session/:id", async (c) => {
   const res = await store.deleteSession(await sha256(`session:${c.req.param("id")}`));
   return c.json({ deleted: true, checks: res.checks });
@@ -333,5 +446,10 @@ if (import.meta.main) {
       config.secrets.googleFactCheckApiKey ? "yes" : "NO"
     }`,
   );
+  if (registry) {
+    const r = registry;
+    console.log(`registry: ${REGISTRY_PATH} (corpus: ${r.access.corpus.backend})`);
+    r.ready.then(() => r.ingestor.start(Number(Deno.env.get("REGISTRY_SYNC_TICK_MS") ?? 60_000)));
+  }
   Deno.serve({ port: PORT }, (req, info) => app.fetch(req, { remoteAddr: info.remoteAddr }));
 }

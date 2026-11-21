@@ -72,14 +72,15 @@ def build_chunks(document: dict, embedder: Embedder, max_chars: int = 700) -> li
     embeddings = embedder.embed_passages([f"passage: {chunk['text']}" for chunk in raw_chunks])
     if any(len(vector) != embedder.dimension for vector in embeddings):
         raise ValueError("embedding_dimension_mismatch")
+    version = document.get("document_version", 1)
     result = []
     for index, (chunk, embedding) in enumerate(zip(raw_chunks, embeddings)):
         if document["normalized_text"][chunk["start_offset"]:chunk["end_offset"]] != chunk["text"]:
             raise ValueError("chunk_offset_mismatch")
         result.append({
-            "chunk_id": f"{document['document_id']}:1:{index}",
+            "chunk_id": f"{document['document_id']}:{version}:{index}",
             "document_id": document["document_id"],
-            "document_version": 1,
+            "document_version": version,
             "chunk_index": index,
             "text": chunk["text"],
             "start_offset": chunk["start_offset"],
@@ -123,6 +124,9 @@ def ingest_rows(rows: list[dict], embedder: Embedder, connection, max_chars: int
             version = (current[0] + 1) if current else 1
             document = {**source, "document_version": version}
             chunks = build_chunks(document, embedder, max_chars=max_chars)
+            if current:
+                # Versioned schema: exactly one `current` row per document_id (legacy rows keep publisher_id NULL).
+                connection.execute("UPDATE documents SET status = 'superseded', superseded_at = now() WHERE document_id = %s AND status = 'current'", (source["document_id"],))
             connection.execute("""INSERT INTO documents (document_id, document_version, source_id, canonical_url, title, language, published_at, retrieved_at, content_hash, content_status, license_status, normalized_text, published_at_source)
                 VALUES (%(document_id)s, %(document_version)s, %(source_id)s, %(canonical_url)s, %(title)s, %(language)s, %(published_at)s, %(retrieved_at)s, %(content_hash)s, %(content_status)s, %(license_status)s, %(normalized_text)s, %(published_at_source)s)""", document)
             for chunk in chunks:
@@ -133,6 +137,9 @@ def ingest_rows(rows: list[dict], embedder: Embedder, connection, max_chars: int
             report["failed"] += 1
             code = type(error).__name__
             report["error_codes"][code] = report["error_codes"].get(code, 0) + 1
+    if report["new"] or report["changed"]:
+        connection.execute("""INSERT INTO corpus_meta (key, value) VALUES ('corpus_revision', 1)
+            ON CONFLICT (key) DO UPDATE SET value = corpus_meta.value + 1""")
     return report
 
 
@@ -145,6 +152,9 @@ def main() -> int:
     rows = [json.loads(line) for line in args.input.read_text(encoding="utf-8").splitlines() if line.strip()]
     embedder = SentenceTransformerEmbedder(args.model)
     with _connection() as connection:
+        from scripts.corpus_versions import ensure_schema
+
+        ensure_schema(connection)
         report = ingest_rows(rows, embedder, connection, max_chars=args.chunk_size)
     print(json.dumps({**report, "embedding_model_id": embedder.model_id, "embedding_dimension": embedder.dimension}, ensure_ascii=False))
     return 0 if report["failed"] == 0 else 1

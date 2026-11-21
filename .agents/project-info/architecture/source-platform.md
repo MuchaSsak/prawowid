@@ -49,3 +49,36 @@ A Git-managed profile makes changes reviewable, but each activation requires a d
 1. Seed the registry from the current catalog. Prove that disabling a source removes it from route selection, corpus matches and the public source list.
 2. Wire one live adapter and one corpus adapter through the same record interface. Prove that both return inspectable citations and that an in-flight fetch cannot publish a disabled result.
 3. Add the operator workflow for draft, sample, activate and disable. Add a filtered evidence browser over the shared query service.
+
+## Prototype on branch t3/test-source-registry (2026-11-22)
+
+Status: **built and tested on localhost, not merged.** The proposal above stays the design; this branch shows it working. Run steps and a 5-minute test script: [docs/source-registry-prototype.md](../../../docs/source-registry-prototype.md).
+
+**Mapping to code:**
+- Registry types, seed, eligibility, validation, store, corpus, adapters, access and ingestion are in `packages/core/src/registry/`.
+- `runCheck` takes an optional `deps.registry`. Without it the pipeline is unchanged.
+- The admin routes are in `apps/api/registry-routes.ts`, mounted only when `REGISTRY_PATH` is set.
+- The operator page is `/admin/zrodla`.
+- The pgvector versioned corpus is in `infra/postgres/` and `scripts/` (Python retrieval service).
+
+**What works (verified 2026-11-22, full tier on pgvector):**
+- Seeded from today's catalog: Google Fact Check is one aggregator binding linked to its fact-checkers. Sejm ELI, Eurostat, NBP and GUS are builtin live bindings. Policja.pl has an upload binding with the 21 sample documents.
+- Disabling the Policja.pl publisher removes it from `GET /api/v1/sources` and from probe results. The corpus route reports unsupported scope.
+- CERT Polska (`https://cert.pl/rss.xml`, robots-permitted) went through draft → sample → activate → sync: 30 items stored and found by probe.
+- A document was uploaded and replaced: v2 is current and v1 superseded. Today's lookup returns v2, a `2026-05` lookup returns v1.
+- The audit log records operator, action and revision.
+
+**Tests:**
+- Deno: eligibility (scope specificity, ambiguity, aggregator link off), atomic serialized publish, disable during a check → `source_unavailable` with "Spróbuj ponownie", cache revalidation, coverage gap, versions today vs historical, stale standing-state on a required binding → system state, ingestion racing a disable, corrupt file → no seed fallback, `HttpCorpusStore` contract.
+- Python: SQL filters before ranking, version selection, replace semantics, and DB integration.
+
+**Simplified versus the proposal (full table in the run guide):**
+- The registry is an atomic JSON file instead of Supabase tables.
+- The operator name comes from an `X-Operator` header. Real authenticated identities must exist before writes go to production.
+- Search is pgvector cosine (keyword stems in the no-Docker tier). The hybrid comparison is still open.
+- Capabilities are coarse.
+- Builtin connectors keep their own fetch code.
+- Uploads are not gated on a retention policy.
+- Sync status is in memory.
+
+The tier and role of a new publisher (e.g. CERT Polska as `official`) are an operator choice in the prototype. The proposal keeps them under engineering review.

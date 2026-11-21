@@ -49,6 +49,8 @@ import { retrieve } from "./retrieve.ts";
 import { type ContextResult, findContextMatches, NARRATIVE_MATCHERS } from "../narratives/mod.ts";
 import type { KnownIncidentStore, NarrativeMatcher } from "../narratives/types.ts";
 import { decideVerdict } from "./verdict.ts";
+import { type EvidenceAccess, REGISTRY_UNAVAILABLE_PL, UNSUPPORTED_SCOPE } from "../registry/access.ts";
+import type { Registry } from "../registry/types.ts";
 
 export interface CoreDeps {
   config: Config;
@@ -65,6 +67,13 @@ export interface CoreDeps {
   connectors?: Connector[];
   /** Known-incident matchers (context, never evidence). Default: NARRATIVE_MATCHERS. */
   narrativeMatchers?: NarrativeMatcher[];
+  /**
+   * Source registry (registry/, architecture/source-platform.md). When set, evidence routes come from
+   * the registry revision pinned at check start (replacing `connectors`), the cache is keyed by the
+   * registry and corpus revisions, and every cited record is revalidated against the active revision
+   * at assembly, cache hits included. Without it the pipeline behaves exactly as before.
+   */
+  registry?: EvidenceAccess;
 }
 
 function llmMessage(err: unknown): string {
@@ -317,11 +326,35 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
   ];
   for (const s of injections) event("injection_detected", { ...s });
 
-  // ── 4. Cache (same canonical result across channels for 5 minutes, scenario G) ─
+  // ── 4. Pin the registry revision, then cache (same canonical result across channels for 5 minutes, scenario G) ─
+  let pinned: Registry | null = null;
+  let corpusRevision = 0;
+  if (deps.registry) {
+    try {
+      pinned = await deps.registry.store.read();
+    } catch {
+      // A configured deployment never falls back to the seed catalog: retryable system state.
+      return finish("technical_error", REGISTRY_UNAVAILABLE_PL);
+    }
+    corpusRevision = await deps.registry.corpusRevision();
+  }
   const today = now.toISOString().slice(0, 10);
   const cacheKey = await sha256Hex(
-    JSON.stringify([inputType, today, normalizeForMatch(userMessage), material.map((m) => normalizeForMatch(m.text))]),
+    JSON.stringify([
+      inputType,
+      today,
+      normalizeForMatch(userMessage),
+      material.map((m) => normalizeForMatch(m.text)),
+      ...(pinned ? [`registry:${pinned.revision}`, `corpus:${corpusRevision}`] : []),
+    ]),
   );
+  /** At assembly: re-read the active revision and re-check every cited record (registry only). */
+  const revalidate = async (): Promise<number> => {
+    if (!deps.registry) return 0;
+    const r = await deps.registry.revalidate(response.claims);
+    response.claims = r.claims;
+    return r.affected;
+  };
   const cached = await deps.store.getCached(cacheKey);
   if (cached) {
     cachedFrom = cached;
@@ -336,6 +369,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       system_message: c.system_message,
     });
     await deps.store.setCached(cacheKey, cached, sessionHash);
+    if (await revalidate()) return finish(statusOf(response), null);
     return finish(cached.status, null);
   }
 
@@ -399,6 +433,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
 
   // ── 7. Evidence per claim, in parallel ─────────────────────────────────────
   const ctx: ConnectorContext = { config: deps.config, signal: deadline.signal, corpus: deps.corpus };
+  const connectors = pinned ? deps.registry!.connectors(pinned) : deps.connectors ?? CONNECTORS;
   const tEvidence = Date.now();
   const claimResults = await Promise.all(extraction.claims.map((c) => checkOne(c)));
   mark("evidence", tEvidence);
@@ -458,10 +493,14 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     };
     // Evidence and known-incident context run side by side; context never feeds the verdict.
     const [r, known] = await Promise.all([
-      retrieve(query, deps.connectors ?? CONNECTORS, ctx),
+      retrieve(query, connectors, ctx),
       findContextMatches(query, deps.narrativeMatchers ?? NARRATIVE_MATCHERS, { config: deps.config, signal: deadline.signal, incidents: deps.incidents }),
     ]);
     base.routes = r.routes;
+    // Registry coverage: a capability whose only source is disabled is unsupported scope, not a failure.
+    for (const gap of r.routes.filter((x) => x.status === "skipped" && x.detail?.startsWith(UNSUPPORTED_SCOPE))) {
+      base.warnings.push({ type: "partial_analysis", text: `Nie sprawdziliśmy w źródle „${gap.label}”: jest teraz wyłączone i nic go nie zastępuje.` });
+    }
     for (const route of [...r.routes, ...known.routes]) {
       if (["error", "timeout", "unavailable"].includes(route.status)) event("route_error", { claim: c.id, ...route });
     }
@@ -589,16 +628,24 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       reason: "Rekomendujemy przekazanie do weryfikacji przez człowieka: twierdzenie dotyczy bezpieczeństwa, a dowodów brakuje.",
     };
   }
-  const failed = claimResults.filter((c) => c.system_state);
-  let status: RequestStatus = failed.length ? "partial" : "ok";
-  if (failed.length && failed.length === claimResults.length) {
-    status = "technical_error";
-    response.system_message = {
-      title: "Nie udało się zakończyć sprawdzania",
-      text: "Żadnego twierdzenia nie udało się sprawdzić z powodów technicznych (szczegóły przy twierdzeniach). To nie jest ocena treści.",
-    };
-  }
+  const revalidated = await revalidate();
+  const status = statusOf(response);
   const result = await finish(status, null);
-  if (status === "ok" || status === "partial") await deps.store.setCached(cacheKey, structuredClone(result), sessionHash);
+  // A result changed by revalidation is never cached: the retry must run against the new revision.
+  if (!revalidated && (status === "ok" || status === "partial")) {
+    await deps.store.setCached(cacheKey, structuredClone(result), sessionHash);
+  }
   return result;
+}
+
+/** ok / partial / technical_error from the claim states; sets the request message when nothing could be checked. */
+function statusOf(response: CheckResponse): RequestStatus {
+  const failed = response.claims.filter((c) => c.system_state);
+  if (!failed.length) return "ok";
+  if (failed.length < response.claims.length) return "partial";
+  response.system_message = {
+    title: "Nie udało się zakończyć sprawdzania",
+    text: "Żadnego twierdzenia nie udało się sprawdzić z powodów technicznych (szczegóły przy twierdzeniach). To nie jest ocena treści.",
+  };
+  return "technical_error";
 }

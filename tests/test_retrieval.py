@@ -96,4 +96,4 @@ def test_search_rejects_invalid_query_and_k():
     with pytest.raises(ValueError, match="query_empty"):
         search("", 3, {}, FakeConnection(ROWS), FakeEmbedder())
     with pytest.raises(ValueError, match="k_out_of_range"):
-        search("kolej", 11, {}, FakeConnection(ROWS), FakeEmbedder())
+        search("kolej", 21, {}, FakeConnection(ROWS), FakeEmbedder())
