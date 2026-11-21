@@ -7,8 +7,8 @@
  * Contract: .agents/project-info/architecture/api-reference.md
  */
 import type { CheckRequest, CheckResponse } from "@prawdowid/core/types";
-import { type BotConfig, LIMITS } from "./config.ts";
-import { validateCheckResponse } from "./validate.ts";
+import { type BotConfig, LIMITS } from "./config.js";
+import { validateCheckResponse } from "./validate.js";
 
 export type CheckOutcome =
   | { kind: "response"; response: CheckResponse }

@@ -6,11 +6,11 @@
  * the image download and the API call, and any failure becomes the system message "Nie mogliśmy
  * wykonać sprawdzenia. To nie jest ocena treści." (messaging-bot.md, steps 2 and 8).
  */
-import { type BotConfig, LIMITS, type Surface } from "./config.ts";
-import type { PrawdowidClient } from "./client.ts";
-import { type IncomingMessage, toIntent } from "./intake.ts";
-import { pseudonym } from "./pseudonym.ts";
-import { renderDeleted, renderFailure, renderHelp, renderLocal, renderResponse } from "./render.ts";
+import { type BotConfig, LIMITS, type Surface } from "./config.js";
+import type { PrawdowidClient } from "./client.js";
+import { type IncomingMessage, toIntent } from "./intake.js";
+import { pseudonym } from "./pseudonym.js";
+import { renderDeleted, renderFailure, renderHelp, renderLocal, renderResponse } from "./render.js";
 
 export type Outcome = "ok" | "system_state" | "technical_error" | "timeout" | "quota";
 

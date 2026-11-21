@@ -6,8 +6,8 @@
  *     and message text never reach the Vercel logs (runbook test A11).
  */
 import type { Logger } from "chat";
-import type { Outcome } from "./conversation.ts";
-import { shortHash } from "./pseudonym.ts";
+import type { Outcome } from "./conversation.js";
+import { shortHash } from "./pseudonym.js";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

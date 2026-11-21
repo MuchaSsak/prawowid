@@ -14,8 +14,8 @@
  * conversion wraps WhatsApp links in <>, see the prototype findings).
  */
 import type { CheckResponse, ClaimResult } from "@prawdowid/core/types";
-import { LIMITS, MAX_REPLY_CHARS, type Surface } from "./config.ts";
-import { safeUrl, sanitizeText } from "./sanitize.ts";
+import { LIMITS, MAX_REPLY_CHARS, type Surface } from "./config.js";
+import { safeUrl, sanitizeText } from "./sanitize.js";
 
 export const ESCALATION_TEXT = "Rekomendujemy przekazanie do weryfikacji przez człowieka";
 export const FAILURE_TEXT = "Nie mogliśmy wykonać sprawdzenia. To nie jest ocena treści.";

@@ -176,3 +176,7 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | web: source quotes flush left (no left rule), more space under the verdict pill, globe fallback for links without a favicon
 ## [2026-11-21] lint | clean: phrase edits in codebase.md only
 ## [2026-11-21] update | web: source quote text tinted by stance (green / red / orange); lint clean
+## [2026-11-21] update | bot Vercel deploy: repo owner (MuchaSsak) must link it, tracked in GitHub issue #6; CLI fallback and Hono preset noted in the runbook
+## [2026-11-21] update | web app live at https://prawdomat.vercel.app (Vercel project prawdomat); bot deployed as Vercel project prawdomat-bot (https://prawdomat-bot.vercel.app)
+## [2026-11-21] update | bot crash on Vercel (ERR_MODULE_NOT_FOUND for .ts specifiers) fixed: relative imports in apps/bot now end in .js; deployment recorded in messaging-bot.md
+## [2026-11-21] update | messaging-bot-runbook: Vercel Hobby team blocks PR deployments by non-member Git authors (PR #7 checks); not a code failure

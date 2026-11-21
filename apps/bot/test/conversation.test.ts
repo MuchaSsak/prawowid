@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import type { CheckRequest } from "@prawdowid/core/types";
-import { mockResponse } from "../../../packages/core/src/mock/fixtures.ts";
-import { createClient, type PrawdowidClient } from "../src/client.ts";
-import { loadConfig } from "../src/config.ts";
-import { converse, type Turn } from "../src/conversation.ts";
-import { sniffImage } from "../src/image.ts";
-import { toIntent } from "../src/intake.ts";
-import { logEvent, quietLogger, setLogSink } from "../src/log.ts";
-import { discordSlashToMessage, sdkMessageToIncoming } from "../src/platforms.ts";
-import { pseudonym } from "../src/pseudonym.ts";
+import { mockResponse } from "../../../packages/core/src/mock/fixtures.js";
+import { createClient, type PrawdowidClient } from "../src/client.js";
+import { loadConfig } from "../src/config.js";
+import { converse, type Turn } from "../src/conversation.js";
+import { sniffImage } from "../src/image.js";
+import { toIntent } from "../src/intake.js";
+import { logEvent, quietLogger, setLogSink } from "../src/log.js";
+import { discordSlashToMessage, sdkMessageToIncoming } from "../src/platforms.js";
+import { pseudonym } from "../src/pseudonym.js";
 
 const config = loadConfig({ get: (k) => ({ PRAWDOWID_API_URL: "https://api.test", PRAWDOWID_CLIENT_KEY: "k" } as Record<string, string>)[k] });
 const SECRET = "test-secret";
@@ -330,9 +330,9 @@ describe("logging (A11)", () => {
 
 describe("Discord /demo", () => {
   test("a listed scenario becomes demo:<scenario>; anything else becomes an empty command", async () => {
-    const { discordDemoToMessage } = await import("../src/platforms.ts");
-    const { DEMO_SCENARIOS } = await import("../src/demo.ts");
-    const { MOCK_SCENARIOS } = await import("../../../packages/core/src/mock/fixtures.ts");
+    const { discordDemoToMessage } = await import("../src/platforms.js");
+    const { DEMO_SCENARIOS } = await import("../src/demo.js");
+    const { MOCK_SCENARIOS } = await import("../../../packages/core/src/mock/fixtures.js");
     const opt = (value: unknown) => ({ data: { options: [{ name: "scenariusz", type: 3, value }] } });
     expect(discordDemoToMessage(opt("mixed"))).toEqual({ text: "demo:mixed", fromSlashCommand: true });
     expect(discordDemoToMessage(opt("rm -rf"))).toEqual({ text: "", fromSlashCommand: true });

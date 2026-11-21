@@ -7,8 +7,8 @@
  * Platform adapters (platforms.ts) first turn their payload into the neutral `IncomingMessage`.
  */
 import type { CheckRequest } from "@prawdowid/core/types";
-import { LIMITS } from "./config.ts";
-import { fetchDiscordImage, fetchSdkImage, type ImageResult } from "./image.ts";
+import { LIMITS } from "./config.js";
+import { fetchDiscordImage, fetchSdkImage, type ImageResult } from "./image.js";
 
 export type ImageSource =
   /** Discord `obraz` option, from `resolved.attachments`. */

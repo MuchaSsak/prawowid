@@ -2,10 +2,10 @@
  * Long-running Bun server with the same routes as the Vercel entry: local development behind a
  * tunnel, or any container host (the EU fallback in decision 007).   bun run bot:dev
  */
-import { createApp, type WaitUntil } from "./app.ts";
-import { createClient } from "./client.ts";
-import { loadConfig } from "./config.ts";
-import { resolveIdSecret } from "./pseudonym.ts";
+import { createApp, type WaitUntil } from "./app.js";
+import { createClient } from "./client.js";
+import { loadConfig } from "./config.js";
+import { resolveIdSecret } from "./pseudonym.js";
 
 const config = loadConfig({ get: (k) => process.env[k] });
 if (!config.idSecret) console.warn("[bot] BOT_ID_SECRET is not set: using a random key, so sessions reset on restart");
