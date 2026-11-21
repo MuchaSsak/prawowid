@@ -444,3 +444,5 @@ body.is-test.is-chat .top { top: 32px; }
 /* ── privacy page ───────────────────────────────────────────────────────── */
 .legal { display: block; width: 100%; max-width: 40rem; margin: 0 auto; padding: 48px 24px 64px; font-size: 1.0625rem; line-height: 1.6; }
 .legal p { margin: 0 0 14px; }
+.legal ul { margin: 0 0 14px; padding-left: 1.25em; }
+.legal li { margin: 0 0 8px; }

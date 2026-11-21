@@ -137,3 +137,6 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | clean: admin facts agree across decision 011, codebase, api-reference and index; no new pages, routing and skills unchanged
 ## [2026-11-21] update | web chat: loading skeleton with a 1-1.5 s minimum (also in sample mode), micro entry animations for bubbles and answer blocks (codebase web row)
 ## [2026-11-21] lint | clean: one-row edit in codebase.md, no new pages, routing/index/skills unchanged
+## [2026-11-21] update | /prywatnosc keeps "Nie robimy tego w 24h bez prawnika!" and adds 5 points a real policy must cover; codebase and compliance-matrix updated
+## [2026-11-21] lint | clean: privacy wording consistent across codebase, compliance-matrix and open-questions
+## [2026-11-21] update | user: the placeholder /prywatnosc is accepted for the hackathon and not counted in compliance; open question removed, compliance-matrix privacy row reworded
