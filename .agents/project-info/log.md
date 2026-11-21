@@ -176,3 +176,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | web: source quotes flush left (no left rule), more space under the verdict pill, globe fallback for links without a favicon
 ## [2026-11-21] lint | clean: phrase edits in codebase.md only
 ## [2026-11-21] update | web: source quote text tinted by stance (green / red / orange); lint clean
+## [2026-11-21] update | web ?test=true: every sample answer gets a public-domain backdrop photo (4 Highsmith/LoC topic photos added); lint clean

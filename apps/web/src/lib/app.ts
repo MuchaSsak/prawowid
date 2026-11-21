@@ -102,15 +102,29 @@ function formatSize(bytes: number): string {
 const isUrl = (s: string) => /^https?:\/\/\S+$/i.test(s);
 
 /**
- * ?test=true only: pictures behind the sample answers for a link, photo or video, so the backdrop
- * can be seen without a file. Public domain (White House photos via Wikimedia Commons), see
- * public/sample/README.md.
+ * ?test=true only: a picture behind every sample answer, so the backdrop shows without a file.
+ * Picked by the first sentence's topic, then by input type, then in rotation. All public domain
+ * (White House and Library of Congress photos via Wikimedia Commons), see public/sample/README.md.
  */
-const SAMPLE_BACKDROP: Partial<Record<InputType, string>> = {
+const SAMPLE_BY_TOPIC: [RegExp, string][] = [
+  [/bibliotek/i, "/sample/library.jpg"],
+  [/\bmost/i, "/sample/bridge.jpg"],
+  [/park/i, "/sample/park.jpg"],
+  [/budżet|burmistrz|komunikac|miast/i, "/sample/city-hall.jpg"],
+];
+const SAMPLE_BY_TYPE: Partial<Record<InputType, string>> = {
   url: "/sample/trump-speech.jpg",
   image: "/sample/trump-oval-office.jpg",
   video: "/sample/trump-video-frame.jpg",
 };
+const SAMPLE_POOL = Object.values(SAMPLE_BY_TYPE).concat(SAMPLE_BY_TOPIC.map(([, src]) => src));
+let samplePick = 0;
+function sampleBackdrop(r: CheckResponse): string {
+  const byType = SAMPLE_BY_TYPE[r.input.type];
+  if (byType) return byType;
+  const text = r.claims[0]?.text ?? "";
+  return SAMPLE_BY_TOPIC.find(([re]) => re.test(text))?.[1] ?? SAMPLE_POOL[samplePick++ % SAMPLE_POOL.length];
+}
 
 /**
  * One still frame of a video (about a quarter in, at most 1 s), as an object URL of a JPEG, for the
@@ -667,7 +681,7 @@ export function initApp() {
         data = (await guard(res.json())) as CheckResponse;
       }
       await guard(settle());
-      const backdrop = (await guard(backdropReady)) ?? (testMode ? SAMPLE_BACKDROP[data.input.type] ?? null : null);
+      const backdrop = (await guard(backdropReady)) ?? (testMode ? sampleBackdrop(data) : null);
       renderResult(bot.body, data, { backdrop });
       srStatus.textContent = announce(data);
     } catch (err) {
