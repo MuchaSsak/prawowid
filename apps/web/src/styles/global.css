@@ -325,7 +325,7 @@ body.is-chat .thread { display: grid; gap: 32px; width: 100%; max-width: 54rem; 
 .card-body { display: grid; gap: 18px; padding: 18px 22px 22px; }
 /* Reading rhythm: the sentence sits a little apart from its pill, its plain meaning hugs it like a
    subtitle; body text is a touch larger and kept to a comfortable line length. */
-.verdict-row + .claim-text { margin-top: 4px; }
+.verdict-row + .claim-text { margin-top: 10px; }
 .claim-text { text-wrap: pretty; }
 .claim-text + .verdict-meaning { margin-top: -4px; }
 .explanation { font-size: 1.0625rem; line-height: 1.6; color: var(--ink); }
@@ -339,10 +339,8 @@ body.is-chat .thread { display: grid; gap: 32px; width: 100%; max-width: 54rem; 
 .cite { padding: 12px 0; border-top: 1px solid var(--line); }
 .cite:first-child { padding-top: 2px; border-top: 0; }
 .cite:last-child { padding-bottom: 0; }
-.cite blockquote { margin: 0; padding-left: 14px; border-left: 2px solid var(--line); font: 400 1.0625rem/1.5 var(--serif); white-space: pre-line; color: var(--ink); }
-.cite.stance-supports blockquote { border-left-color: var(--ok-bar); }
-.cite.stance-refutes blockquote { border-left-color: var(--bad-bar); }
-.cite.stance-misleading blockquote { border-left-color: var(--mis2-bar); }
+/* Label, quote and source line share one left edge: the quote icons mark the quote, no left rule. */
+.cite blockquote { margin: 0; padding-left: 0; font: 400 1.0625rem/1.5 var(--serif); white-space: pre-line; color: var(--ink); }
 /* Quote icons on both sides of a source excerpt instead of „ ” characters; tinted by the source's stance. */
 .quote { --q: var(--ink-3); }
 .quote::before, .quote::after {
@@ -350,12 +348,13 @@ body.is-chat .thread { display: grid; gap: 32px; width: 100%; max-width: 54rem; 
   -webkit-mask: var(--q-icon) center / contain no-repeat; mask: var(--q-icon) center / contain no-repeat;
   --q-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='4 6 16 12'%3E%3Cpath d='M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z'/%3E%3C/svg%3E");
 }
-.quote::before { margin-right: .3em; vertical-align: .05em; transform: rotate(180deg); }
+.quote::before { margin-right: .35em; vertical-align: .05em; transform: rotate(180deg); }
 .quote::after { margin-left: .3em; vertical-align: .05em; }
-.stance-supports .quote { --q: var(--ok-bar); }
-.stance-refutes .quote { --q: var(--bad-bar); }
-.stance-misleading .quote { --q: var(--mis2-bar); }
-.cite-meta { margin-top: 10px; padding-left: 16px; font-size: .875rem; line-height: 1.5; color: var(--ink-2); }
+/* The quoted words take the stance's text tint too (light green / red / orange in dark mode). */
+.stance-supports .quote { --q: var(--ok-bar); color: var(--ok-fg); }
+.stance-refutes .quote { --q: var(--bad-bar); color: var(--bad-fg); }
+.stance-misleading .quote { --q: var(--mis2-bar); color: var(--mis2-fg); }
+.cite-meta { margin-top: 10px; padding-left: 0; font-size: .875rem; line-height: 1.5; color: var(--ink-2); }
 .cite-meta .publisher { font-weight: 600; color: var(--ink); }
 .cite-stance { font-weight: 600; }
 .stance-supports .cite-stance { color: var(--ok-fg); }
@@ -364,6 +363,7 @@ body.is-chat .thread { display: grid; gap: 32px; width: 100%; max-width: 54rem; 
 .cite-link { display: inline-block; padding: 4px 0; color: var(--navy); font-weight: 600; text-decoration: none; }
 /* The site's icon in front of a source link; the white chip keeps dark icons visible in dark mode. */
 .favicon { display: inline-block; width: 14px; height: 14px; padding: 1px; margin-right: 6px; vertical-align: -3px; border-radius: 4px; background: #fff; object-fit: contain; }
+.favicon-globe { background: none; padding: 0; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .cite-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 .no-source { font-size: .9375rem; color: var(--ink-2); }
 

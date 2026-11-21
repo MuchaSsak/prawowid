@@ -252,9 +252,21 @@ export function stateCard(title: string, lines: string[], extra: HTMLElement | n
 /**
  * The site's small icon in front of a link, so a list of sources doesn't read as one grey block.
  * Fetched from DuckDuckGo's icon service: it receives only the publisher's domain (already public),
- * never the user's text, and no referrer. Unknown sites get a 404, so the icon is simply removed
- * (no blank placeholder). Decorative: hidden from screen readers.
+ * never the user's text, and no referrer. A site with no icon (404, e.g. the demo example.org)
+ * gets a small globe instead, so every link keeps its marker. Decorative: hidden from screen readers.
  */
+/** Fallback for a site without a favicon: a plain globe in the link color. */
+function globeIcon(): SVGSVGElement {
+  const svg = document.createElementNS(SVG, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("class", "favicon favicon-globe");
+  const p = document.createElementNS(SVG, "path");
+  p.setAttribute("d", "M12 3a9 9 0 110 18 9 9 0 010-18zM3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3z");
+  svg.append(p);
+  return svg;
+}
+
 function favicon(host: string): HTMLElement {
   const img = h("img", {
     class: "favicon",
@@ -267,7 +279,7 @@ function favicon(host: string): HTMLElement {
     referrerpolicy: "no-referrer",
     "aria-hidden": "true",
   });
-  img.addEventListener("error", () => img.remove(), { once: true });
+  img.addEventListener("error", () => img.replaceWith(globeIcon()), { once: true });
   return img;
 }
 
@@ -293,11 +305,9 @@ function citation(c: Citation): HTMLElement {
     h(
       "p",
       { class: "cite-meta" },
-      // "To źródło potwierdza" is left out (user's choice, 2026-11-21): the green quote says it.
-      // A refuting or different-context source keeps its words, so meaning never rests on color alone.
-      c.stance === "supports" ? h("span", { class: "sr-only" }, `${STANCE.supports.text}: `) : null,
-      c.stance !== "supports" ? h("span", { class: "cite-stance" }, STANCE[c.stance].text) : null,
-      c.stance !== "supports" ? " · " : null,
+      // No visible stance label ("To źródło potwierdza / zaprzecza / …"; user's choice, 2026-11-21):
+      // the quote's color and the verdict above carry it. Screen readers still hear it.
+      h("span", { class: "sr-only" }, `${STANCE[c.stance].text}: `),
       h("span", { class: "publisher" }, c.publisher),
       c.published_at ? ` · ${date(c.published_at)}` : "",
       link ? " · " : "",

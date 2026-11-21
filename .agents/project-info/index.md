@@ -12,6 +12,7 @@ Format: `- [path](path): one-line summary`
 - [rules/README.md](rules/README.md): scope of the folder 
 - [rules/hard-constraints.md](rules/hard-constraints.md): 21 non-negotiable rules from the task and the organizers (no fabricated sources, verdicts vs system states, security, eval integrity, facts not opinions)
 - [rules/ui-conventions.md](rules/ui-conventions.md): user's UI style rules (no uppercase eyebrow labels above titles, less text)
+- [rules/cost-sheet.md](rules/cost-sheet.md): **keep the cost Google Sheet current with real numbers**: when to update (full eval runs, model/price, hosting/channel, limits, NBP rate), sources per input, keep it small, cell map
 
 ## hackathon/
 - [hackathon/README.md](hackathon/README.md): scope of the folder 

@@ -166,3 +166,13 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | clean: one-row edit in codebase.md (web answer extras); routing, index, links and skill parity intact
 ## [2026-11-21] update | cost sheet now the hosted Google Sheet (card on /admin/dokumenty, local xlsx removed) and cut down to costs, assumptions and 3 load lines at the user's request; deliverables + decision 011 updated
 ## [2026-11-21] lint | clean: two one-line edits (deliverables, 011); no links or index entries affected
+## [2026-11-21] update | Google Sheet rewritten in place through the Sheets connector (tab renamed 'Koszty', same link): 5 cost rows, 5 inputs with sources, 3 load lines; values checked after the write (1,18 USD / 4,78 zł per 1000 text checks)
+## [2026-11-21] decide | rules/cost-sheet.md: the user's rule that the cost sheet is always kept current with real (measured or verified) numbers; triggers, sources, cell map
+## [2026-11-21] lint | clean: one new rules page, indexed, links resolve, routing unchanged (rules/ already routed)
+## [2026-11-21] update | /prywatnosc rewritten in the team's casual voice (lowercase, little punctuation, same five points); codebase web row updated
+## [2026-11-21] lint | clean: one phrase in codebase.md, no links or index entries affected
+## [2026-11-21] update | web: visible stance labels removed from all source rows (user); codebase web row updated
+## [2026-11-21] lint | clean: two phrase edits in codebase.md
+## [2026-11-21] update | web: source quotes flush left (no left rule), more space under the verdict pill, globe fallback for links without a favicon
+## [2026-11-21] lint | clean: phrase edits in codebase.md only
+## [2026-11-21] update | web: source quote text tinted by stance (green / red / orange); lint clean
