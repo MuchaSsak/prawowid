@@ -1,6 +1,6 @@
 /**
  * The verification core: one entry point every channel calls (hard constraint 18).
- * Flow: validate → intake (text | url | image) → guard (PII, injection) → cache → extract →
+ * Flow: validate → intake (text | url | image | video | audio) → guard (PII, injection) → cache → extract →
  * per claim in parallel: retrieve → assess → code verdict → render → log.
  */
 import { type Config, LIMITS } from "../config.ts";
@@ -11,6 +11,7 @@ import { normalizeForMatch, sha256Hex } from "../guard/normalize.ts";
 import { maskPii } from "../guard/pii.ts";
 import { extractImage } from "../intake/image.ts";
 import { isMediaType, mediaInputError } from "../intake/media.ts";
+import { transcribeRecording, transcriptToMaterial } from "../intake/recording.ts";
 import { fetchArticle, IntakeError, type ResolveHost } from "../intake/url.ts";
 import { LlmError, type LlmUsage } from "../llm/openrouter.ts";
 import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v4.ts";
@@ -75,6 +76,8 @@ function llmMessage(err: unknown): string {
         return "Model językowy nie odpowiedział na czas.";
       case "rate_limited":
         return "Przekroczono limit zapytań do modelu językowego.";
+      case "payment":
+        return "Konto usługi modelu nie ma wystarczających środków na tę analizę.";
       case "invalid_output":
         return "Model zwrócił nieprawidłową odpowiedź.";
       default:
@@ -112,9 +115,10 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
   const event = (type: CheckEventRow["type"], detail: Record<string, unknown>) =>
     events.push({ check_id, type, detail, created_at: new Date().toISOString() });
   const deadline = new AbortController();
-  const timer = setTimeout(() => deadline.abort(), LIMITS.requestDeadlineMs);
   const sessionHash = req.session_id ? await sha256Hex(`session:${req.session_id}`) : null;
   const inputType = req.input?.type;
+  const isRecording = inputType === "video" || inputType === "audio";
+  const timer = setTimeout(() => deadline.abort(), isRecording ? LIMITS.recordingRequestDeadlineMs : LIMITS.requestDeadlineMs);
 
   const response: CheckResponse = {
     contract_version: CONTRACT_VERSION,
@@ -183,14 +187,6 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     const bad = mediaInputError(inputType, value);
     if (bad) return finish("input_rejected", bad);
   }
-  if (inputType === "video" || inputType === "audio") {
-    // The contract accepts recordings now so channels can build on it; transcription is not wired
-    // yet (architecture/multimodal-media.md). A system state, never a verdict (hard constraint 8).
-    return finish(
-      "input_rejected",
-      "Analiza nagrań wideo i audio nie jest jeszcze dostępna. Wklej transkrypcję jako tekst albo użyj trybu demonstracyjnego.",
-    );
-  }
   if (inputType === "text" && value.length > 50_000) {
     return finish("input_rejected", "Tekst jest za długi (maks. 50 000 znaków). Wklej najważniejszy fragment.");
   }
@@ -229,6 +225,38 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       if (a.truncated) {
         response.warnings.push({ type: "partial_analysis", text: `Artykuł jest długi: przeanalizowaliśmy pierwsze ${LIMITS.maxMaterialChars} znaków.` });
       }
+    } else if (inputType === "video" || inputType === "audio") {
+      const rec = await transcribeRecording(inputType, value, {
+        apiKey: deps.config.secrets.openrouterApiKey,
+        models: deps.config.models,
+        signal: deadline.signal,
+      });
+      usages.push(rec.usage);
+      prompts.add(rec.prompt);
+      const t = rec.data;
+      for (const s of t.injection_signals) event("injection_detected", { provenance: inputType, excerpt: s.slice(0, 200) });
+      response.input.description = t.visual_summary.trim() || null;
+      if (t.audibility !== "good") {
+        response.warnings.push({ type: "illegible_media", text: "Część nagrania była niewyraźna; niektóre wypowiedzi mogły zostać pominięte." });
+      }
+      response.limitations.push("Sprawdzamy to, co zostało powiedziane lub pokazane w nagraniu. Nie oceniamy, czy nagranie jest autentyczne ani czy nie zostało zmontowane.");
+      if (rec.nonEea) {
+        response.limitations.push("To nagranie zostało przetworzone przez model Google poza Europejskim Obszarem Gospodarczym (bez przechowywania danych).");
+      }
+      const m = transcriptToMaterial(inputType, t);
+      material = m.material;
+      if (m.truncated) {
+        response.warnings.push({ type: "partial_analysis", text: "Nagranie jest długie: przeanalizowaliśmy jego początek." });
+      }
+      if (!material.length && !userMessageRaw.trim()) {
+        mark("intake", tIntake);
+        return finish(
+          "needs_clarification",
+          inputType === "video"
+            ? "W nagraniu nie ma wypowiedzi ani tekstu do sprawdzenia. Dopisz, co dokładnie mamy zweryfikować."
+            : "W nagraniu nie ma wypowiedzi do sprawdzenia. Nagraj je ponownie albo wpisz twierdzenie tekstem.",
+        );
+      }
     } else {
       const img = await extractImage(value, {
         apiKey: deps.config.secrets.openrouterApiKey,
@@ -262,8 +290,9 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       const technical = err.kind === "fetch_failed" || err.kind === "timeout";
       return finish(technical ? "technical_error" : "input_rejected", err.message);
     }
-    event("llm_error", { stage: "image", message: (err as Error).message.slice(0, 300) });
-    return finish("technical_error", `Nie udało się odczytać obrazu. ${llmMessage(err)}`);
+    const what = inputType === "video" ? "nagrania wideo" : inputType === "audio" ? "nagrania audio" : "obrazu";
+    event("llm_error", { stage: isRecording ? inputType : "image", message: (err as Error).message.slice(0, 300) });
+    return finish("technical_error", `Nie udało się odczytać ${what}. ${llmMessage(err)}`);
   }
   mark("intake", tIntake);
 

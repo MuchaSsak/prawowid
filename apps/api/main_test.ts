@@ -102,7 +102,7 @@ Deno.test("empty text → input_rejected (live and mock)", async () => {
   assertEquals((await (await post({ input: { type: "text", value: "  " }, mock: true })).json()).status, "input_rejected");
 });
 
-Deno.test("video and audio: mock answers with timestamped claims; live says not yet supported (no verdict)", async () => {
+Deno.test("video and audio: mock answers with timestamped claims; live without a key is a system state (no verdict)", async () => {
   const mp4 = "data:video/mp4;base64,AAAAIGZ0eXBpc29t";
   const ogg = "data:audio/webm;codecs=opus;base64,GkXfo59ChoEB";
   const v = await (await post({ input: { type: "video", value: mp4 }, user_message: "Czy to prawda?", mock: true })).json();
@@ -116,7 +116,7 @@ Deno.test("video and audio: mock answers with timestamped claims; live says not 
     const type = value.startsWith("data:video") ? "video" : "audio";
     const live = await (await post({ input: { type, value } })).json();
     valid(live);
-    assertEquals([live.status, live.claims.length], ["input_rejected", 0]);
+    assertEquals([live.status, live.claims.length], ["technical_error", 0]);
   }
 });
 
@@ -151,7 +151,35 @@ Deno.test("rate limit: the 13th request in a minute from one IP → 429 rate_lim
   for (let i = 0; i < 12; i++) assertEquals((await post({ input: { type: "text", value: "x" }, mock: "confirmed" }, h)).status, 200);
   const res = await post({ input: { type: "text", value: "x" }, mock: "confirmed" }, h);
   assertEquals(res.status, 429);
-  assertEquals((await res.json()).status, "rate_limited");
+  assert(Number(res.headers.get("retry-after")) > 0);
+  const body = await res.json();
+  valid(body);
+  assertEquals(body.status, "rate_limited");
+  assert(body.system_message.text.includes("Spróbuj ponownie za"));
+});
+
+Deno.test("rate limit: a spoofed X-Forwarded-For does not escape the limit when the socket address is known", async () => {
+  const env = { remoteAddr: { hostname: "198.51.100.9" } };
+  const send = (i: number) =>
+    app.fetch(
+      new Request("http://x/api/v1/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-forwarded-for": `1.2.3.${i}` },
+        body: JSON.stringify({ input: { type: "text", value: "x" }, mock: "confirmed" }),
+      }),
+      env,
+    );
+  for (let i = 0; i < 12; i++) assertEquals((await send(i)).status, 200);
+  assertEquals((await send(99)).status, 429);
+});
+
+Deno.test("admin: repeated wrong tokens from one IP → 429, before the token is even checked", async () => {
+  const h = { "x-forwarded-for": "10.203.0.1", authorization: "Bearer nope" };
+  for (let i = 0; i < 10; i++) assertEquals((await get("/api/v1/admin/checks", h)).status, 401);
+  assertEquals((await get("/api/v1/admin/checks", h)).status, 429);
+  assertEquals((await get("/api/v1/admin/checks", { ...h, authorization: "Bearer test-admin-token" })).status, 429);
+  const other = await get("/api/v1/admin/checks", { "x-forwarded-for": "10.203.0.2", authorization: "Bearer test-admin-token" });
+  assertEquals(other.status, 200);
 });
 
 Deno.test("keyed bot client: limits are per end user, not per bot IP", async () => {

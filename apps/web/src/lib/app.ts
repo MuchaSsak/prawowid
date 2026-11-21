@@ -27,6 +27,48 @@ const STAGES: Record<InputType, string[]> = {
   audio: ["Wysyłamy nagranie…", "Spisujemy, co słychać w nagraniu…", "Szukamy w źródłach…", "Piszemy odpowiedź…"],
 };
 
+/**
+ * Browser recordings come out as WebM/Opus (Chrome) or MP4, which the EU transcription model can't
+ * read (it takes mp3, wav, ogg). Re-encode to 16 kHz mono 16-bit WAV (~32 KB/s, 2 min ≈ 3.8 MB) so
+ * voice messages stay on the EU route. Returns null if the browser can't decode it.
+ */
+async function toWav(blob: Blob): Promise<Blob | null> {
+  try {
+    const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new Ctx();
+    const decoded = await ctx.decodeAudioData(await blob.arrayBuffer());
+    void ctx.close();
+    const rate = 16_000;
+    const offline = new OfflineAudioContext(1, Math.max(1, Math.ceil(decoded.duration * rate)), rate);
+    const src = offline.createBufferSource();
+    src.buffer = decoded;
+    src.connect(offline.destination);
+    src.start();
+    const pcm = (await offline.startRendering()).getChannelData(0);
+    const out = new DataView(new ArrayBuffer(44 + pcm.length * 2));
+    const str = (o: number, t: string) => [...t].forEach((c, i) => out.setUint8(o + i, c.charCodeAt(0)));
+    str(0, "RIFF");
+    out.setUint32(4, 36 + pcm.length * 2, true);
+    str(8, "WAVEfmt ");
+    out.setUint32(16, 16, true);
+    out.setUint16(20, 1, true); // PCM
+    out.setUint16(22, 1, true); // mono
+    out.setUint32(24, rate, true);
+    out.setUint32(28, rate * 2, true);
+    out.setUint16(32, 2, true);
+    out.setUint16(34, 16, true);
+    str(36, "data");
+    out.setUint32(40, pcm.length * 2, true);
+    for (let i = 0; i < pcm.length; i++) {
+      const v = Math.max(-1, Math.min(1, pcm[i]));
+      out.setInt16(44 + i * 2, v < 0 ? v * 0x8000 : v * 0x7fff, true);
+    }
+    return new Blob([out.buffer], { type: "audio/wav" });
+  } catch {
+    return null;
+  }
+}
+
 interface Attachment {
   kind: MediaType;
   file: File;
@@ -372,7 +414,7 @@ export function initApp() {
   fileInput.addEventListener("change", () => attach(fileInput.files?.[0]));
 
   // ── voice message: record in the browser, attach as audio ─────────────────
-  const MAX_RECORDING_S = 120; // ~0.5 MB of Opus, far under the 5 MB cap
+  const MAX_RECORDING_S = 120; // ~3.8 MB once re-encoded to 16 kHz WAV, under the 5 MB cap
   let recorder: MediaRecorder | null = null;
   let micBusy = false; // permission prompt open: ignore further clicks
   let micGen = 0; // bumped by "Nowe pytanie": a late permission grant or stop event is dropped
@@ -424,7 +466,7 @@ export function initApp() {
     }
     const chunks: Blob[] = [];
     rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
-    rec.onstop = () => {
+    rec.onstop = async () => {
       stream.getTracks().forEach((t) => t.stop());
       clearInterval(recTimer);
       recorder = null;
@@ -432,7 +474,11 @@ export function initApp() {
       if (gen !== micGen) return;
       const mime = (rec.mimeType || type || "audio/webm").split(";")[0];
       const stamp = new Date().toTimeString().slice(0, 5).replace(":", "");
-      attach(new File(chunks, `nagranie-${stamp}.${mime.split("/")[1]}`, { type: mime }));
+      const wav = await toWav(new Blob(chunks, { type: mime }));
+      if (gen !== micGen) return;
+      attach(wav
+        ? new File([wav], `nagranie-${stamp}.wav`, { type: "audio/wav" })
+        : new File(chunks, `nagranie-${stamp}.${mime.split("/")[1]}`, { type: mime }));
     };
     recorder = rec;
     const started = Date.now();
@@ -667,7 +713,9 @@ export function initApp() {
     abort = controller;
     setStopMode(true);
     form.classList.add("is-busy");
-    const timeoutId = setTimeout(() => controller.abort(new DOMException("Timeout", "TimeoutError")), 40_000);
+    // Recordings add a transcription call; the core allows them 55 s (LIMITS.recordingRequestDeadlineMs).
+    const waitMs = type === "video" || type === "audio" ? 70_000 : 40_000;
+    const timeoutId = setTimeout(() => controller.abort(new DOMException("Timeout", "TimeoutError")), waitMs);
     // Rejects as soon as the request is stopped or times out, so every wait below ends at once.
     const aborted = new Promise<never>((_, reject) => {
       controller.signal.addEventListener("abort", () => reject(controller.signal.reason), { once: true });

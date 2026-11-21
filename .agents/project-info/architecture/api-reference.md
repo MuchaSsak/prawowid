@@ -35,7 +35,7 @@ A bot can forward a chat message as `text` even when it contains a link: the ser
 - `text`: up to 50,000 chars (the first 12,000 are analysed, with a `partial_analysis` warning).
 - `url`: a public http(s) article. Tracking params are stripped; private-looking params, IP addresses, local hosts and robots.txt-disallowed pages are refused (`input_rejected`).
 - `image`: a `data:image/(jpeg|png|webp);base64,…` URL, max 5 MB. Metadata is stripped before the vision call; the image is not stored.
-- `video`: a `data:video/(mp4|webm|quicktime|mpeg);base64,…` URL, max 5 MB. `audio`: a `data:audio/…;base64,…` URL (mp3, wav, m4a/mp4, aac, ogg, webm), max 5 MB. Added 2026-11-21 ([decision 009](../decisions/009-video-audio-input-and-web-composer.md)). **Mock only for now:** in live mode a valid recording returns `input_rejected` ("not available yet"), never a verdict. Format and size are checked the same way in mock and live (`packages/core/src/intake/media.ts`), so a channel built on mock gets the same rejections later. The 5 MB cap keeps the base64 body under the 8 MB limit.
+- `video`: a `data:video/(mp4|webm|quicktime|mpeg);base64,…` URL, max 5 MB. `audio`: a `data:audio/…;base64,…` URL (mp3, wav, m4a/mp4, aac, ogg, webm), max 5 MB. Added 2026-11-21 ([decision 009](../decisions/009-video-audio-input-and-web-composer.md)). Live mode transcribes them (Voxtral EU for mp3/wav/ogg audio, Gemini for other audio and all video) and claims carry `provenance` like `audio@00:18`; routing and limits in [multimodal-media](multimodal-media.md#status-2026-11-21-uploaded-recordings-work-live). Format and size are checked the same way in mock and live (`packages/core/src/intake/media.ts`), so a channel built on mock gets the same rejections later. The 5 MB cap keeps the base64 body under the 8 MB limit.
 - With a file, put what the user typed in `user_message`.
 
 HTTP status codes: `200` for every outcome the pipeline produces, including system states (read `status`, not the HTTP code). `400` = body is not JSON or has no `input` (`status: input_rejected`). `413` = body over 8 MB. `429` = rate limited (`status: rate_limited`).
@@ -48,7 +48,18 @@ Live latency: 5-10 s for text (two LLM steps + source APIs), +2 s for an image. 
 | `X-Client-Key` | a key from the server's `CLIENT_KEYS`; marks the caller as a trusted server client |
 | `X-End-User` | a stable id of the chat user (e.g. the phone number); the server only uses its SHA-256 for rate limiting |
 
-Rate limit: 12 checks per minute per browser IP, or per end user for keyed clients. A bot calling without a key shares one IP-level limit for all its users.
+Rate limits (`apps/api/rate-limit.ts`, in memory per instance, added 2026-11-21). Aim: people and testers practically never hit them, scripts get stopped and shut out. Every refusal is `429` + `Retry-After` (seconds) + `status: rate_limited` with "Spróbuj ponownie za …" in `system_message`.
+
+| Limit | Key | Counts | Value |
+|---|---|---|---|
+| Burst | browser IP (IPv6 by /64), or end user of a keyed client | every `POST /check`, mock too | 12 at once, then 1 more every 5 s (12/min sustained) |
+| Hour / day | same | same | 150 / hour, 600 / day (generous for a shared venue NAT) |
+| Abuse ban | same | requests refused by the two limits above | 30 refusals in 10 min → banned 15 min, each repeat ban doubles, max 24 h; requests during a ban don't extend it |
+| Service budget | the whole instance | live checks only (they cost money) | 600 / hour, 4,000 / day |
+| Per client | `X-Client-Key` client name | live checks only | 1,500 / day |
+| Admin login | IP | wrong `ADMIN_TOKEN` | 10 per 15 min → `429` even with the right token; 20 more → 1 h ban |
+
+The IP is the socket address (`remoteAddr`); `X-Forwarded-For` is ignored when one exists, because a caller can write anything into it. If the API is ever put behind a proxy, this needs a trusted-proxy setting. A bot calling without a key shares one IP-level limit for all its users.
 
 ## Mock mode
 Mock responses use exactly the live structures, cost nothing, need no keys and take `MOCK_DELAY_MS` (default 600 ms). They are always marked: `meta.mode: "mock"`, `warnings[0].type: "demo_data"`, claims about the fictional town "Przykładowo", sources on `https://example.org/prawdowid-demo/…`.
@@ -82,7 +93,7 @@ Pick a scenario (first match wins):
 | `MOCK_DELAY_MS` | no | simulated mock latency (default 600) |
 | `ADMIN_TOKEN` | no (secret) | enables `GET /api/v1/admin/checks` and `GET /api/v1/admin/analytics` (the admin page asks for it). Independently of it, every live check writes one JSON audit line to the host log (`event: "prawdowid.check"`: time, channel, status, verdicts, source ids, a hash and the length of the masked question, never its text, so sessions stay deletable) |
 | `CLIENT_KEYS` | no | `name:key,name2:key2` for server clients |
-| `MOCK_CLIENTS` | no | comma-separated client names (from `CLIENT_KEYS`) that always get mock answers, even when `PRAWDOWID_MODE` is live; `bot` holds the messaging bot in mock until its spend caps exist ([messaging-bot](messaging-bot.md)) |
+| `MOCK_CLIENTS` | no | comma-separated client names (from `CLIENT_KEYS`) that always get mock answers, even when `PRAWDOWID_MODE` is live; `bot` holds the messaging bot in mock until the bot itself is ready for live (its daily quota, M1b); the API spend caps exist since 2026-11-21 ([messaging-bot](messaging-bot.md)) |
 | `WEB_ORIGINS` | no | comma-separated browser origins for CORS (default localhost:4321) |
 | `MODEL_CLAIM_EXTRACTION`, `MODEL_EVIDENCE_ASSESSMENT`, `MODEL_IMAGE_EXTRACTION` | no | model overrides ([decision 003](../decisions/003-config-in-code.md)) |
 | `PORT` | no | local port (default 8787) |

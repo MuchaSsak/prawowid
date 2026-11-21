@@ -2,7 +2,7 @@
 How we turn a linked article's images, YouTube or MP4 videos and audio into text the verification pipeline can check, and which model does it. **Idea**: a recommendation, not decided. Verified on 2026-11-21 against the live OpenRouter model list (`/api/v1/models`, 476 models) and the OpenRouter docs (multimodal/videos, multimodal/audio).
 
 ## Verified facts (OpenRouter, 2026-11-21)
-- **Video** goes through the **Responses API** (`/api/v1/responses`) with the `input_video` content type. `videoUrl` is either a URL or a **base64 data URL**. Formats: mp4, mpeg, mov, webm.
+- **Video** goes through the **Responses API** (`/api/v1/responses`) with the `input_video` content type, or through chat completions with `video_url` (what our code uses). `videoUrl` is either a URL or a **base64 data URL**. Formats: mp4, mpeg, mov, webm.
 - **YouTube:** "Google Gemini on AI Studio only supports YouTube links (not Vertex AI)". So a YouTube URL can be passed **directly** if we pin the provider to Google AI Studio. Any other video (an MP4 on a CDN) must be **downloaded by us and sent as base64**.
 - **Audio** goes through `input_audio`, **base64 only** (no URLs). The Responses API accepts wav and mp3.
 - Models accepting **text + image + audio + video** (prices per 1M input/output tokens):
@@ -19,8 +19,15 @@ How we turn a linked article's images, YouTube or MP4 videos and audio into text
 
 - `typesafe/jev-router` exists on OpenRouter (all modalities, router pricing). It is probably the "jev" the team mentioned. Unconfirmed.
 
-## Status (2026-11-21)
-The v1 contract already accepts uploaded `video` and `audio` files (data URLs, max 5 MB), and the web app can send them. Only mock mode answers them; live returns `input_rejected` until the transcription step below is built ([decision 009](../decisions/009-video-audio-input-and-web-composer.md)). The mock already uses the planned timestamped provenance (`video@01:15`).
+## Status (2026-11-21): uploaded recordings work live
+Uploaded `video` and `audio` files (data URLs, max 5 MB, [decision 009](../decisions/009-video-audio-input-and-web-composer.md)) are transcribed live by `packages/core/src/intake/recording.ts`, then go through the normal pipeline. Linked videos (YouTube, MP4 inside an article) are **not built yet** (steps 3-4 below).
+- **Routing by format** (probed with our key, 2026-11-21, OpenRouter chat completions): Voxtral (`mistral/eu`) decodes **mp3, wav and ogg/opus** and rejects webm and m4a ("valid mp3 or wav"). So audio in those three formats goes to `audio_transcription` (Voxtral, EU); webm, m4a/mp4 and aac audio and **every video** go to `video_transcription` (Gemini 3.1 Flash-Lite, non-EEA), and the response gets the limitation "przetworzone przez model Google poza EOG".
+- **Content parts:** audio `{type:"input_audio", input_audio:{data:<bare base64>, format}}`; video `{type:"video_url", video_url:{url:"data:video/mp4;base64,…"}}`, both on `/chat/completions` (no Responses API needed). Gemini also reads webm/ogg audio.
+- **Web mic:** the browser records WebM/Opus, so `apps/web` re-encodes it to 16 kHz mono WAV (~32 KB/s, 2 min ≈ 3.8 MB) before sending, which keeps voice messages on the EU route. If decoding fails it sends the original.
+- **Output → material:** one item per speaker turn with provenance `audio@mm:ss` / `video@mm:ss`; on-screen text becomes `[Tekst na ekranie] …` items. Capped at `maxMaterialChars` (warning "przeanalizowaliśmy jego początek"). Unclear audio → `illegible_media` warning; no speech and no user message → `needs_clarification`. Every recording answer carries the limitation that we don't judge authenticity or edits.
+- **Time budget:** recordings get a 55 s request deadline (`recordingRequestDeadlineMs`, 25 s for the transcription call); the web app waits 70 s for them instead of 40 s.
+- **Measured (one synthetic 7 s English clip, 2026-11-21):** mp3 via Voxtral ~14 s end-to-end, $0.0067 for the whole check; webm via Gemini ~18 s, $0.0029. Too small a sample for the cost sheet.
+- **Video is blocked by the account for now:** OpenRouter answers 402 "requires at least $1.00 in balance for video" because the API key has a low spend limit. The pipeline returns `technical_error` ("Konto usługi modelu nie ma wystarczających środków"), never a verdict. See [open-questions](../open-questions.md).
 
 ## Design: "media → text" first, then the normal pipeline
 1. **Fetch the article** (SSRF-safe). Readability gives the main text + publish date. Collect `<img>` (skip logos and icons by size), `<video>`/`<source>` MP4s, and YouTube `<iframe>` embeds.

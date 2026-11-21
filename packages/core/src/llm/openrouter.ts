@@ -5,7 +5,7 @@
 import { z } from "zod";
 import { routingFor } from "../config.ts";
 
-export type LlmErrorKind = "missing_key" | "timeout" | "rate_limited" | "http" | "invalid_output";
+export type LlmErrorKind = "missing_key" | "timeout" | "rate_limited" | "payment" | "http" | "invalid_output";
 
 export class LlmError extends Error {
   constructor(public kind: LlmErrorKind, message: string) {
@@ -16,7 +16,11 @@ export class LlmError extends Error {
 
 export type ContentPart =
   | { type: "text"; text: string }
-  | { type: "image_url"; image_url: { url: string } };
+  | { type: "image_url"; image_url: { url: string } }
+  /** Base64 only; the format must be one the provider decodes (Voxtral: mp3, wav, ogg). */
+  | { type: "input_audio"; input_audio: { data: string; format: string } }
+  /** A data URL (mp4, webm, mov, mpeg); Gemini on Vertex takes no plain video URLs. */
+  | { type: "video_url"; video_url: { url: string } };
 
 export interface LlmUsage {
   model: string;
@@ -97,6 +101,8 @@ async function once<T extends z.ZodType>(opts: ChatJsonOptions<T>): Promise<{ da
   }
 
   if (res.status === 429) throw new LlmError("rate_limited", `${opts.schemaName}: OpenRouter 429`);
+  // 402: no credit, or the key's spend limit is too low (video needs at least $1 of headroom).
+  if (res.status === 402) throw new LlmError("payment", `${opts.schemaName}: OpenRouter 402: ${body.slice(0, 300)}`);
   if (!res.ok) throw new LlmError("http", `${opts.schemaName}: OpenRouter ${res.status}: ${body.slice(0, 300)}`);
 
   let payload: {

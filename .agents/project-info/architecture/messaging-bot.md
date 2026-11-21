@@ -137,8 +137,8 @@ Not in scope:
   
   The only links posted are `https:` `citations[].url` and the web app URL. The Discord adapter (4.44.0) builds its message payload without `allowed_mentions` and has no option for it (checked in its source, 2026-11-21), so the sanitizer is the only guard against mentions. Replies are ephemeral, which also limits who could be pinged.
 - **Abuse and cost limits.**
-  - The API limits 12 checks/min per end user for keyed clients.
-  - The bot limits 30 checks/day per pseudonym (Redis, from M1b). Before that, M1 runs in mock mode only, which costs nothing, under the API's 12/min limit.
+  - The API limits each end user of a keyed client (burst 12, 150/h, 600/day, abuse ban; [api-reference](api-reference.md)).
+  - The bot limits 30 checks/day per pseudonym (Redis, from M1b). Before that, M1 runs in mock mode only, which costs nothing, under the API's per-user limits.
   - The API adds a per-key daily cap and a live-mode cost cap (see [Changes needed in the API](#changes-needed-in-the-api-additive-contract-v1)). Only **live** checks count toward them, so mock traffic and the health check can't lock users out.
   - An alert fires at 80 % of the per-key cap, and the cap can be raised by an API env var without a redeploy.
   - **Two separate gates:**
@@ -163,7 +163,7 @@ Not in scope:
 
 ## Changes needed in the API (additive, contract v1)
 - **Done (2026-11-21): `MOCK_CLIENTS`** (see below) and `client_mode` in `GET /api/v1/health` for keyed clients, so the `demo:` gate knows the bot's own mode before its first check ([api-reference](api-reference.md)).
-- **Spend limits:** a per-client-key daily cap and a live-mode cost cap. Both count live checks only and are answered as `rate_limited`. They gate going live. Owner: the API owner, by Sun 05:00.
+- **Done (2026-11-21): spend limits.** 1,500 live checks per client key per day and a service-wide 600/hour, 4,000/day live budget; live checks only, answered as `rate_limited` ([api-reference](api-reference.md)). In memory per instance, so a cold start resets them.
 - **Cache bypass:** honour `Cache-Control: no-cache` from keyed clients, so the consistency script can measure fresh runs. Owner: the API owner, by Sun 01:00.
 - **Per-client mock:** `MOCK_CLIENTS=bot` forces mock answers for that client key while `PRAWDOWID_MODE` is live for the web. Removing it is the bot's live switch. Owner: the API owner, by Sun 01:00.
 - **Mode:** `GET /api/v1/health` already reports `mode`. With `MOCK_CLIENTS`, the bot reads its own effective mode from `meta.mode` on each response (the banner already follows it), and the `demo:` gate uses the same value.

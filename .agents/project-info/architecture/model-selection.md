@@ -17,7 +17,7 @@ Which models to use per pipeline step: quality, reliability, cost and GDPR compl
 | `mistralai/mistral-large-2512` | $0.50 / $1.50 | **EU or ZDR** | strong reasoning, still cheap |
 | `mistralai/mistral-large-4-0` | $0.70 / $2.10 | Mistral | 1M ctx, top Mistral |
 | `mistralai/mistral-embed-2312` | $0.10 / - | ZDR | EU-vendor embeddings |
-| `mistralai/voxtral-small-24b-2507` | $0.10 / $0.30 | **EU or ZDR** | audio transcription |
+| `mistralai/voxtral-small-24b-2507` | $0.10 / $0.30 | **EU or ZDR** | audio transcription; decodes mp3, wav, ogg only (probed 2026-11-21) |
 | `anthropic/claude-haiku-5.5` | $0.10 / $0.50 | global (non-EEA) | strong and cheap; comparison or fallback |
 | `google/gemini-3.1-flash-lite` | $0.25 / $1.50 | global (non-EEA) | the only cheap option for **video** + YouTube |
 | `google/gemini-2.5-flash-lite` | $0.10 / $0.40 | global (non-EEA) | cheaper omni fallback |
@@ -31,8 +31,8 @@ Which models to use per pipeline step: quality, reliability, cost and GDPR compl
 | 2. Stance + exact quotes (the critical step) | **mistral-large-2512** (code default since 2026-11-21) | EU. In smoke runs Small labelled a bare act title as "supports" and produced confident wrong verdicts; Large did not. Revisit with the eval; Small stays available via `MODEL_EVIDENCE_ASSESSMENT` |
 | Embeddings | **bge-m3** (quality, cross-lingual PL↔EN/RU) on **masked, public** text only, or `mistral-embed` for a strictly EU-vendor path | the corpus is public data; user queries are PII-masked first |
 | Images (OCR) | **mistral-small-2603** (vision, EU) | keeps the image path in the EU; the OCR text is redacted before the next step |
-| Video / YouTube | **gemini-3.1-flash-lite** (optional bonus path) | the only practical video model; **disclose non-EEA processing**, and use it only for public videos |
-| Audio (uploaded) | **voxtral-small** via `mistral/eu` | EU transcription |
+| Video / YouTube | **gemini-3.1-flash-lite** (code default for uploads, `MODEL_VIDEO_TRANSCRIPTION`) | the only practical video model; **disclose non-EEA processing**, and use it only for public videos |
+| Audio (uploaded) | **voxtral-small** via `mistral/eu` (code default, `MODEL_AUDIO_TRANSCRIPTION`) | EU transcription; webm/m4a/aac audio falls back to the video model |
 | Benchmark / fallback | claude-haiku-5.5 | evaluate on approved fixtures. Enable live fallback only if it meets the [verification workflow](verification-pipeline.md) deployment policy |
 
 **Cost model.** Count extraction on each uncached check, stance assessment on claims requiring prose, and vision transcription on images. Measure actual billed usage per stage and report cost per 100 checks with the input mix and call counts. Structured evidence can skip the evidence-model call. Earlier estimate for text only (all Small, 2k/0.4k + 5k/0.5k tokens): about $1.4 per 1,000 checks, about $4 with Large on the assessment step; images and video are extra.

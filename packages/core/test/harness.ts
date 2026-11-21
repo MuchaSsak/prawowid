@@ -18,6 +18,8 @@ export type ModelScript = {
   extraction?: (input: { user_message: string; material: { provenance: string; text: string }[] }) => unknown;
   assessment?: (input: { claim: { text: string }; passages: { passage_id: string; text: string; publisher: string }[] }) => unknown;
   image?: () => unknown;
+  /** video_transcription / audio_transcription; gets the user content parts as sent. */
+  recording?: (parts: unknown[]) => unknown;
   /** Force an HTTP status for a model step (e.g. 429). Called per request. */
   status?: (schema: string, model: string) => number | undefined;
 };
@@ -70,6 +72,7 @@ export function stubFetch(model: ModelScript, sources: SourceScript = {}) {
       if (schema === "claim_extraction" && model.extraction) return llm(model.extraction(input), b.model);
       if (schema === "evidence_assessment" && model.assessment) return llm(model.assessment(input), b.model);
       if (schema === "image_extraction" && model.image) return llm(model.image(), b.model);
+      if (schema.endsWith("_transcription") && model.recording) return llm(model.recording(userContent as unknown[]), b.model);
       return json({ error: { message: `no script for ${schema}` } }, 500);
     }
     if (url.hostname === "factchecktools.googleapis.com") {

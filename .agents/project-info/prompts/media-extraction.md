@@ -24,7 +24,8 @@ Do not identify people from their faces. Name a person only if their name is wri
 Code reads EXIF locally with `exifr` (date, device; GPS is dropped), strips metadata before sending the image, and redacts returned text before any downstream step. `legibility: poor` → warning "nie udało się odczytać obrazu w całości". There is no reverse image search unless one is actually built ([rules/hard-constraints.md](../rules/hard-constraints.md) rule 15).
 
 ## Video / audio (transcript)
-- **Model:** video `google/gemini-3.1-flash-lite` (YouTube via Google AI Studio, MP4 as base64; disclosed as non-EEA). Audio: `mistralai/voxtral-small-24b-2507` via `mistral/eu`.
+In code since 2026-11-21 as `media-extraction-recording@1` (`packages/core/src/prompts/media-extraction.v1.ts`). The code version adds `audibility` and `injection_signals`, asks for ISO language codes, and for audio fixes `on_screen_text: []` and `visual_summary: ""`. Not evaluated beyond one smoke clip.
+- **Model:** video `google/gemini-3.1-flash-lite` (MP4/WebM as a base64 data URL; disclosed as non-EEA). Audio: `mistralai/voxtral-small-24b-2507` via `mistral/eu` for mp3/wav/ogg, else the video model ([routing](../architecture/multimodal-media.md#status-2026-11-21-uploaded-recordings-work-live)).
 
 ```text
 You transcribe recordings for Prawdowid, a fact-checking service. Your transcript is used to find claims that will be checked against sources. Transcribe; do not summarise, judge or correct what is said.
@@ -39,4 +40,4 @@ Return:
 Do not identify people from their faces or voices. Use a name only if it is shown on screen or said in the recording.
 ```
 
-Code: each segment becomes `material` with provenance `video@mm:ss`, so a claim's citation can point to the moment. Caps: ≤10 min, ≤50 MB, timeout. Video runs **async** so the text answer isn't held up. Unsupported platforms or a failure → system state, never a verdict.
+Code: each speaker turn becomes `material` with provenance `video@mm:ss` / `audio@mm:ss`, so a claim can point to the moment. Uploads are capped at 5 MB and run synchronously inside a 55 s deadline; the ≤10 min / ≤50 MB caps and async handling are for linked videos, not built yet. Unsupported platforms or a failure → system state, never a verdict.

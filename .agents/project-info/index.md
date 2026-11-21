@@ -41,7 +41,7 @@ Format: `- [path](path): one-line summary`
 - [architecture/README.md](architecture/README.md): scope of the folder 
 - [architecture/api-endpoints-verified.md](architecture/api-endpoints-verified.md): **every source endpoint tested by curl**, plus the POST /api/check flow and ingestion jobs
 - [architecture/model-selection.md](architecture/model-selection.md): OpenRouter models per step, prices, EU/ZDR endpoints, GDPR checklist
-- [architecture/multimodal-media.md](architecture/multimodal-media.md): images, YouTube and MP4 video, audio → text (OpenRouter Responses API, Gemini), limits
+- [architecture/multimodal-media.md](architecture/multimodal-media.md): images, video and audio → text; uploaded recordings live (Voxtral EU by format, else Gemini), linked videos still a plan; limits
 - [architecture/verification-pipeline.md](architecture/verification-pipeline.md): workflow graph, claim extraction, evidence eligibility, verdict rules, failure states and release checks (Idea)
 - [architecture/stack-direction.md](architecture/stack-direction.md): what the team said about the stack (Turborepo, Deno Deploy, OpenRouter, Supabase?)
 - [architecture/stack-research.md](architecture/stack-research.md): Deno Deploy (sunset Apr 2027), OpenRouter, Supabase, input handling, Discord, POST /api/check flow
@@ -73,7 +73,7 @@ Format: `- [path](path): one-line summary`
 - [decisions/006-api-contract-v1-and-mock.md](decisions/006-api-contract-v1-and-mock.md): `/api/v1` contract frozen (additive only), mock mode with clearly synthetic fixtures, keyed server clients
 - [decisions/007-messaging-bot-chat-sdk.md](decisions/007-messaging-bot-chat-sdk.md): one bot service on the Vercel Chat SDK for Discord, WhatsApp and Messenger, calling the HTTP API (mock by default), hosted on Vercel Hobby (fra1) with Discord slash commands only
 - [decisions/008-trusted-source-allowlist.md](decisions/008-trusted-source-allowlist.md): evidence only from an allowlist of publishers (`GET /api/v1/sources`), tier by credentials (PAP, Sprawdzam To = media), one publisher = one origin, no bypassing robots/terms
-- [decisions/009-video-audio-input-and-web-composer.md](decisions/009-video-audio-input-and-web-composer.md): `video`/`audio` inputs added to contract v1 (data URLs, 5 MB, mock only for now), one shared media validator, single-composer web app on mock data (demo switch later removed: web is live-only)
+- [decisions/009-video-audio-input-and-web-composer.md](decisions/009-video-audio-input-and-web-composer.md): `video`/`audio` inputs added to contract v1 (data URLs, 5 MB; live transcription since 2026-11-21), one shared media validator, single-composer web app on mock data (demo switch later removed: web is live-only)
 - [decisions/011-admin-analytics.md](decisions/011-admin-analytics.md): admin panel: analytics page (3 stat tiles (checks, false-or-misleading share, median time), most checked claims with verdict and trend, heatmap + traffic; full-screen key lock; aggregates only, sample switch, light only, browser token auth); plus `/admin/dokumenty`, cards with iframe previews of our files (cost sheet first)
 - [decisions/003-config-in-code.md](decisions/003-config-in-code.md): `.env` holds only secrets; models, routing and limits are code defaults, models overridable by optional env vars
 - [decisions/010-product-name-prawdomat.md](decisions/010-product-name-prawdomat.md): display name is **Prawdomat**; technical identifiers (env vars, packages, cookies, UA) keep `prawdowid`; PRAWDOWID = the MSZ task

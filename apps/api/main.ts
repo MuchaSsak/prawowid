@@ -49,6 +49,7 @@ import {
   publicCatalog,
   runCheck,
 } from "@prawdowid/core";
+import { type Decision, ipKey, RateLimiter, waitText } from "./rate-limit.ts";
 
 const config = loadConfig({ get: (k) => Deno.env.get(k) });
 // Every saved check also becomes one JSON audit line in the host's log (no question text), so the
@@ -85,19 +86,38 @@ async function sha256(text: string): Promise<string> {
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// ── Rate limit: fixed window, in memory (per instance) ──────────────────────
-const WINDOW_MS = 60_000;
-const MAX_PER_WINDOW = 12;
-const hits = new Map<string, { n: number; start: number }>();
-function rateLimited(key: string): boolean {
-  const now = Date.now();
-  const h = hits.get(key);
-  if (!h || now - h.start > WINDOW_MS) {
-    hits.set(key, { n: 1, start: now });
-    return false;
-  }
-  h.n++;
-  return h.n > MAX_PER_WINDOW;
+// ── Rate limits: in memory, per instance (rate-limit.ts; numbers in api-reference.md) ──
+const MIN = 60_000, HOUR = 60 * MIN, DAY = 24 * HOUR;
+/** Every POST /check (mock included) per IP, or per end user of a keyed client. Loose for people, tight for scripts. */
+const perCaller = new RateLimiter({
+  burst: { capacity: 12, refillMs: 5_000 },
+  windows: [{ limit: 150, windowMs: HOUR }, { limit: 600, windowMs: DAY }],
+  abuse: { strikes: 30, windowMs: 10 * MIN, banMs: 15 * MIN, maxBanMs: DAY },
+});
+/** Live checks only (they cost money), across all callers: caps the spend even against many IPs. */
+const liveBudget = new RateLimiter({ windows: [{ limit: 600, windowMs: HOUR }, { limit: 4_000, windowMs: DAY }] });
+/** Live checks per keyed client (e.g. the bot), so one client can't use up the whole budget. */
+const perClientLive = new RateLimiter({ windows: [{ limit: 1_500, windowMs: DAY }] });
+/** Failed admin logins per IP: stops guessing ADMIN_TOKEN. */
+const adminFailures = new RateLimiter({
+  windows: [{ limit: 10, windowMs: 15 * MIN }],
+  abuse: { strikes: 20, windowMs: 15 * MIN, banMs: HOUR, maxBanMs: DAY },
+});
+setInterval(() => [perCaller, liveBudget, perClientLive, adminFailures].forEach((l) => l.sweep()), 10 * MIN);
+
+/**
+ * The caller's IP. The socket address wins: X-Forwarded-For is set by the caller and would let a
+ * script pick a new "IP" per request. The header is only used when there is no socket address
+ * (in-process tests, or a host that gives none).
+ */
+function clientIp(c: Context): string {
+  const socket = (c.env as { remoteAddr?: { hostname?: string } } | undefined)?.remoteAddr?.hostname;
+  return socket ?? c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+}
+
+function limitedResponse(c: Context, d: Exclude<Decision, { ok: true }>, title: string, text: string) {
+  c.header("Retry-After", String(Math.ceil(d.retryAfterMs / 1000)));
+  return c.json(systemOnly("rate_limited", title, `${text} Spróbuj ponownie za ${waitText(d.retryAfterMs)}.`), 429);
 }
 
 function systemOnly(status: CheckResponse["status"], title: string, text: string): CheckResponse {
@@ -193,12 +213,16 @@ app.post(
   async (c) => {
     // Clients with a key (the messaging bot) are limited per end user, browsers per IP.
     const client = CLIENT_KEYS.get(c.req.header("x-client-key") ?? "");
-    const ip = c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
-      (c.env as { remoteAddr?: { hostname?: string } } | undefined)?.remoteAddr?.hostname ?? "local";
     const endUser = c.req.header("x-end-user");
-    const limitKey = client && endUser ? `${client}:${await sha256(endUser)}` : `ip:${ip}`;
-    if (rateLimited(limitKey)) {
-      return c.json(systemOnly("rate_limited", "Zbyt wiele zapytań", "Spróbuj ponownie za chwilę."), 429);
+    const limitKey = client && endUser ? `${client}:${await sha256(endUser)}` : ipKey(clientIp(c));
+    const caller = perCaller.hit(limitKey);
+    if (!caller.ok) {
+      return limitedResponse(
+        c,
+        caller,
+        "Zbyt wiele zapytań",
+        caller.reason === "banned" ? "Za dużo zapytań w krótkim czasie." : "Wysyłasz pytania szybciej, niż je sprawdzamy.",
+      );
     }
 
     let body: CheckRequest;
@@ -231,6 +255,13 @@ app.post(
       res.meta.latency_ms = MOCK_DELAY_MS;
       return c.json(res);
     }
+    // Live checks cost money: a per-client and a service-wide cap (mock traffic never counts).
+    const budget = (client ? perClientLive.check(`client:${client}`) : { ok: true as const });
+    const total = budget.ok ? liveBudget.hit("all") : budget;
+    if (!total.ok) {
+      return limitedResponse(c, total, "Chwilowo nie przyjmujemy nowych sprawdzeń", "Osiągnęliśmy limit sprawdzeń usługi.");
+    }
+    if (client) perClientLive.hit(`client:${client}`);
     return c.json(await runCheck({ ...body, channel }, { config, store, corpus, resolveHost }));
   },
 );
@@ -246,7 +277,14 @@ async function sameSecret(a: string, b: string): Promise<boolean> {
 /** Admin routes: 404 when ADMIN_TOKEN is unset, 401 on a wrong token (constant-time compare). */
 async function adminDenied(c: Context): Promise<Response | null> {
   if (!ADMIN_TOKEN) return c.json({ error: "not found", see: "GET /" }, 404);
+  const key = ipKey(clientIp(c));
+  const blocked = adminFailures.check(key);
+  if (!blocked.ok) {
+    c.header("Retry-After", String(Math.ceil(blocked.retryAfterMs / 1000)));
+    return c.json({ error: "too many failed attempts" }, 429);
+  }
   if (!(await sameSecret(c.req.header("authorization") ?? "", `Bearer ${ADMIN_TOKEN}`))) {
+    adminFailures.hit(key);
     return c.json({ error: "unauthorized" }, 401);
   }
   return null;

@@ -10,7 +10,12 @@ export interface Env {
   get(key: string): string | undefined;
 }
 
-export type ModelStep = "claim_extraction" | "evidence_assessment" | "image_extraction";
+export type ModelStep =
+  | "claim_extraction"
+  | "evidence_assessment"
+  | "image_extraction"
+  | "audio_transcription"
+  | "video_transcription";
 
 export const DEFAULT_MODELS: Record<ModelStep, string> = {
   claim_extraction: "mistralai/mistral-small-2603",
@@ -18,6 +23,11 @@ export const DEFAULT_MODELS: Record<ModelStep, string> = {
   // produced confident wrong verdicts; Large did not. See architecture/model-selection.md.
   evidence_assessment: "mistralai/mistral-large-2512",
   image_extraction: "mistralai/mistral-small-2603",
+  // EU (mistral/eu). Takes mp3, wav and ogg only (probed 2026-11-21); other audio formats go to
+  // the video model (intake/recording.ts). See architecture/multimodal-media.md.
+  audio_transcription: "mistralai/voxtral-small-24b-2507",
+  // Non-EEA (Google), disclosed in the response limitations. The only cheap model that reads video.
+  video_transcription: "google/gemini-3.1-flash-lite",
 };
 
 export interface ProviderRouting {
@@ -49,6 +59,9 @@ export const LIMITS = {
   passagesPerClaim: 5,
   /** Whole request budget, shared by all stages. */
   requestDeadlineMs: 30_000,
+  /** Video and audio need one more model call (transcription) before the normal pipeline. */
+  recordingRequestDeadlineMs: 55_000,
+  recordingTimeoutMs: 25_000,
   extractionTimeoutMs: 15_000,
   assessmentTimeoutMs: 14_000,
   imageTimeoutMs: 15_000,
@@ -88,6 +101,8 @@ export function loadConfig(env: Env): Config {
       claim_extraction: model("claim_extraction"),
       evidence_assessment: model("evidence_assessment"),
       image_extraction: model("image_extraction"),
+      audio_transcription: model("audio_transcription"),
+      video_transcription: model("video_transcription"),
     },
     trustedSources: TRUSTED_SOURCES,
     secrets: {

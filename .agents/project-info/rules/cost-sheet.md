@@ -7,7 +7,7 @@ The user's rule (2026-11-21): the cost sheet must always be up to date and hold 
 - A full benchmark run (`bun run eval`, `eval:organizer`): new cost per 100 checks and median latency from `eval/results/latest*.md`. Quick runs (6 cases) are too small; don't use them.
 - A model, provider or price change ([model-selection.md](../architecture/model-selection.md)).
 - A hosting plan, channel or operator fee change (new channel, WhatsApp/SMS live, Vercel/Deno/Supabase plan).
-- A rate limit or quota change in `apps/api/main.ts` or the bot (e.g. the bot's daily quota or the spend cap once built).
+- A rate limit or quota change in `apps/api/main.ts` or the bot (e.g. the bot's daily quota, or the API limits in `apps/api/rate-limit.ts` / `main.ts`).
 - Any time you edit the sheet: refresh the USD/PLN rate from NBP (`https://api.nbp.pl/api/exchangerates/rates/a/usd/?format=json`) and put its date in the source cell.
 
 ## Real numbers
