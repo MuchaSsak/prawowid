@@ -1,0 +1,58 @@
+/**
+ * Storage interfaces. Today: in-memory mock (memory.ts). Later: Supabase, with these rows mapped to
+ * the private schema of decisions/001 (private.check_logs, private.check_events, private.sessions)
+ * and corpus.documents / corpus.chunks. Only the server talks to storage; clients never do.
+ */
+import type { SourceRecord } from "../connectors/types.ts";
+import type { CheckResponse, InputType, RequestStatus } from "../types.ts";
+
+export interface CheckLogRow {
+  check_id: string;
+  /** sha256 of the client session id; the raw id is never stored. */
+  session_hash: string | null;
+  channel: string;
+  input_type: InputType;
+  /** PII-masked input, truncated. Never the raw input or provider payloads. */
+  masked_input: string;
+  status: RequestStatus;
+  claims: { id: string; verdict: string | null; system_state: string | null; source_ids: string[] }[];
+  latency_ms: number;
+  models: string[];
+  prompt_versions: string[];
+  cost_usd: number;
+  created_at: string;
+}
+
+export type CheckEventType =
+  | "injection_detected"
+  | "quote_rejected"
+  | "span_rejected"
+  | "verdict_disagreement"
+  | "route_error"
+  | "llm_error"
+  | "intake_error"
+  | "pii_redacted";
+
+export interface CheckEventRow {
+  check_id: string;
+  type: CheckEventType;
+  detail: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface CheckStore {
+  saveCheck(row: CheckLogRow): Promise<void>;
+  logEvent(row: CheckEventRow): Promise<void>;
+  getCached(key: string): Promise<CheckResponse | null>;
+  setCached(key: string, value: CheckResponse, sessionHash: string | null): Promise<void>;
+  /** DELETE /api/session/{id}: removes the session's checks, events and cache entries. */
+  deleteSession(sessionHash: string): Promise<{ checks: number }>;
+  listRecent(limit: number): Promise<CheckLogRow[]>;
+  prune(now: Date): Promise<void>;
+}
+
+export interface CorpusStore {
+  size(): number;
+  search(queries: string[], limit: number): Promise<SourceRecord[]>;
+  upsert(records: SourceRecord[]): Promise<void>;
+}

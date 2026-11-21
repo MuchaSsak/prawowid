@@ -1,0 +1,26 @@
+{
+  "name": "prawdowid",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "bun@1.4.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "api:dev": "cd apps/api && deno task dev",
+    "api:start": "cd apps/api && deno task start",
+    "web:dev": "bun run --cwd apps/web dev",
+    "web:build": "bun run --cwd apps/web build",
+    "check": "turbo run check",
+    "test": "deno test --allow-env packages/core",
+    "supabase:schemas:check": "node supabase/scripts/check-schemas.mjs",
+    "supabase:migration": "node supabase/scripts/migrate.mjs --generate",
+    "supabase:push": "node supabase/scripts/migrate.mjs --push",
+    "supabase:deploy:edge": "node supabase/scripts/deploy-functions.mjs"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@prawdowid/core",
+  "version": "0.1.0",
+  "exports": { ".": "./src/mod.ts" },
+  "imports": {
+    "zod": "npm:zod@^4.1.0",
+    "linkedom": "npm:linkedom@^0.18.0",
+    "@mozilla/readability": "npm:@mozilla/readability@^0.6.0"
+  }
+}

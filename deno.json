@@ -1,0 +1,6 @@
+{
+  "workspace": ["./apps/api", "./packages/core"],
+  "nodeModulesDir": "none",
+  "fmt": { "lineWidth": 110 },
+  "exclude": ["apps/web", "example", "node_modules", "supabase"]
+}

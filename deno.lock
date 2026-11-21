@@ -1,0 +1,32 @@
+{
+  "version": "5",
+  "specifiers": {
+    "npm:zod@^4.1.0": "4.4.3"
+  },
+  "npm": {
+    "zod@4.4.3": {
+      "integrity": "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="
+    }
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:turbo@^2.5.0"
+      ]
+    },
+    "members": {
+      "apps/api": {
+        "dependencies": [
+          "jsr:@hono/hono@^4.9.0"
+        ]
+      },
+      "packages/core": {
+        "dependencies": [
+          "npm:@mozilla/readability@0.6",
+          "npm:linkedom@0.18",
+          "npm:zod@^4.1.0"
+        ]
+      }
+    }
+  }
+}

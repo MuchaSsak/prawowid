@@ -2,6 +2,7 @@
 # Secrets & environment (rule 11: no keys, secrets or PII in repo)
 # ─────────────────────────────────────────────────────────────
 .env
+/example
 .env.*
 *.env
 !.env.example
