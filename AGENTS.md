@@ -32,6 +32,7 @@ All paths are relative to `.agents/project-info/`.
 | Team: members, roles, availability, contacts                           | `team/`                           |
 | LLM system prompts, their patterns, anti-patterns and edge cases       | `prompts/`                        |
 | Decisions already made, and why (don't re-argue these)                 | `decisions/`                      |
+| Tests, benchmark, reference set, metric results, known accuracy gaps   | `evaluation/`                     |
 | Pitch, demo, presentation, submission materials                        | `pitch/`                          |
 | Unresolved questions, unknowns, things waiting on the user             | `open-questions.md`               |
 | Raw files (PDFs, images, docs) the user provided                       | `sources/` (read via topic pages) |

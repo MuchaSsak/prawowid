@@ -30,6 +30,7 @@ A required route that is unavailable (e.g. no Google key) gives the claim `sourc
 - **A fact-check counts as sufficient alone**, like an official source (as the prompt says). The pipeline draft wants its demonstrated evidence: still an open question.
 - **Support vs "misleading", both above the threshold, is a conflict** → `brak wystarczających dowodów` + `sources_conflict`.
 - **Inconsistent assessment guard** (pipeline §4): when the passage labels lead code to `confirmed` but the model's own proposed verdict is `false`/`misleading` (or the reverse), the claim abstains.
+- **A lone "misleading" reading does not override a refutation backed by more independent origins** (found by the benchmark: one misleading passage beat three fact-check refutations).
 - Fact-claim cap = **8** (prompt), not 12 (pipeline).
 - Answers are Polish only for now; en/uk are not wired yet.
 - Private names are not masked yet (no local recognizer); disclosed in limitations.

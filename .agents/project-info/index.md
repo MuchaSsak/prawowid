@@ -66,6 +66,10 @@ Format: `- [path](path): one-line summary`
 - [decisions/006-api-contract-v1-and-mock.md](decisions/006-api-contract-v1-and-mock.md): `/api/v1` contract frozen (additive only), mock mode with clearly synthetic fixtures, keyed server clients
 - [decisions/003-config-in-code.md](decisions/003-config-in-code.md): `.env` holds only secrets; models, routing and limits are code defaults, models overridable by optional env vars
 
+## evaluation/
+- [evaluation/README.md](evaluation/README.md): scope of the folder
+- [evaluation/benchmark.md](evaluation/benchmark.md): **tests and benchmark**: 100 free deterministic tests, 37-case live reference set (A-J), metric definitions, results (macro-F1 0.66, abstention/robustness/consistency 100%, $0.11 per 100), known gaps
+
 ## pitch/
 - [pitch/README.md](pitch/README.md): scope of the folder 
 - [pitch/jury-insights.md](pitch/jury-insights.md): what the jury and MSZ care about, plus a 5-min pitch script

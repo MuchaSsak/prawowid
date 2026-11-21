@@ -50,7 +50,7 @@ Legend: ✅ covered by design · ⚠️ risk or partly covered · ❌ gap, work 
 | Requirement | Our design | Status |
 |---|---|---|
 | No test answers in prompts, no hardcoded examples | prompts use rules, and few-shot examples (if any) are synthetic | ✅ (rule 16) |
-| Metrics: macro-F1 ≥0.75, citation coverage ≥95%, correctness ≥85%, abstention ≥80%, injection ≥90%, latency ≤30 s, cost per 100 | | ❌ **we need our own eval set (≥30 cases, A-J) + a script that computes these**. This is a deliverable too |
+| Metrics: macro-F1 ≥0.75, citation coverage ≥95%, correctness ≥85%, abstention ≥80%, injection ≥90%, latency ≤30 s, cost per 100 | | ⚠️ built: 37-case set + `eval/run.ts` computes them ([evaluation/benchmark.md](../evaluation/benchmark.md)); macro-F1 0.66 is below 0.75 and citation correctness needs human labels |
 | Disclose unsupported cases | a "Czego nie obsługujemy" section | ❌ to write |
 
 ## Source coverage gaps (affect accuracy, not the gate)

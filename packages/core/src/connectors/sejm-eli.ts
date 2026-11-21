@@ -26,6 +26,46 @@ const IN_FORCE: Record<string, string> = {
   UNKNOWN: "nieznane",
 };
 
+const STOP = new Set([
+  "ustawa", "ustawy", "ustawę", "ustawie", "ustawą", "akt", "aktu", "z", "dnia", "roku", "rok", "r", "w", "od", "do",
+  "weszła", "wchodzi", "życie", "obowiązuje", "obowiązywała", "została", "zostało", "został", "uchwalona", "uchwalono",
+  "uchwalenie", "przyjęta", "przyjęto", "pochodzi", "nadal", "data", "wejście", "wejścia", "obecna", "nowa", "stara",
+]);
+
+/**
+ * ELI's `title` search is a literal substring match: inflected forms ("Konstytucji"), the word
+ * "ustawa" or a year in the query return nothing. Build literal title fragments in code:
+ * named acts from the claim, then "o …" subject phrases, then the model's queries without noise.
+ */
+export function titleCandidates(claimText: string, queries: string[]): string[] {
+  const out: string[] = [];
+  const add = (s: string | undefined) => {
+    const t = (s ?? "").replace(/\s+/g, " ").trim();
+    if (t.length >= 4 && !out.some((o) => o.toLowerCase() === t.toLowerCase())) out.push(t);
+  };
+  const text = `${claimText} ${queries.join(" ")}`;
+  if (/konstytucj/i.test(text)) add("Konstytucja Rzeczypospolitej Polskiej");
+  for (const m of text.matchAll(/\bkodeks\w*\s+(\p{L}+(?:\s+(?:karnego|karny|cywilnego|cywilny|wykonawczego|wykonawczy|postępowania|morski|wyborczy|rodzinny|pracy|drogowy|spółek|handlowych|celny|wodny|morski|skarbowy|administracyjnego)){0,2})/giu)) {
+    add(`Kodeks ${m[1]}`);
+  }
+  for (const m of text.matchAll(/\b(?:ustaw\p{L}*|akt\p{L}*)\s+(?:z\s+dnia\s+[\p{L}\d\s.]+?\s+)?o\s+((?:\p{Ll}+\s*){1,8})/giu)) {
+    const words: string[] = [];
+    for (const w of m[1].trim().split(/\s+/)) {
+      if (STOP.has(w.toLowerCase()) || /\d/.test(w)) break;
+      words.push(w);
+    }
+    while (words.length && ["i", "oraz", "w", "z"].includes(words[words.length - 1])) words.pop();
+    if (words.length) {
+      add(words.join(" "));
+      if (words.length > 2) add(words.slice(0, 2).join(" "));
+    }
+  }
+  for (const q of queries) {
+    add(q.split(/\s+/).filter((w) => !STOP.has(w.toLowerCase().replace(/\.$/, "")) && !/\d/.test(w)).join(" ").replace(/^o\s+/i, ""));
+  }
+  return out;
+}
+
 export const sejmEli: Connector = {
   id: "sejm_eli",
   label: "Sejm ELI (akty prawne)",
@@ -34,12 +74,13 @@ export const sejmEli: Connector = {
   unavailableReason: () => null,
 
   async search(claim, ctx) {
-    const queries = claim.search_queries_pl.slice(0, 3);
+    const queries = titleCandidates(claim.text, claim.search_queries_pl).slice(0, 3);
+    const aboutAmendment = /noweliz|zmian|zmieni/i.test(claim.text);
     const settled = await Promise.allSettled(
       queries.map((q) => {
         const u = new URL("https://api.sejm.gov.pl/eli/acts/search");
         u.searchParams.set("title", q);
-        u.searchParams.set("limit", "5");
+        u.searchParams.set("limit", "50");
         return fetchJson(u.toString(), ctx.signal, LIMITS.connectorTimeoutMs) as Promise<{ items?: EliAct[] }>;
       }),
     );
@@ -51,8 +92,23 @@ export const sejmEli: Connector = {
     const retrieved = new Date().toISOString();
     const seen = new Set<string>();
     const out: SourceRecord[] = [];
-    for (const { value } of ok) {
-      for (const a of value.items ?? []) {
+    // Base acts first (the act the claim is about); amending acts only if the claim is about a change;
+    // announcements (tekst jednolity), corrections and regulations are not the act itself.
+    const items = ok.flatMap(({ value }) => value.items ?? []);
+    const rank = (a: EliAct) => {
+      const t = a.title ?? "";
+      if (/Obwieszczenie|sprostowani|Rozporządzenie|Uchwała|Postanowienie|Wyrok/i.test(t)) return 9;
+      if (/o zmianie|wprowadzające/i.test(t)) return aboutAmendment ? 1 : 5;
+      return 0;
+    };
+    const picked = items
+      .map((a, i) => ({ a, r: rank(a), i }))
+      .filter((x) => x.r < 9 && (x.r < 5 || aboutAmendment))
+      .sort((x, y) => x.r - y.r || x.i - y.i)
+      .slice(0, 5)
+      .map((x) => x.a);
+    for (const a of picked) {
+      {
         if (!a.address || seen.has(a.address)) continue;
         seen.add(a.address);
         // Amending acts ("o zmianie ustawy …") are different acts from the one they amend; say so

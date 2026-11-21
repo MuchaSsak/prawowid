@@ -81,7 +81,8 @@ export function decideVerdict(passages: VerifiedPassage[], opts: { optionalRoute
       decisive: [...flat(sup), ...flat(against)],
     };
   }
-  if (meets(mis)) {
+  // A lone "misleading" reading does not override a refutation backed by more independent origins.
+  if (meets(mis) && !(meets(ref) && ref.length > mis.length)) {
     return { verdict: "misleading", rule: "misleading_threshold", strength: strengthFor(mis, ref), warnings, decisive: flat(mis) };
   }
   if (meets(sup)) {

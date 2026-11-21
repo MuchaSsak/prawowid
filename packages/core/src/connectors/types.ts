@@ -52,7 +52,19 @@ export interface Connector {
   search(claim: ClaimQuery, ctx: ConnectorContext): Promise<SourceRecord[]>;
 }
 
+/** One retry for transient failures (network error, 5xx, 429), as the pipeline allows (§3). */
 export async function fetchJson(url: string, signal: AbortSignal, timeoutMs: number): Promise<unknown> {
+  try {
+    return await fetchJsonOnce(url, signal, timeoutMs);
+  } catch (err) {
+    const transient = err instanceof ConnectorError && (err.kind === "error" || err.kind === "rate_limited");
+    if (!transient || signal.aborted) throw err;
+    await new Promise((r) => setTimeout(r, 400));
+    return await fetchJsonOnce(url, signal, timeoutMs);
+  }
+}
+
+async function fetchJsonOnce(url: string, signal: AbortSignal, timeoutMs: number): Promise<unknown> {
   let res: Response;
   try {
     res = await fetch(url, {

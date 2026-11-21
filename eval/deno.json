@@ -1,0 +1,7 @@
+{
+  "tasks": {
+    "eval": "deno run --allow-net --allow-env --allow-read --allow-write --env-file=../.env run.ts",
+    "eval:remote": "deno run --allow-net --allow-env --allow-read --allow-write run.ts --url https://prawowid.mateusz.deno.net",
+    "eval:quick": "deno run --allow-net --allow-env --allow-read --allow-write --env-file=../.env run.ts --only A02,A07,D01,N02,E03,J01 --no-save"
+  }
+}
