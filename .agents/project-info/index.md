@@ -59,6 +59,7 @@ Format: `- [path](path): one-line summary`
 - [decisions/README.md](decisions/README.md): scope and format of decision records 
 - [decisions/001-private-logs-schema.md](decisions/001-private-logs-schema.md): logs and the corpus in a non-exposed Postgres schema, no public CRUD, 30-day retention
 - [decisions/002-single-llm-pass.md](decisions/002-single-llm-pass.md): images OCR via the vision model (not local), PII redacted after OCR, no second verifier model
+- [decisions/003-config-in-code.md](decisions/003-config-in-code.md): `.env` holds only secrets; models, routing and limits are code defaults, models overridable by optional env vars
 
 ## pitch/
 - [pitch/README.md](pitch/README.md): scope of the folder 

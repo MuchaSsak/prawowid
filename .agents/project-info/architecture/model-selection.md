@@ -6,6 +6,8 @@ Which models to use per pipeline step: quality, reliability, cost and GDPR compl
 - **Claude Haiku 5.5** runs on Google Vertex (global), Claude on AWS, Azure (global), Anthropic and Bedrock. **Gemini** runs on Google AI Studio and Vertex (global). **GPT-5-mini** runs on OpenAI and Azure. **bge-m3** is hosted by Parasail and DeepInfra. None of these has an EU tag, so treat them as **non-EEA processing**.
 - **Provider routing options:** `provider: { data_collection: "deny", zdr: true, only: [...], require_parameters: true }`. **Full EU in-region routing (`eu.openrouter.ai`) is Business/Enterprise only.**
 - OpenRouter itself is a US intermediary, so it is a data processor in the chain. Whether pinning by endpoint tag works (`only: ["mistral/eu"]`) is an **Assumption**: test it with our key and check the `provider` field in the response.
+- **Google Safety Retention (from 2026-10-18):** OpenRouter shows that Google models now require Safety Retention unless you opt out in the account privacy settings and workspace guardrails. This affects the Gemini video path. Opt out before using it. (user screenshot of the OpenRouter dashboard, 2026-11-21)
+- **Routing is set per step in code**, not account-wide: an account-wide Mistral-only or ZDR-only restriction would block Gemini video, bge-m3 embeddings and the fallback model. See [decision 003](../decisions/003-config-in-code.md).
 - All candidates below support `structured_outputs` (JSON schema). We validate it in code anyway.
 
 ## Prices (per 1M tokens, input/output, live 2026-11-21)

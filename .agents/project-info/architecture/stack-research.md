@@ -346,8 +346,8 @@ prawdowid/
 ├─ package.json            # npm|pnpm workspaces + turbo; scripts: dev, test, eval, ingest
 ├─ deno.json               # "workspace": ["apps/api","apps/discord","packages/core","packages/sources","packages/eval"]
 ├─ turbo.json
-├─ .env.example            # OPENROUTER_API_KEY, MODEL_EXTRACT, MODEL_VERDICT, MODEL_WRITER, MODEL_GUARD, MODEL_VISION,
-│                          # EMBED_MODEL, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, DISCORD_*, JINA_API_KEY (optional)
+├─ .env.example            # secrets only (OPENROUTER_API_KEY, EUVSDISINFO_TOKEN, later SUPABASE_*, DISCORD_*);
+│                          #   models/routing/limits are code defaults (decisions/003-config-in-code.md)
 ├─ apps/
 │  ├─ api/                 # Deno: Deno.serve router, /api/check (JSON+SSE), /api/session DELETE, /internal/*,
 │  │                       #   adapters/web.ts, adapters/whatsapp-demo.ts, Deno.cron incremental ingest; package.json → deno task

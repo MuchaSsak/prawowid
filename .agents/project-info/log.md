@@ -30,3 +30,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] decision | 002 (user): image OCR back to the vision-model call (no local OCR), PII redaction kept after OCR, no second verifier model; reverted PR #1's local-OCR wording on 6 architecture pages
 ## [2026-11-21] update | AGENTS.md: .agents/skills and .claude/skills must always hold the same skills; wiki-lint gained a skill-parity check
 ## [2026-11-21] lint | 1 finding: retention 30 days (decision 001) vs 7 days (pipeline) -> open-questions; links, index, routing and skill parity clean
+## [2026-11-21] decision | 003 (user): .env holds only secrets (OpenRouter key, EUvsDisinfo token); models, routing, limits move to code defaults with optional MODEL_* overrides; .env.example trimmed; Google Safety Retention opt-out noted in architecture/model-selection
+## [2026-11-21] lint | clean (scoped to decision 003): index, links, skill parity OK; no wiki page references the removed env vars
