@@ -1,5 +1,5 @@
 # Messaging bot: Discord, WhatsApp and Messenger on the Vercel Chat SDK
-The design of the second channel. One bot service on the [Vercel Chat SDK](https://chat-sdk.dev/docs), hosted on Vercel, serves all three platforms and calls the Prawdomat API over HTTP. **Status: M1 code written in `apps/bot` (2026-11-21), not deployed yet.** It covers the console channel, Discord `/sprawdz` (text and `obraz`), `/pomoc` and `/usun-dane`, plus WhatsApp and Messenger handlers, the sanitizer, the guaranteed reply and the log line. No Redis yet (M1b). What is built and verified: [Implementation status](#implementation-status-2026-11-21). An earlier prototype was removed at the user's request; its findings are below. The design went through a 3-reviewer council (2026-11-21). Decided in [decision 007](../decisions/007-messaging-bot-chat-sdk.md). Setup, env vars, acceptance tests and the demo runbook: [messaging-bot-runbook.md](messaging-bot-runbook.md). The API: [api-reference.md](api-reference.md). What it renders: [response-contract.md](../product/response-contract.md).
+The design of the second channel. One bot service on the [Vercel Chat SDK](https://chat-sdk.dev/docs), hosted on Vercel, serves all three platforms and calls the Prawdomat API over HTTP. **Status: M1 code written in `apps/bot` (2026-11-21), deployed at https://prawdomat-bot.vercel.app ([deployment](#implementation-status-2026-11-21)).** It covers the console channel, Discord `/sprawdz` (text and `obraz`), `/pomoc` and `/usun-dane`, plus WhatsApp and Messenger handlers, the sanitizer, the guaranteed reply and the log line. No Redis yet (M1b). What is built and verified: [Implementation status](#implementation-status-2026-11-21). An earlier prototype was removed at the user's request; its findings are below. The design went through a 3-reviewer council (2026-11-21). Decided in [decision 007](../decisions/007-messaging-bot-chat-sdk.md). Setup, env vars, acceptance tests and the demo runbook: [messaging-bot-runbook.md](messaging-bot-runbook.md). The API: [api-reference.md](api-reference.md). What it renders: [response-contract.md](../product/response-contract.md).
 
 ## Diagram
 ```mermaid
@@ -217,6 +217,8 @@ Owners:
 
 ## Implementation status (2026-11-21)
 Code: `apps/bot` (Bun/Node, Chat SDK 4.44.0 pinned). How to run it: `apps/bot/README.md`.
+
+**Deployment:** Vercel project `prawdomat-bot` (team `muszarski`, Hono preset, Root Directory `apps/bot`, deploys from `main`), production URL `https://prawdomat-bot.vercel.app`. Vercel transpiles each file separately and keeps import specifiers, so relative imports must end in `.js` (TypeScript and Bun map them to the `.ts` sources). The first deploy crashed on every route with `ERR_MODULE_NOT_FOUND .../platforms.ts`; fixed by switching every relative import to `.js` (verified by running the per-file-transpiled bot on plain Node: `/health` 200, Meta verify handshake echoes the challenge). Rule: never write `./x.ts` in `apps/bot`.
 
 | Part | State |
 |---|---|

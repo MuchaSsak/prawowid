@@ -1,5 +1,5 @@
 # Messaging bot runbook: setup, env vars, acceptance tests, demo day
-How to bring up the bot designed in [messaging-bot.md](messaging-bot.md) and keep it working through judging. Status: M1 code written in `apps/bot`, not deployed ([implementation status](messaging-bot.md#implementation-status-2026-11-21)). Timeline, gates and cut line: [messaging-bot.md § Milestones](messaging-bot.md#milestones-and-cut-line).
+How to bring up the bot designed in [messaging-bot.md](messaging-bot.md) and keep it working through judging. Status: M1 code in `apps/bot`, deployed at https://prawdomat-bot.vercel.app, platform setup in progress ([implementation status](messaging-bot.md#implementation-status-2026-11-21)). Timeline, gates and cut line: [messaging-bot.md § Milestones](messaging-bot.md#milestones-and-cut-line).
 
 ## Env vars (Vercel project settings, production only)
 | Variable | Secret | Needed from | Purpose |
@@ -9,7 +9,7 @@ How to bring up the bot designed in [messaging-bot.md](messaging-bot.md) and kee
 | `BOT_ID_SECRET` | yes | M1 | HMAC key for the user pseudonym. Don't rotate it during the event (rotation orphans sessions and quotas) |
 | `REDIS_URL` | yes | M1b | set by the Upstash integration (dedupe, daily quota, outcome counters) |
 | `HEALTH_TOKEN` | yes | M1b | sent as `Authorization: Bearer …` to `/health?deep=1`; only the uptime monitor holds it |
-| `PRAWDOWID_WEB_URL` | no | M1 | the web app link in every reply's footer |
+| `PRAWDOWID_WEB_URL` | no | M1 | the web app link in every reply's footer: `https://prawdomat.vercel.app` (the web app, Vercel project `prawdomat`, deployed from `main`; checked 2026-11-21) |
 | `BOT_PRIVACY_CONTACT` | no | M1 | the data controller and contact e-mail shown in `/pomoc` (blocks the invite gate until set) |
 | `DISCORD_GUILD_ID` | no | M1 | the demo server; used only by `bun run bot:discord:commands` |
 | `DISCORD_BOT_TOKEN`, `DISCORD_PUBLIC_KEY`, `DISCORD_APPLICATION_ID` | yes / no / no | M1 | Discord app (the adapter requires the token, and command registration uses it) |
@@ -21,6 +21,8 @@ On the API (Deno Deploy): `CLIENT_KEYS=bot:<key>`, `PRAWDOWID_MODE` (the web's m
 ## Setup checklists
 **Vercel (M1):**
 - Import the repo and set Root Directory to the bot app.
+- The repo lives on the `MuchaSsak` GitHub account, so only that account can link it to Vercel (another account's import fails with "install the GitHub integration first"). Owner task: [issue #6](https://github.com/MuchaSsak/prawowid/issues/6). Fallback without GitHub: `vercel` CLI from the repo root with code directory `apps/bot` and a `.vercelignore` excluding `.env*` (no auto-deploy on push).
+- Preset: Hono (zero-config, `src/index.ts`). Live project: `prawdomat-bot` → `https://prawdomat-bot.vercel.app` ([status](messaging-bot.md#implementation-status-2026-11-21)). Relative imports must use `.js`, or every route crashes with `ERR_MODULE_NOT_FOUND`. `PRAWDOWID_CLIENT_KEY` stays unset until the API has `CLIENT_KEYS` (the bot then shares the API's per-IP limit).
 - One catch-all function for every route.
 - Fluid compute on (the default), region `fra1`, `maxDuration` 300 s.
 - Register only the production URL on the platforms.
