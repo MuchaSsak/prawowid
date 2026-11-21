@@ -22,6 +22,7 @@ On the API (Deno Deploy): `CLIENT_KEYS=bot:<key>`, `PRAWDOWID_MODE` (the web's m
 **Vercel (M1):**
 - Import the repo and set Root Directory to the bot app.
 - The repo lives on the `MuchaSsak` GitHub account, so only that account can link it to Vercel (another account's import fails with "install the GitHub integration first"). Owner task: [issue #6](https://github.com/MuchaSsak/prawowid/issues/6). Fallback without GitHub: `vercel` CLI from the repo root with code directory `apps/bot` and a `.vercelignore` excluding `.env*` (no auto-deploy on push).
+- The Vercel projects (`prawdomat`, `prawdomat-bot`) sit on a Hobby team, which deploys only commits whose Git author is a team member. Commits by any other author (e.g. `RocketPLN`, PR #7) show "Deployment was blocked" / "Git author must have access" on the PR. That is an account limit, not a build failure: the code deploys once a member's commit (or the merge to `main` by the owner) triggers it. Fixes: owner merges or redeploys, the repo goes public, or the team upgrades to Pro and adds the author.
 - Preset: Hono (zero-config, `src/index.ts`). Live project: `prawdomat-bot` → `https://prawdomat-bot.vercel.app` ([status](messaging-bot.md#implementation-status-2026-11-21)). Relative imports must use `.js`, or every route crashes with `ERR_MODULE_NOT_FOUND`. `PRAWDOWID_CLIENT_KEY` stays unset until the API has `CLIENT_KEYS` (the bot then shares the API's per-IP limit).
 - One catch-all function for every route.
 - Fluid compute on (the default), region `fra1`, `maxDuration` 300 s.
