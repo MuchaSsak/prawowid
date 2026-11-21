@@ -218,7 +218,7 @@ Owners:
 ## Implementation status (2026-11-21)
 Code: `apps/bot` (Bun/Node, Chat SDK 4.44.0 pinned). How to run it: `apps/bot/README.md`.
 
-**Deployment:** Vercel project `prawdomat-bot` (team `muszarski`, Hono preset, Root Directory `apps/bot`, deploys from `main`), production URL `https://prawdomat-bot.vercel.app`. Vercel transpiles each file separately and keeps import specifiers, so relative imports must end in `.js` (TypeScript and Bun map them to the `.ts` sources). The first deploy crashed on every route with `ERR_MODULE_NOT_FOUND .../platforms.ts`; fixed by switching every relative import to `.js` (verified by running the per-file-transpiled bot on plain Node: `/health` 200, Meta verify handshake echoes the challenge). Rule: never write `./x.ts` in `apps/bot`.
+**Deployment:** Vercel project `prawdomat-bot` (team `muszarski`, Hono preset, Root Directory `apps/bot`, deploys from `main`), production URL `https://prawdomat-bot.vercel.app`. Vercel transpiles each file separately and keeps import specifiers, so relative imports must end in `.js` (TypeScript and Bun map them to the `.ts` sources). The first deploy crashed on every route with `ERR_MODULE_NOT_FOUND .../platforms.ts`; fixed by switching every relative import to `.js` (verified by running the per-file-transpiled bot on plain Node: `/health` 200, Meta verify handshake echoes the challenge). Rule: never write `./x.ts` in `apps/bot`. The second failure (2026-11-21: request logs showed only `GET /` and `/favicon.ico`; every route incl. `/health` answered `500 FUNCTION_INVOCATION_FAILED`): the runtime log said `Invalid export found in module "/var/task/apps/bot/src/app.js". The default export must be a function or server.` Vercel's Hono zero-config picks `src/app.ts` ahead of `src/index.ts`, and `app.ts` had only a named `createApp` export. Fixed by renaming it to `src/routes.ts`. Rule: never add a `src/app.ts` in `apps/bot`. Also hardened then: a missing `BOT_ID_SECRET` no longer throws at load (`/health` answers 503 naming it, webhooks 503, never a random key), and `/` (200) and `/favicon.ico` (204) exist for browsers and Vercel's post-deploy probe.
 
 | Part | State |
 |---|---|
@@ -231,9 +231,10 @@ Code: `apps/bot` (Bun/Node, Chat SDK 4.44.0 pinned). How to run it: `apps/bot/RE
 | Redis (dedupe across instances, 30/day quota, outcome counters), `/health?deep=1`, consistency script | **not built** (M1b) |
 | `/demo` with a dropdown of the 18 mock scenarios (Discord) | built (user feedback: typing `demo:` was not discoverable); same `demo:` gate, so it only runs while the bot gets mock answers |
 | Real Discord app (test server, local bot behind a Cloudflare quick tunnel, local mock API) | **works** (2026-11-21): Interactions Endpoint URL saved (PING + bad-signature check passed), commands registered, `/sprawdz` and `/demo` answered in 1-2 s. The very first reply failed with "Discord interaction API error" (cause not logged then; the SDK logger now passes the HTTP status and Discord's numeric error code, never messages or field names) |
-| Vercel deployment, Meta apps, runbook tests A1-A11 on production | **not done** |
+| Vercel deployment | **deployed, crashing until the `routes.ts` rename reaches `main`** (see Deployment above) |
+| Meta apps, runbook tests A1-A11 on production | **not done** |
 
-Tests: `bun run bot:test`, 121 tests, no network. They cover every mock scenario rendered on every platform, A2/A3/A6/A7/A9/A10/A11 offline equivalents, and signed Discord and WhatsApp webhooks through the real SDK.
+Tests: `bun run bot:test`, 135 tests, no network. They cover the root, favicon and missing-secret routes, every mock scenario rendered on every platform, A2/A3/A6/A7/A9/A10/A11 offline equivalents, and signed Discord and WhatsApp webhooks through the real SDK.
 
 Implementation details worth knowing:
 - WhatsApp turns media into placeholder text (`[Image]`, `[Sticker]`), so the bot reads the raw message `type` and the image caption from `raw.message`, not `message.text`.
@@ -250,4 +251,4 @@ Implementation details worth knowing:
   - The SDK defers the interaction itself (`{"type":5}`) and posts the answer as `PATCH /webhooks/<app>/<token>/messages/@original`. These follow-ups always go to discord.com and ignore `DISCORD_API_URL`.
   - The adapter's `interactionFlags` sets the deferred response's flags, and the follow-up code ORs them in. Whether `SUPPRESS_EMBEDS` survives the PATCH is unverified, so links are also wrapped as `<url>`.
 - **Verified with simulated platforms against the deployed mock API:** a signed WhatsApp webhook (reply, typing indicator, Meta GET handshake) and a signed Discord `/sprawdz` interaction.
-- **Never verified:** a real Vercel deployment, real platform accounts, Redis, the cold-start ack time, image download from each CDN.
+- **Never verified:** a healthy Vercel deployment, real platform accounts, Redis, the cold-start ack time, image download from each CDN.

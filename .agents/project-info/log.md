@@ -181,3 +181,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | web app live at https://prawdomat.vercel.app (Vercel project prawdomat); bot deployed as Vercel project prawdomat-bot (https://prawdomat-bot.vercel.app)
 ## [2026-11-21] update | bot crash on Vercel (ERR_MODULE_NOT_FOUND for .ts specifiers) fixed: relative imports in apps/bot now end in .js; deployment recorded in messaging-bot.md
 ## [2026-11-21] update | messaging-bot-runbook: Vercel Hobby team blocks PR deployments by non-member Git authors (PR #7 checks); not a code failure
+## [2026-11-21] update | bot on Vercel crashed on every route: Vercel Hono zero-config used src/app.ts (no default export) as entrypoint; renamed to src/routes.ts; missing BOT_ID_SECRET now reported on /health (503) instead of throwing; / and /favicon.ico added; runbook + messaging-bot updated
+## [2026-11-21] lint | 2 findings: messaging-bot status table and test count were stale (fixed); README format-example link is expected

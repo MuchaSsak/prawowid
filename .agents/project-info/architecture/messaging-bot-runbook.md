@@ -6,7 +6,7 @@ How to bring up the bot designed in [messaging-bot.md](messaging-bot.md) and kee
 |---|---|---|---|
 | `PRAWDOWID_API_URL` | no | M1 | the API base URL (https://prawowid.mateusz.deno.net) |
 | `PRAWDOWID_CLIENT_KEY` | yes | M1 | must match an entry in the API's `CLIENT_KEYS` (set on Deno Deploy too). Never in the README or the console instructions |
-| `BOT_ID_SECRET` | yes | M1 | HMAC key for the user pseudonym. Don't rotate it during the event (rotation orphans sessions and quotas) |
+| `BOT_ID_SECRET` | yes | M1 | HMAC key for the user pseudonym (generate with `openssl rand -hex 32`). Don't rotate it during the event (rotation orphans sessions and quotas). Without it the function still boots, but `/health` answers 503 with `missing: ["BOT_ID_SECRET"]` and every webhook answers 503 |
 | `REDIS_URL` | yes | M1b | set by the Upstash integration (dedupe, daily quota, outcome counters) |
 | `HEALTH_TOKEN` | yes | M1b | sent as `Authorization: Bearer …` to `/health?deep=1`; only the uptime monitor holds it |
 | `PRAWDOWID_WEB_URL` | no | M1 | the web app link in every reply's footer: `https://prawdomat.vercel.app` (the web app, Vercel project `prawdomat`, deployed from `main`; checked 2026-11-21) |
@@ -25,6 +25,7 @@ On the API (Deno Deploy): `CLIENT_KEYS=bot:<key>`, `PRAWDOWID_MODE` (the web's m
 - The Vercel projects (`prawdomat`, `prawdomat-bot`) sit on a Hobby team, which deploys only commits whose Git author is a team member. Commits by any other author (e.g. `RocketPLN`, PR #7) show "Deployment was blocked" / "Git author must have access" on the PR. That is an account limit, not a build failure: the code deploys once a member's commit (or the merge to `main` by the owner) triggers it. Fixes: owner merges or redeploys, the repo goes public, or the team upgrades to Pro and adds the author.
 - Preset: Hono (zero-config, `src/index.ts`). Live project: `prawdomat-bot` → `https://prawdomat-bot.vercel.app` ([status](messaging-bot.md#implementation-status-2026-11-21)). Relative imports must use `.js`, or every route crashes with `ERR_MODULE_NOT_FOUND`. `PRAWDOWID_CLIENT_KEY` stays unset until the API has `CLIENT_KEYS` (the bot then shares the API's per-IP limit).
 - One catch-all function for every route.
+- After each deploy, open `https://<prod>/health`. It must be 200 with `ok: true`. A 503 lists the missing env names. A bare `500 FUNCTION_INVOCATION_FAILED` on every route means the function crashed on load: read the deployment's runtime log (2026-11-21: Vercel picked `src/app.ts` as the entrypoint, see [status](messaging-bot.md#implementation-status-2026-11-21)). `/` answers 200 and `/favicon.ico` 204, so Vercel's post-deploy probe and browser visits aren't errors.
 - Fluid compute on (the default), region `fra1`, `maxDuration` 300 s.
 - Register only the production URL on the platforms.
 

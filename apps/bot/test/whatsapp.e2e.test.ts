@@ -5,7 +5,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { CheckRequest } from "@prawdowid/core/types";
 import { mockResponse } from "../../../packages/core/src/mock/fixtures.js";
-import { createApp } from "../src/app.js";
+import { createApp } from "../src/routes.js";
 import { createClient } from "../src/client.js";
 import { loadConfig } from "../src/config.js";
 import { setLogSink } from "../src/log.js";
