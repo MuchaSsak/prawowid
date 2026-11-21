@@ -45,7 +45,7 @@ A required route that is unavailable (e.g. no Google key) gives the claim `sourc
 - Mistral Large on the EU endpoint sometimes returns 429. The client retries once after 1.5 s, then falls back to Small for that call (`fallbackModel`).
 
 ## Next steps
-1. Add the deployed API URL to [api-reference](api-reference.md) and point the web app at it (`PUBLIC_API_URL`), then set `WEB_ORIGINS` on the API.
+1. Set OPENROUTER_API_KEY and GOOGLE_FACT_CHECK_API_KEY in the Deno Deploy app (live checks fail without them); point the web app at the deployed API (`PUBLIC_API_URL`), then set `WEB_ORIGINS` on the API.
 2. Numeric routes (GUS BDL, NBP, Eurostat) with code-side typed comparison (no LLM).
 3. Our own eval set (≥30 cases) and a metrics script, before tuning prompts further.
 4. Supabase: `private.check_logs` / `check_events` tables, then the corpus with hybrid search.

@@ -3,7 +3,7 @@ Every endpoint, header, request field, environment variable and mock scenario of
 
 ## Base URL
 - Local: `http://localhost:8787` (`bun run api:dev`).
-- Deployed: the Deno Deploy app URL (app `prawowid`, see the console). Add it here once stable.
+- Deployed: **https://prawowid.mateusz.deno.net** (Deno Deploy app `prawowid`, builds from GitHub `main`). Verified 2026-11-21: `/`, `/api/v1/health`, `/api/v1/schema`, `/api/v1/mock/scenarios` and mock checks work; live checks need the env vars below set in the app settings.
 
 ## Endpoints
 | Method + path | Purpose | Response |
