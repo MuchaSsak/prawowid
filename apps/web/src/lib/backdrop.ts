@@ -40,7 +40,7 @@ float fbm(vec2 p) {
 }
 
 void main() {
-  float t = uTime * 0.07;
+  float t = uTime * 0.09;
   float aspect = uRes.x / max(uRes.y, 1.0);
   vec2 p = vec2(vUv.x * aspect, vUv.y) * 1.6;
 
@@ -117,7 +117,7 @@ export function initBackdrop(host: HTMLElement): void {
     u.uLo.value = page;
     u.uAccent.value = toRgb(probe, css.getPropertyValue("--navy"), page);
     // Dark: a faint blue haze drifting over the near-black page. Light: barely there.
-    u.uAccentAmt.value = dark.matches ? (chat ? 0.035 : 0.11) : (chat ? 0.012 : 0.03);
+    u.uAccentAmt.value = dark.matches ? (chat ? 0.09 : 0.18) : (chat ? 0.03 : 0.06);
     u.uWarp.value = 0;
   };
 
