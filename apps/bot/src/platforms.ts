@@ -14,7 +14,6 @@ import type { MessengerRawMessage } from "@chat-adapter/messenger";
 import { type BotConfig, LIMITS, type Platform } from "./config.js";
 import type { PrawdowidClient } from "./client.js";
 import { converse, type Turn } from "./conversation.js";
-import { demoText } from "./demo.js";
 import type { IncomingMessage } from "./intake.js";
 import { logEvent, quietLogger } from "./log.js";
 
@@ -62,13 +61,6 @@ type DiscordInteraction = {
  * Discord /sprawdz: options read by name from the raw interaction (`tresc` string, `obraz`
  * attachment). Never `event.text`: the SDK flattens every option into it, attachment id included.
  */
-/** Discord /demo: the `scenariusz` choice becomes the text `demo:<scenario>` (same gate as typing it). */
-export function discordDemoToMessage(raw: unknown): IncomingMessage {
-  const opts = (raw as DiscordInteraction).data?.options ?? [];
-  const text = demoText(opts.find((o) => o.name === "scenariusz" && o.type === 3)?.value);
-  return { text: text ?? "", fromSlashCommand: true };
-}
-
 export function discordSlashToMessage(raw: unknown): IncomingMessage {
   const i = raw as DiscordInteraction;
   const opts = i.data?.options ?? [];
@@ -147,9 +139,9 @@ export function registerHandlers(chat: Chat, platform: Platform, deps: PlatformD
       thread.post({ raw: t }));
   });
 
-  const slash = (command: Turn["command"], parse = discordSlashToMessage) => async (event: SlashCommandEvent) => {
+  const slash = (command: Turn["command"]) => async (event: SlashCommandEvent) => {
     const raw = event.raw as DiscordInteraction;
-    const incoming = command ? { text: "", fromSlashCommand: true } : parse(raw);
+    const incoming = command ? { text: "", fromSlashCommand: true } : discordSlashToMessage(raw);
     await respond(
       deps,
       platform,
@@ -159,7 +151,6 @@ export function registerHandlers(chat: Chat, platform: Platform, deps: PlatformD
     );
   };
   chat.onSlashCommand("/sprawdz", slash(undefined));
-  chat.onSlashCommand("/demo", slash(undefined, discordDemoToMessage));
   chat.onSlashCommand("/pomoc", slash("help"));
   chat.onSlashCommand("/usun-dane", slash("delete_data"));
 }

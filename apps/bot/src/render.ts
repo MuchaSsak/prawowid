@@ -242,7 +242,7 @@ export function renderHelp(o: RenderOptions & { mode: "live" | "mock" | "unknown
     "Nie oceniamy opinii i nie wykrywamy deepfake'ów.",
     ...(o.mode === "mock"
       ? [o.surface === "discord"
-        ? "🧪 Bot działa teraz w trybie demonstracyjnym: odpowiedzi są przykładowe. Wybierz przykład w /demo albo wpisz np. „demo:false” w /sprawdz."
+        ? "🧪 Bot działa teraz w trybie demonstracyjnym: odpowiedzi są przykładowe. Wpisz np. „demo:false” w /sprawdz."
         : "🧪 Bot działa teraz w trybie demonstracyjnym: odpowiedzi są przykładowe. Spróbuj np. „demo:false” albo „demo:mixed”."]
       : []),
     "",
