@@ -5,6 +5,7 @@ import { containsVerbatim } from "../src/guard/normalize.ts";
 import { scanInjection } from "../src/guard/injection.ts";
 import { cleanUrl, isPrivateIp } from "../src/intake/url.ts";
 import { stripMetadata } from "../src/intake/image.ts";
+import { mediaInputError } from "../src/intake/media.ts";
 import { decideVerdict } from "../src/pipeline/verdict.ts";
 import type { VerifiedPassage } from "../src/pipeline/assess.ts";
 import type { SourceTier, Stance } from "../src/types.ts";
@@ -136,4 +137,14 @@ Deno.test("ELI title candidates: literal title fragments, no inflection, no year
   assertEquals(titleCandidates("Konstytucji RP nie uchwalono w 1989 roku.", [])[0], "Konstytucja Rzeczypospolitej Polskiej");
   assertEquals(titleCandidates("Według kodeksu pracy urlop trwa 20 dni.", [])[0], "Kodeks pracy");
   assert(titleCandidates("x", ["ustawa o ochronie danych osobowych 2018"]).includes("ochronie danych osobowych"));
+});
+
+Deno.test("media: data URL format, MIME per type and size cap (no decoding)", () => {
+  assertEquals(mediaInputError("video", "data:video/mp4;base64,AAAA"), null);
+  assertEquals(mediaInputError("audio", "data:audio/webm;codecs=opus;base64,AAAA"), null);
+  assert(mediaInputError("audio", "data:video/mp4;base64,AAAA")?.includes("MP3"));
+  assert(mediaInputError("video", "https://example.com/a.mp4")?.includes("data URL"));
+  assert(mediaInputError("video", "data:video/mp4;base64,")?.includes("pusty"));
+  const big = "data:video/mp4;base64," + "A".repeat(Math.ceil((5 * 1024 * 1024 * 4) / 3) + 8);
+  assert(mediaInputError("video", big)?.includes("za duże"));
 });

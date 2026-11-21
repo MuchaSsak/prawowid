@@ -37,6 +37,8 @@ export const MOCK_SCENARIOS = [
   "injection",
   "url",
   "image",
+  "video",
+  "audio",
   "needs_clarification",
   "out_of_scope",
   "not_a_claim",
@@ -63,6 +65,8 @@ export const MOCK_SCENARIO_DESCRIPTIONS: Record<MockScenario, string> = {
   injection: "input contained instructions to the AI → injection_detected warning, normal verdict",
   url: "input type url: input.url/title/published_at filled, 2 claims",
   image: "input type image: input.description filled, illegible_media warning",
+  video: "input type video: input.description filled, 2 claims with timestamped provenance (video@mm:ss)",
+  audio: "input type audio: input.description filled, 1 claim with timestamped provenance (audio@mm:ss), partial_analysis warning",
   needs_clarification: "request state: too vague, clarification question",
   out_of_scope: "request state: not a fact-checking request",
   not_a_claim: "request state: joke or greeting, nothing to check",
@@ -91,6 +95,8 @@ export function pickScenario(req: CheckRequest): MockScenario {
   if (m && (MOCK_SCENARIOS as readonly string[]).includes(m[1].toLowerCase())) return m[1].toLowerCase() as MockScenario;
   if (req.input?.type === "url") return "url";
   if (req.input?.type === "image") return "image";
+  if (req.input?.type === "video") return "video";
+  if (req.input?.type === "audio") return "audio";
   return AUTO[hash(value) % AUTO.length];
 }
 
@@ -297,6 +303,21 @@ function claimsFor(s: MockScenario): { status: RequestStatus; claims: ClaimResul
         warnings: [{ type: "illegible_media", text: "Nie udało się odczytać obrazu w całości; część tekstu może być pominięta." }],
         claims: [{ ...claimsFor("false").claims[0], provenance: "image#1" }],
       };
+    case "video":
+      return {
+        status: "ok",
+        warnings: [],
+        claims: [
+          { ...claimsFor("misleading").claims[0], provenance: "video@00:42" },
+          { ...claimsFor("not_verifiable").claims[0], id: "c2", provenance: "video@01:15" },
+        ],
+      };
+    case "audio":
+      return {
+        status: "ok",
+        warnings: [{ type: "partial_analysis", text: "[DEMO] Część nagrania była niewyraźna; przeanalizowaliśmy zrozumiałe fragmenty." }],
+        claims: [{ ...claimsFor("insufficient_evidence").claims[0], provenance: "audio@00:18" }],
+      };
     case "needs_clarification":
       return { status: "needs_clarification", claims: [], warnings: [], detail: "[DEMO] O które miasto i który rok chodzi?" };
     case "out_of_scope":
@@ -317,6 +338,7 @@ export function mockResponse(req: CheckRequest, scenario: MockScenario = pickSce
   const type = req.input?.type ?? "text";
   const isUrl = scenario === "url";
   const isImage = scenario === "image";
+  const media = scenario === "video" || scenario === "audio" ? scenario : null;
   return {
     contract_version: CONTRACT_VERSION,
     check_id: crypto.randomUUID(),
@@ -338,11 +360,17 @@ export function mockResponse(req: CheckRequest, scenario: MockScenario = pickSce
       }
       : { state: "none", reason: null },
     input: {
-      type: isUrl ? "url" : isImage ? "image" : type,
+      type: isUrl ? "url" : isImage ? "image" : media ?? type,
       title: isUrl ? "[DEMO] Przykładowy artykuł o Przykładowie" : null,
       url: isUrl ? "https://example.org/prawdowid-demo/article" : null,
       published_at: isUrl ? "2025-06-10" : null,
-      description: isImage ? "[DEMO] Zrzut ekranu wpisu w mediach społecznościowych z tekstem o moście." : null,
+      description: isImage
+        ? "[DEMO] Zrzut ekranu wpisu w mediach społecznościowych z tekstem o moście."
+        : media === "video"
+        ? "[DEMO] Nagranie wideo (1:32): osoba mówi do kamery na tle ratusza w Przykładowie; na ekranie napis o budżecie miasta."
+        : media === "audio"
+        ? "[DEMO] Nagranie audio (0:47): wiadomość głosowa o rzekomej darmowej komunikacji miejskiej w Przykładowie."
+        : null,
     },
     meta: {
       latency_ms: 0,

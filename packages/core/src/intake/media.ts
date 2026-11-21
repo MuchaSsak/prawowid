@@ -1,0 +1,39 @@
+/**
+ * Shape checks for uploaded media (image, video, audio) sent as `data:<mime>;base64,…` URLs.
+ * Cheap: reads only the header and the base64 length, never decodes. Used by the live pipeline
+ * and by the API's mock path, so both reject the same inputs with the same message.
+ * Wiki: architecture/api-reference.md, architecture/multimodal-media.md
+ */
+import { LIMITS } from "../config.ts";
+import type { InputType } from "../types.ts";
+
+export type MediaType = Extract<InputType, "image" | "video" | "audio">;
+
+export const MEDIA_MIME: Record<MediaType, readonly string[]> = {
+  image: ["image/jpeg", "image/png", "image/webp"],
+  video: ["video/mp4", "video/webm", "video/quicktime", "video/mpeg"],
+  audio: ["audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav", "audio/wave", "audio/mp4", "audio/x-m4a", "audio/aac", "audio/ogg", "audio/webm"],
+};
+
+const LABEL: Record<MediaType, { noun: string; big: string; formats: string; max: number }> = {
+  image: { noun: "Obraz", big: "za duży", formats: "JPG, PNG i WebP", max: LIMITS.maxImageBytes },
+  video: { noun: "Nagranie wideo", big: "za duże", formats: "MP4, WebM, MOV i MPEG", max: LIMITS.maxMediaBytes },
+  audio: { noun: "Nagranie audio", big: "za duże", formats: "MP3, WAV, M4A, AAC, OGG i WebM", max: LIMITS.maxMediaBytes },
+};
+
+export function isMediaType(t: unknown): t is MediaType {
+  return t === "image" || t === "video" || t === "audio";
+}
+
+/** Returns a Polish rejection message, or null when the data URL is acceptable. */
+export function mediaInputError(type: MediaType, value: string): string | null {
+  const l = LABEL[type];
+  const m = value.match(/^data:([\w/+.-]+)(?:;[\w=.-]+)*;base64,/);
+  if (!m) return `${l.noun}: oczekujemy pliku jako data URL (data:<typ>;base64,…).`;
+  if (!MEDIA_MIME[type].includes(m[1].toLowerCase())) return `${l.noun}: obsługujemy formaty ${l.formats}.`;
+  const b64 = value.length - m[0].length;
+  const bytes = Math.floor((b64 * 3) / 4);
+  if (bytes > l.max) return `${l.noun} jest ${l.big} (maks. ${Math.round(l.max / 1024 / 1024)} MB).`;
+  if (b64 === 0) return `${l.noun}: plik jest pusty.`;
+  return null;
+}
