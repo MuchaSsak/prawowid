@@ -168,7 +168,7 @@ Not in scope:
 - **Mode:** `GET /api/v1/health` already reports `mode`. With `MOCK_CLIENTS`, the bot reads its own effective mode from `meta.mode` on each response (the banner already follows it), and the `demo:` gate uses the same value.
 
 ## Consistency metric
-The script sends the eval inputs two ways: through the API directly (the web path) and through the console channel (the bot's real client, validator and render). It runs twice:
+The benchmark already measures channel consistency at the API level: G cases re-sent as `channel: messaging`, with verdicts and citation ids required to match ([evaluation/benchmark.md](../evaluation/benchmark.md)). The bot's script extends that through the real bot path. It sends the eval inputs two ways: through the API directly (the web path) and through the console channel (the bot's real client, validator and render). It runs twice:
 1. **Fresh run (`no-cache`), the reported metric:** each input goes through each path minutes apart, the way the jury reproduces it by hand. It compares `status`, verdict labels and citation `source_id`s, so it can fail if the core is nondeterministic or the render changes anything.
 2. **Cached run:** a render-fidelity check that the bot shows exactly what the API returned.
 

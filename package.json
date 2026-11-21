@@ -12,13 +12,16 @@
     "api:dev": "cd apps/api && deno task dev",
     "api:start": "cd apps/api && deno task start",
     "web:dev": "bun run --cwd apps/web dev",
-    "web:build": "bun run --cwd apps/web build",
+    "web:preview": "bun run --cwd apps/web build && bun run --cwd apps/web preview",
     "check": "turbo run check",
     "test": "deno test --allow-env --allow-net packages/core apps/api",
     "supabase:schemas:check": "node supabase/scripts/check-schemas.mjs",
     "supabase:migration": "node supabase/scripts/migrate.mjs --generate",
     "supabase:push": "node supabase/scripts/migrate.mjs --push",
-    "supabase:deploy:edge": "node supabase/scripts/deploy-functions.mjs"
+    "supabase:deploy:edge": "node supabase/scripts/deploy-functions.mjs",
+    "eval": "cd eval && deno task eval",
+    "eval:quick": "cd eval && deno task eval:quick",
+    "eval:remote": "cd eval && deno task eval:remote"
   },
   "devDependencies": {
     "turbo": "^2.5.0"

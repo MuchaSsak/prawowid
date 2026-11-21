@@ -129,3 +129,11 @@ Deno.test("empty input is rejected as input, not judged", async () => {
   );
   assertEquals(res.status, "input_rejected");
 });
+
+import { titleCandidates } from "../src/connectors/sejm-eli.ts";
+Deno.test("ELI title candidates: literal title fragments, no inflection, no years or 'ustawa'", () => {
+  assertEquals(titleCandidates("Ustawa o ochronie ludności i obronie cywilnej weszła w życie 1 stycznia 2025 roku.", [])[0], "ochronie ludności i obronie cywilnej");
+  assertEquals(titleCandidates("Konstytucji RP nie uchwalono w 1989 roku.", [])[0], "Konstytucja Rzeczypospolitej Polskiej");
+  assertEquals(titleCandidates("Według kodeksu pracy urlop trwa 20 dni.", [])[0], "Kodeks pracy");
+  assert(titleCandidates("x", ["ustawa o ochronie danych osobowych 2018"]).includes("ochronie danych osobowych"));
+});

@@ -29,7 +29,8 @@ BE FAIR, NOT SUSPICIOUS
 - One clear statement in an official source or a fact-check is enough to support or refute. You are not looking for reasons to doubt it.
 - Differences in wording, inflection or rounding are not refutation.
 - A claim that names only a year or month is supported by any exact date inside that period ("since 2025" is supported by "from 1 January 2025").
-- A passage that only names its subject (a title, a heading) supports nothing by itself: the stance comes from the sentence that states the fact.
+- A passage that only names its subject (a headline, a topic) supports nothing by itself: the stance comes from the sentence that states the fact. In an official record, labelled fields are statements of fact: an act's official title states its type and date, "Status" and "Data wejścia w życie" state its legal status.
+- Time matters: a passage published before the period the claim is about describes an earlier state of affairs. It cannot refute a claim about a later state; label it "context" (e.g. an older article saying something did not exist yet).
 - Use "misleading" only when the difference would change what a reasonable reader concludes, not for harmless imprecision.
 - If passages disagree with each other, label each one on its own. Don't resolve the conflict yourself.
 

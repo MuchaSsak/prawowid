@@ -44,8 +44,8 @@ Format: `- [path](path): one-line summary`
 - [architecture/stack-research.md](architecture/stack-research.md): Deno Deploy (sunset Apr 2027), OpenRouter, Supabase, input handling, Discord, POST /api/check flow
 - [architecture/data-sources-research.md](architecture/data-sources-research.md): every source: access, license, priority, corpus plan; live official APIs
 - [architecture/euvsdisinfo-mcp.md](architecture/euvsdisinfo-mcp.md): EUvsDisinfo MCP how-to and data shape
-- [architecture/messaging-bot.md](architecture/messaging-bot.md): **the bot channel**: Discord + WhatsApp + Messenger on the Vercel Chat SDK Mermaid diagram, components, message flow, platforms, security and privacy, milestones and cut line, prototype findings (designed, not implemented)
-- [architecture/messaging-bot-runbook.md](architecture/messaging-bot-runbook.md): bot setup checklists per platform, env vars, acceptance tests (A1-A10), demo-day steps
+- [architecture/messaging-bot.md](architecture/messaging-bot.md): **the bot channel**: Discord + WhatsApp + Messenger on the Vercel Chat SDK: Mermaid diagram, components, message flow, platforms, security and privacy, milestones and cut line, prototype findings (designed, not implemented)
+- [architecture/messaging-bot-runbook.md](architecture/messaging-bot-runbook.md): bot setup checklists per platform, env vars, acceptance tests (A1-A11), demo-day steps, post-event shutdown
 - [architecture/api-reference.md](architecture/api-reference.md): **for channel builders**: every endpoint, header, request field, env var, mock scenario, Deno Deploy setup, versioning rules
 - [architecture/codebase.md](architecture/codebase.md): **what is built**: code layout, evidence routes, interim verdict choices, measured latency/cost, next steps
 - [architecture/technical-approach-research.md](architecture/technical-approach-research.md): pipeline best practice, models, retrieval, injection defense, eval harness, IFCN/EFCSN
@@ -68,6 +68,10 @@ Format: `- [path](path): one-line summary`
 - [decisions/006-api-contract-v1-and-mock.md](decisions/006-api-contract-v1-and-mock.md): `/api/v1` contract frozen (additive only), mock mode with clearly synthetic fixtures, keyed server clients
 - [decisions/007-messaging-bot-chat-sdk.md](decisions/007-messaging-bot-chat-sdk.md): one bot service on the Vercel Chat SDK for Discord, WhatsApp and Messenger, calling the HTTP API (mock by default), hosted on Vercel Hobby (fra1) with Discord slash commands only
 - [decisions/003-config-in-code.md](decisions/003-config-in-code.md): `.env` holds only secrets; models, routing and limits are code defaults, models overridable by optional env vars
+
+## evaluation/
+- [evaluation/README.md](evaluation/README.md): scope of the folder
+- [evaluation/benchmark.md](evaluation/benchmark.md): **tests and benchmark**: 100 free deterministic tests, 37-case live reference set (A-J), metric definitions, results (macro-F1 0.66, abstention/robustness/consistency 100%, $0.11 per 100), known gaps
 
 ## pitch/
 - [pitch/README.md](pitch/README.md): scope of the folder 

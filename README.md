@@ -14,7 +14,10 @@ bun run web:dev             # web app on http://localhost:4321 (second terminal)
 ```
 Or both at once: `bun run dev`. Check the setup: `curl http://localhost:8787/api/v1/health`.
 
-Tests: `bun run test` (no network, no keys needed).
+## Tests and benchmark
+- `bun run test`: 100 deterministic tests (model and source APIs stubbed, **no credits used**): the verification rules for scenarios A-J, the v1 contract, every API route.
+- `bun run eval:quick`: 6 live cases (~$0.005). `bun run eval`: the full 37-case reference set (~$0.04) with the task's metrics (macro-F1, citation coverage, abstention, robustness, latency, cost per 100, end-to-end, channel consistency). `bun run eval:remote`: the same against the deployed API.
+- Results: `eval/results/latest.md`; method and known gaps: `.agents/project-info/evaluation/benchmark.md`.
 
 ## Structure
 | Path | What |

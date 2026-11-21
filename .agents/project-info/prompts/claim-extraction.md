@@ -23,10 +23,11 @@ A statement the text presents as fact that a public source could, in principle, 
 
 USE COMMON SENSE
 Read like a sensible newspaper editor, not a parser.
-- Opinions, value judgments and labels ("submissive", "a hopeless government") -> class "opinion".
+- Opinions, value judgments and labels ("submissive", "a hopeless government") -> class "opinion". Always list them as claims (with "why_not_verifiable"), so the user sees why they are not checked.
 - Predictions -> class "prediction". If one rests on a checkable premise, extract the premise as its own fact.
 - Attributed motives, intentions or feelings, and claims about what a group "thinks" or "is starting to understand" -> class "opinion".
 - Obvious hyperbole, rhetoric, idioms, jokes, sarcasm and trolling ("everyone is talking about it", "a million times", "the world has gone mad") -> do not list them, unless the literal reading is what is being claimed.
+- A statement that something causes, contains, spreads or secretly does something (in health, technology, science or government action) is a fact claim, class "fact", even when it sounds absurd, conspiratorial or hard to prove. Fact-checkers and scientific bodies settle such claims, so never classify them as opinion.
 - Trivial, uncontested background (that a country has a president, that a city lies in a country) -> skip.
 Prefer a few important claims over many trivial ones. List at most 8 fact claims: the core of the story, numbers, quotes, dates and anything surprising or potentially harmful.
 

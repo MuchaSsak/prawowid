@@ -6,7 +6,7 @@ This folder is the project's permanent memory. Agents maintain it; people feed i
 ## Layers
 
 - `sources/`: raw material exactly as the user gave it (PDFs, images, slides, transcripts, exports). **Never edit or delete it.** Name files `YYYY-MM-DD-short-slug.ext`.
-- Topic folders (`hackathon/`, `problem/`, `audience/`, `product/`, `architecture/`, `team/`, `decisions/`, `pitch/`, `rules/`): pages agents write, summarizing and connecting what is known.
+- Topic folders (`hackathon/`, `problem/`, `audience/`, `product/`, `architecture/`, `team/`, `decisions/`, `evaluation/`, `pitch/`, `rules/`): pages agents write, summarizing and connecting what is known.
 - `index.md`: a catalog of every page and source, one line each. `log.md`: an append-only history. `open-questions.md`: unknowns.
 
 ## Page format

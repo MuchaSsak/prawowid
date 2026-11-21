@@ -1,7 +1,8 @@
 {
   "workspace": [
     "./apps/api",
-    "./packages/core"
+    "./packages/core",
+    "./eval"
   ],
   "nodeModulesDir": "none",
   "fmt": {
