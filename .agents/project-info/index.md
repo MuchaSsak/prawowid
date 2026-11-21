@@ -69,11 +69,12 @@ Format: `- [path](path): one-line summary`
 - [decisions/006-api-contract-v1-and-mock.md](decisions/006-api-contract-v1-and-mock.md): `/api/v1` contract frozen (additive only), mock mode with clearly synthetic fixtures, keyed server clients
 - [decisions/007-messaging-bot-chat-sdk.md](decisions/007-messaging-bot-chat-sdk.md): one bot service on the Vercel Chat SDK for Discord, WhatsApp and Messenger, calling the HTTP API (mock by default), hosted on Vercel Hobby (fra1) with Discord slash commands only
 - [decisions/008-trusted-source-allowlist.md](decisions/008-trusted-source-allowlist.md): evidence only from an allowlist of publishers (`GET /api/v1/sources`), tier by credentials (PAP, Sprawdzam To = media), one publisher = one origin, no bypassing robots/terms
+- [decisions/009-video-audio-input-and-web-composer.md](decisions/009-video-audio-input-and-web-composer.md): `video`/`audio` inputs added to contract v1 (data URLs, 5 MB, mock only for now), one shared media validator, single-composer web app on mock data
 - [decisions/003-config-in-code.md](decisions/003-config-in-code.md): `.env` holds only secrets; models, routing and limits are code defaults, models overridable by optional env vars
 
 ## evaluation/
 - [evaluation/README.md](evaluation/README.md): scope of the folder
-- [evaluation/benchmark.md](evaluation/benchmark.md): **tests and benchmark**: 123 free deterministic tests, 50-case live reference set (A-J + statistics + organizer-style), metric definitions, results (run 3: macro-F1 0.71, misleading 0.50, abstention 88%, robustness/consistency 100%, $0.10 per 100), known gaps
+- [evaluation/benchmark.md](evaluation/benchmark.md): **tests and benchmark**: 150 free deterministic tests, 50-case live reference set (A-J + statistics + organizer-style), metric definitions, results (run 3: macro-F1 0.71, misleading 0.50, abstention 88%, robustness/consistency 100%, $0.10 per 100), known gaps
 
 ## pitch/
 - [pitch/README.md](pitch/README.md): scope of the folder 

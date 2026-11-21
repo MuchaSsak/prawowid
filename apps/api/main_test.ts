@@ -101,6 +101,36 @@ Deno.test("empty text → input_rejected (live and mock)", async () => {
   assertEquals((await (await post({ input: { type: "text", value: "  " }, mock: true })).json()).status, "input_rejected");
 });
 
+Deno.test("video and audio: mock answers with timestamped claims; live says not yet supported (no verdict)", async () => {
+  const mp4 = "data:video/mp4;base64,AAAAIGZ0eXBpc29t";
+  const ogg = "data:audio/webm;codecs=opus;base64,GkXfo59ChoEB";
+  const v = await (await post({ input: { type: "video", value: mp4 }, user_message: "Czy to prawda?", mock: true })).json();
+  valid(v);
+  assertEquals([v.input.type, v.status, v.meta.mode], ["video", "ok", "mock"]);
+  assert(v.claims.every((c: { provenance: string }) => c.provenance.startsWith("video@")));
+  const a = await (await post({ input: { type: "audio", value: ogg }, mock: true })).json();
+  valid(a);
+  assertEquals(a.input.type, "audio");
+  for (const value of [mp4, ogg]) {
+    const type = value.startsWith("data:video") ? "video" : "audio";
+    const live = await (await post({ input: { type, value } })).json();
+    valid(live);
+    assertEquals([live.status, live.claims.length], ["input_rejected", 0]);
+  }
+});
+
+Deno.test("media checks run in mock mode too: wrong format, mismatched type, not a data URL", async () => {
+  for (const input of [
+    { type: "video", value: "data:video/x-flv;base64,AAAA" },
+    { type: "audio", value: "data:video/mp4;base64,AAAA" },
+    { type: "image", value: "https://example.com/a.png" },
+  ]) {
+    const r = await (await post({ input, mock: true })).json();
+    valid(r);
+    assertEquals(r.status, "input_rejected", JSON.stringify(input));
+  }
+});
+
 Deno.test("SSRF through the API: private and local URLs are refused", async () => {
   for (const value of ["http://localhost:8787/api/v1/health", "http://169.254.169.254/latest", "http://10.0.0.1/", "file:///etc/passwd"]) {
     const r = await (await post({ input: { type: "url", value } })).json();

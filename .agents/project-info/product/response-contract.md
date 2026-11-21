@@ -87,9 +87,9 @@ Every field is always present (no optional fields in the response); `null` means
   "warnings": [{ "type": "injection_detected", "text": "…" }],   // request-level
   "limitations": ["…"],
   "escalation": { "state": "none|recommended", "reason": "…" | null },
-  "input": { "type": "text|url|image", "title": "…" | null, "url": "…" | null, "published_at": "…" | null, "description": "image description" | null },
+  "input": { "type": "text|url|image|video|audio", "title": "…" | null, "url": "…" | null, "published_at": "…" | null, "description": "image or recording description" | null },
   "meta": { "latency_ms": 8400, "stages_ms": { "extract": 2900 }, "models": ["mistralai/…"], "prompt_versions": ["claim-extraction@2"],
             "cost_usd": 0.0009, "cached": false, "mode": "live|mock" }
 }
 ```
-Rendering rules for every channel: show `verdict_label` for a verdict and `system_message` for a system state, styled differently; when `warnings[0].type === "demo_data"`, show it prominently. The messaging bot renders a short form (verdict, strength, up to 3 citations, a link to the web result) from the same object, so both channels show the same verdict and evidence.
+`claims[].provenance` says where a claim came from: `text`, `article`, `image#1`, or a timestamp for recordings (`video@01:15`, `audio@00:18`); the web app shows it as a tag. The web app builds its own heading from `claims` ("Sprawdziliśmy N zdania") and does not show `summary.text`, which stays for short channels such as the messaging bot. Rendering rules for every channel: show `verdict_label` for a verdict and `system_message` for a system state, styled differently; when `warnings[0].type === "demo_data"`, show it prominently. The messaging bot renders a short form (verdict, strength, up to 3 citations, a link to the web result) from the same object, so both channels show the same verdict and evidence.

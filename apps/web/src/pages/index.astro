@@ -1,82 +1,114 @@
 ---
+import "@fontsource-variable/newsreader/opsz.css";
+import "@fontsource-variable/inter-tight";
 import "../styles/global.css";
+
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
 ---
 <!doctype html>
 <html lang="pl">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content="Prawdowid: bezpłatne sprawdzanie faktów ze źródłami." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>Prawdowid · sprawdź, zanim udostępnisz</title>
+    <title>Prawdowid: sprawdź, zanim udostępnisz</title>
   </head>
   <body data-api={apiUrl}>
-    <header class="top">
-      <div class="wrap">
-        <a class="brand" href="/"><span class="logo" aria-hidden="true">✓</span> Prawdowid</a>
-        <span class="badge">prototyp</span>
-      </div>
-    </header>
-
-    <main class="wrap">
-      <section class="intro">
-        <h1>Sprawdź, zanim udostępnisz</h1>
-        <p>
-          Wklej wypowiedź, link do artykułu albo zrzut ekranu. Wyodrębnimy twierdzenia o faktach, sprawdzimy je w
-          źródłach i pokażemy, co dokładnie mówią źródła.
-        </p>
-      </section>
-
-      <form id="check-form" class="card form" novalidate>
-        <div class="tabs" role="tablist" aria-label="Rodzaj treści">
-          <button type="button" role="tab" class="tab" data-type="text" aria-selected="true">Tekst</button>
-          <button type="button" role="tab" class="tab" data-type="url" aria-selected="false">Link</button>
-          <button type="button" role="tab" class="tab" data-type="image" aria-selected="false">Obraz</button>
+    <div class="frame">
+      <header class="top">
+        <div class="top-row">
+          <a class="brand" href="/">
+            <svg class="mark" id="mark" data-rosette="mark" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+            Prawdowid
+          </a>
+          <div class="top-actions">
+            <button type="button" id="new-chat" class="pill-btn" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              <span>Nowe pytanie</span>
+            </button>
+          </div>
         </div>
+      </header>
 
-        <div class="panel" data-panel="text">
-          <label for="text-input" class="sr-only">Tekst do sprawdzenia</label>
-          <textarea id="text-input" rows="7" maxlength="50000"
-            placeholder="Np. „Od 2025 roku w Polsce obowiązuje nowa ustawa o ochronie ludności.”"></textarea>
-          <div class="hint"><span id="char-count">0</span> znaków</div>
+      <main>
+        <section class="intro">
+          <h1>Sprawdź, zanim udostępnisz</h1>
+          <p class="lede">Wklej wypowiedź albo link, dołącz zdjęcie, film lub nagranie. Pokażemy, co mówią o tym źródła.</p>
+        </section>
+
+        <section id="thread" class="thread" aria-label="Rozmowa"></section>
+        <p id="sr-status" class="sr-only" aria-live="polite"></p>
+
+        <div id="dock" class="dock">
+          <div class="dock-inner">
+            <form id="check-form" class="composer" novalidate>
+              <div id="attachment" class="attachment" hidden>
+                <div id="attachment-media" class="attachment-media"></div>
+                <div class="attachment-info">
+                  <span id="attachment-kind" class="kind-chip"></span>
+                  <span id="attachment-name" class="attachment-name"></span>
+                  <span id="attachment-size" class="muted"></span>
+                </div>
+                <button type="button" id="attachment-remove" class="icon-btn" aria-label="Usuń załącznik" title="Usuń załącznik">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                </button>
+              </div>
+
+              <div class="pill-row">
+                <label for="text-input" class="sr-only">Treść do sprawdzenia lub pytanie do załącznika</label>
+                <textarea id="text-input" rows="1" maxlength="50000"></textarea>
+                <button type="button" id="attach" class="icon-btn" aria-label="Dołącz zdjęcie, film lub nagranie" title="Dołącz zdjęcie, film lub nagranie (do 5 MB)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 7.5l-7.8 7.8a2.1 2.1 0 003 3l8.1-8.1a4.2 4.2 0 00-6-6L5.7 12.3a6.3 6.3 0 009 9l6.3-6.3" /></svg>
+                </button>
+                <button type="button" id="mic" class="icon-btn mic" aria-label="Nagraj wiadomość głosową" aria-pressed="false" title="Nagraj wiadomość głosową">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0014 0M12 18v3" /></svg>
+                </button>
+                <button type="submit" id="submit" class="send" aria-label="Sprawdź" title="Sprawdź">
+                  <span class="send-label" aria-hidden="true">Sprawdź</span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                </button>
+                <input id="file-input" type="file" hidden />
+              </div>
+            </form>
+
+            <p id="form-error" class="form-error" role="alert" hidden></p>
+            <p id="send-as" class="composer-note" aria-live="polite"></p>
+
+            <details class="settings" id="settings">
+              <summary>
+                <span id="mode-summary">Demo: odpowiedzi przykładowe</span>
+              </summary>
+              <div class="settings-body">
+              <div class="seg" role="radiogroup" aria-label="Rodzaj odpowiedzi">
+                <button type="button" role="radio" class="seg-btn" data-mode="mock" aria-checked="true">Demo</button>
+                <button type="button" role="radio" class="seg-btn" data-mode="live" aria-checked="false">Na żywo</button>
+              </div>
+              <label class="scenario" id="scenario-wrap">
+                <span>Scenariusz</span>
+                <select id="scenario">
+                  <option value="">dobierz sam</option>
+                </select>
+              </label>
+              <p id="mode-hint" class="mode-hint"></p>
+              </div>
+            </details>
+          </div>
         </div>
+      </main>
+    </div>
 
-        <div class="panel" data-panel="url" hidden>
-          <label for="url-input">Link do artykułu lub komunikatu</label>
-          <input id="url-input" type="url" inputmode="url" placeholder="https://…" />
-          <p class="hint">Pobierzemy tylko publiczną stronę, z pominięciem parametrów śledzących.</p>
-        </div>
-
-        <div class="panel" data-panel="image" hidden>
-          <label class="drop" id="drop">
-            <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp" />
-            <span id="drop-label">Kliknij lub upuść zrzut ekranu (JPG, PNG, WebP, maks. 5 MB)</span>
-            <img id="preview" alt="Podgląd wybranego obrazu" hidden />
-          </label>
-          <p class="hint">Obraz trafia tylko do odczytu tekstu i nie jest zapisywany. Metadane (np. lokalizacja) usuwamy przed wysłaniem.</p>
-        </div>
-
-        <div class="panel-extra" id="note-wrap" hidden>
-          <label for="note-input">Co chcesz sprawdzić? <span class="muted">(opcjonalnie)</span></label>
-          <input id="note-input" type="text" maxlength="2000" placeholder="Np. „Czy to zdjęcie jest z tego roku?”" />
-        </div>
-
-        <div class="actions">
-          <button type="submit" id="submit" class="primary">Sprawdź</button>
-          <span id="progress" class="progress" aria-live="polite"></span>
-        </div>
-      </form>
-
-      <section id="result" aria-live="polite"></section>
-    </main>
-
-    <footer class="foot wrap">
-      <p>
-        Prawdowid nie ocenia opinii i nie zastępuje własnego osądu. Zawsze sprawdź cytowane źródła.
-        <button type="button" id="forget" class="link">Usuń dane mojej sesji</button>
-      </p>
+    <footer class="foot">
+      <p>Prawdowid nie ocenia opinii i nie zastępuje własnego osądu. Zawsze otwórz cytowane źródła. Twoich plików nie zapisujemy.</p>
+      <button type="button" id="forget" class="text-link">Usuń dane mojej sesji</button>
     </footer>
+
+    <div id="drop-overlay" class="drop-overlay" hidden>
+      <div class="drop-card">
+        <strong>Upuść plik, żeby go dołączyć</strong>
+        <span>Zdjęcie, film albo nagranie do 5 MB</span>
+      </div>
+    </div>
 
     <script>
       import { initApp } from "../lib/app.ts";

@@ -19,7 +19,7 @@ Or both at once: `bun run dev`. Check the setup: `curl http://localhost:8787/api
 
 ## Tests and benchmark
 - `bun run bot:test`: the bot's tests (no network, no credits).
-- `bun run test`: 123 deterministic tests (model and source APIs stubbed, **no credits used**): the verification rules for scenarios A-J, the v1 contract, the source allowlist, the statistics routes and the number check, every API route.
+- `bun run test`: 150 deterministic tests (model and source APIs stubbed, **no credits used**): the verification rules for scenarios A-J, the v1 contract, the source allowlist, the statistics routes and the number check, video/audio input checks, every API route.
 - `bun run eval:quick`: 6 live cases (~$0.005). `bun run eval`: the full 50-case reference set (~$0.05) with the task's metrics (macro-F1, citation coverage, abstention, robustness, latency, cost per 100, end-to-end, channel consistency). `bun run eval:remote`: the same against the deployed API.
 - Results: `eval/results/latest.md`; method and known gaps: `.agents/project-info/evaluation/benchmark.md`.
 
@@ -34,7 +34,7 @@ Or both at once: `bun run dev`. Check the setup: `curl http://localhost:8787/api
 | `.agents/project-info` | the project wiki (design, decisions, prompts) |
 
 ## API
-`POST /api/v1/check` with `{ "input": { "type": "text" | "url" | "image", "value": "…" }, "user_message"?: "…", "session_id"?: "…" }`. `image` takes a `data:` URL (JPG/PNG/WebP, max 5 MB). Every endpoint, header, env var and mock scenario: `.agents/project-info/architecture/api-reference.md`. The response shape: `.agents/project-info/product/response-contract.md`. Machine-readable: `GET /api/v1/schema`.
+`POST /api/v1/check` with `{ "input": { "type": "text" | "url" | "image" | "video" | "audio", "value": "…" }, "user_message"?: "…", "session_id"?: "…" }`. `image`, `video` and `audio` take a `data:` URL (max 5 MB); video and audio are answered in mock mode only for now. Every endpoint, header, env var and mock scenario: `.agents/project-info/architecture/api-reference.md`. The response shape: `.agents/project-info/product/response-contract.md`. Machine-readable: `GET /api/v1/schema`.
 
 **Mock mode** (no keys needed): send `"mock": true` or a scenario name, start a text with `demo:<scenario>`, or run the server with `PRAWDOWID_MODE=mock`. Scenarios: `GET /api/v1/mock/scenarios`.
 

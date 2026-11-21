@@ -36,6 +36,8 @@ Deno.test("mock scenario selection: explicit name, demo: prefix, input type, det
   assertEquals(pickScenario({ input: { type: "text", value: "demo:partial cokolwiek" } }), "partial");
   assertEquals(pickScenario({ input: { type: "url", value: "https://example.com" } }), "url");
   assertEquals(pickScenario({ input: { type: "image", value: "data:…" } }), "image");
+  assertEquals(pickScenario({ input: { type: "video", value: "data:…" } }), "video");
+  assertEquals(pickScenario({ input: { type: "audio", value: "data:…" } }), "audio");
   const a = pickScenario({ input: { type: "text", value: "to samo" } });
   assertEquals(pickScenario({ input: { type: "text", value: "to samo" } }), a);
 });

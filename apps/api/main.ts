@@ -27,7 +27,9 @@ import {
   type CheckResponse,
   CONTRACT_VERSION,
   contractJsonSchema,
+  isMediaType,
   loadConfig,
+  mediaInputError,
   MemoryCheckStore,
   MemoryCorpusStore,
   MOCK_SCENARIO_DESCRIPTIONS,
@@ -167,7 +169,7 @@ app.get("/api/v1/mock/scenarios", (c) =>
 
 app.post(
   "/api/v1/check",
-  bodyLimit({ maxSize: 8 * 1024 * 1024, onError: (c) => c.json(rejected("Plik jest za duży (maks. 5 MB obrazu)."), 413) }),
+  bodyLimit({ maxSize: 8 * 1024 * 1024, onError: (c) => c.json(rejected("Plik jest za duży (maks. 5 MB)."), 413) }),
   async (c) => {
     // Clients with a key (the messaging bot) are limited per end user, browsers per IP.
     const client = CLIENT_KEYS.get(c.req.header("x-client-key") ?? "");
@@ -186,15 +188,21 @@ app.post(
       return c.json(rejected("Nieprawidłowe zapytanie (oczekujemy JSON)."), 400);
     }
     if (!body || typeof body !== "object" || !body.input || typeof body.input.value !== "string") {
-      return c.json(rejected('Brak pola "input": { "type": "text"|"url"|"image", "value": "…" }.'), 400);
+      return c.json(rejected('Brak pola "input": { "type": "text"|"url"|"image"|"video"|"audio", "value": "…" }.'), 400);
     }
     const channel = body.channel ?? (client ? "messaging" : "web");
 
     const wantsMock = MODE === "mock" || (client !== undefined && MOCK_CLIENTS.has(client)) || body.mock === true ||
       (typeof body.mock === "string" && body.mock !== "");
     if (wantsMock) {
-      if (!body.input.value.trim()) {
-        const r = rejected("Wklej tekst, link albo dodaj obraz.");
+      // Same input checks as live, so a channel built on mock gets the same rejections later.
+      const bad = !body.input.value.trim()
+        ? "Wklej tekst, link albo dodaj obraz, wideo lub nagranie audio."
+        : isMediaType(body.input.type)
+        ? mediaInputError(body.input.type, body.input.value)
+        : null;
+      if (bad) {
+        const r = rejected(bad);
         r.meta.mode = "mock";
         return c.json(r);
       }

@@ -22,7 +22,7 @@ Unknown paths: `404 { error, see }`.
 Request body (JSON, max 8 MB):
 ```jsonc
 {
-  "input": { "type": "text" | "url" | "image", "value": "…" },  // required
+  "input": { "type": "text" | "url" | "image" | "video" | "audio", "value": "…" },  // required
   "user_message": "what the user wants checked (with url/image)",  // optional, ≤ 2000 chars
   "session_id": "opaque id",   // optional: stored only as a SHA-256 hash; DELETE /session/:id removes its data
   "channel": "web" | "api" | "messaging",   // optional; defaults to "messaging" for keyed clients, else "web"
@@ -33,6 +33,8 @@ A bot can forward a chat message as `text` even when it contains a link: the ser
 - `text`: up to 50,000 chars (the first 12,000 are analysed, with a `partial_analysis` warning).
 - `url`: a public http(s) article. Tracking params are stripped; private-looking params, IP addresses, local hosts and robots.txt-disallowed pages are refused (`input_rejected`).
 - `image`: a `data:image/(jpeg|png|webp);base64,…` URL, max 5 MB. Metadata is stripped before the vision call; the image is not stored.
+- `video`: a `data:video/(mp4|webm|quicktime|mpeg);base64,…` URL, max 5 MB. `audio`: a `data:audio/…;base64,…` URL (mp3, wav, m4a/mp4, aac, ogg, webm), max 5 MB. Added 2026-11-21 ([decision 009](../decisions/009-video-audio-input-and-web-composer.md)). **Mock only for now:** in live mode a valid recording returns `input_rejected` ("not available yet"), never a verdict. Format and size are checked the same way in mock and live (`packages/core/src/intake/media.ts`), so a channel built on mock gets the same rejections later. The 5 MB cap keeps the base64 body under the 8 MB limit.
+- With a file, put what the user typed in `user_message`.
 
 HTTP status codes: `200` for every outcome the pipeline produces, including system states (read `status`, not the HTTP code). `400` = body is not JSON or has no `input` (`status: input_rejected`). `413` = body over 8 MB. `429` = rate limited (`status: rate_limited`).
 
@@ -52,7 +54,7 @@ Mock responses use exactly the live structures, cost nothing, need no keys and t
 Pick a scenario (first match wins):
 1. `"mock": "<scenario>"` in the request;
 2. text input starting with `demo:<scenario>` (works from a chat app, e.g. `demo:partial`);
-3. `"mock": true` or `PRAWDOWID_MODE=mock`: `url` input → `url`, `image` → `image`, otherwise a stable hash of the text picks one of confirmed, false, misleading, insufficient_evidence, mixed, conflict (same text → same answer).
+3. `"mock": true` or `PRAWDOWID_MODE=mock`: `url` input → `url`, `image` → `image`, `video` → `video`, `audio` → `audio`, otherwise a stable hash of the text picks one of confirmed, false, misleading, insufficient_evidence, mixed, conflict (same text → same answer).
 
 | Scenario | Returns |
 |---|---|
@@ -65,6 +67,7 @@ Pick a scenario (first match wins):
 | `escalation` | high-risk claim without evidence → `escalation.state: recommended` |
 | `injection` | `injection_detected` warning + a normal verdict |
 | `url` / `image` | `input.url`/`title`/`published_at` or `input.description` filled |
+| `video` / `audio` | `input.type` video/audio, `input.description` filled, claims with timestamped `provenance` (`video@00:42`, `audio@00:18`); audio adds a `partial_analysis` warning |
 | `needs_clarification`, `out_of_scope`, `not_a_claim`, `input_rejected`, `rate_limited`, `technical_error` | request-level system states, no claims |
 
 ## Server environment variables

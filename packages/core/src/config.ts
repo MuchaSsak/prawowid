@@ -42,6 +42,8 @@ export const LIMITS = {
   /** Characters of material sent to claim extraction (pasted text or a fetched article). */
   maxMaterialChars: 12_000,
   maxImageBytes: 5 * 1024 * 1024,
+  /** Video and audio uploads (data URLs). Kept under the API's 8 MB JSON body after base64. */
+  maxMediaBytes: 5 * 1024 * 1024,
   /** Fact claims kept after extraction (prompt v1 says 8; pipeline draft says 12: open question). */
   maxFactClaims: 8,
   passagesPerClaim: 5,

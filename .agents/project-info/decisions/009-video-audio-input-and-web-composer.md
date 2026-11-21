@@ -1,0 +1,14 @@
+# 009: Video and audio uploads in the v1 contract, and a single-composer web app on mock data
+Date: 2026-11-21 · Status: decided (user)
+
+Context: the user asked for a web app that talks to the API, on mock data for now, with a text input and uploads for video, image and audio, and gave a free hand on design. The API accepted only `text`, `url` and `image`, and the transcription step is not built yet ([multimodal-media](../architecture/multimodal-media.md)).
+
+Decision:
+- **Contract (additive, allowed by [decision 006](006-api-contract-v1-and-mock.md)):** `input.type` gains `video` and `audio`, sent as base64 data URLs, max 5 MB each so the body stays under 8 MB. Mock scenarios `video` and `audio` return claims with timestamped `provenance` (`video@00:42`). Live mode rejects recordings with a clear `input_rejected` message (a system state, never a verdict) until transcription lands.
+- **One validator** (`packages/core/src/intake/media.ts`) checks format and size in both live and mock, so channels built on mock see the same rejections later.
+- **Web app:** one composer instead of tabs: text plus at most one file; text next to a file goes as `user_message`; a bare link goes as `url`. Demo mode is the default and sends `mock`; a live switch is there for when keys are set. A JSON panel shows the exact request and response for whoever is building against the API.
+- **Chat flow and look (user, same day):** the first screen is a hero with one big input; after the first send it becomes a chat thread with a smaller input docked at the bottom. The visual style follows america.gov (soft rounded hero panel, light serif headline, white pill input with paperclip, mic and a round navy send button) without any state symbols or "official website" banner; our mark is a guilloche rosette. The mic records a voice message in the browser and sends it as `audio`. Fonts are self-hosted (no Google Fonts requests).
+
+Rejected: multipart upload (a second request format, and the JSON data-URL shape already works for images); a client-only mock in the web app (it would drift from the API contract the messaging bot uses); several attachments per check (the contract takes one input).
+
+Affects: [architecture/api-reference.md](../architecture/api-reference.md), [product/response-contract.md](../product/response-contract.md), [architecture/codebase.md](../architecture/codebase.md), [architecture/multimodal-media.md](../architecture/multimodal-media.md).

@@ -19,6 +19,9 @@ How we turn a linked article's images, YouTube or MP4 videos and audio into text
 
 - `typesafe/jev-router` exists on OpenRouter (all modalities, router pricing). It is probably the "jev" the team mentioned. Unconfirmed.
 
+## Status (2026-11-21)
+The v1 contract already accepts uploaded `video` and `audio` files (data URLs, max 5 MB), and the web app can send them. Only mock mode answers them; live returns `input_rejected` until the transcription step below is built ([decision 009](../decisions/009-video-audio-input-and-web-composer.md)). The mock already uses the planned timestamped provenance (`video@01:15`).
+
 ## Design: "media → text" first, then the normal pipeline
 1. **Fetch the article** (SSRF-safe). Readability gives the main text + publish date. Collect `<img>` (skip logos and icons by size), `<video>`/`<source>` MP4s, and YouTube `<iframe>` embeds.
 2. **Images:** send the top ~3 to the media model → OCR text + a short description + any visible date. Read EXIF with `exifr` (skip GPS). Redact PII in the OCR text before the next step ([intake rules](verification-pipeline.md#1-validate-and-prepare-input)).

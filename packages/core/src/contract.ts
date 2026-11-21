@@ -5,7 +5,7 @@
  * Wiki: .agents/project-info/architecture/api-reference.md
  */
 import { z } from "zod";
-import { CLAIM_TYPES, type CheckRequest, type CheckResponse, CONTRACT_VERSION, VERDICTS } from "./types.ts";
+import { CLAIM_TYPES, type CheckRequest, type CheckResponse, CONTRACT_VERSION, INPUT_TYPES, VERDICTS } from "./types.ts";
 
 const nullableString = z.string().nullable();
 
@@ -91,7 +91,7 @@ export const CheckResponseSchema = z.strictObject({
   limitations: z.array(z.string()),
   escalation: z.strictObject({ state: z.enum(["none", "recommended"]), reason: nullableString }),
   input: z.strictObject({
-    type: z.enum(["text", "url", "image"]),
+    type: z.enum(INPUT_TYPES),
     title: nullableString,
     url: nullableString,
     published_at: nullableString,
@@ -109,7 +109,7 @@ export const CheckResponseSchema = z.strictObject({
 });
 
 export const CheckRequestSchema = z.strictObject({
-  input: z.strictObject({ type: z.enum(["text", "url", "image"]), value: z.string() }),
+  input: z.strictObject({ type: z.enum(INPUT_TYPES), value: z.string() }),
   user_message: z.string().optional(),
   session_id: z.string().optional(),
   channel: z.enum(["web", "api", "messaging"]).optional(),
