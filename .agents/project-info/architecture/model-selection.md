@@ -28,17 +28,17 @@ Which models to use per pipeline step: quality, reliability, cost and GDPR compl
 | 1. Claims + types + queries | **mistral-small-2603** via `mistral/eu` | EU, cheap, a structured task |
 | 2. Stance + exact quotes (the critical step) | **mistral-small-2603** first; switch to **mistral-large-2512** if the eval F1 < 0.75 | EU; Large costs only about 3× Small |
 | Embeddings | **bge-m3** (quality, cross-lingual PL↔EN/RU) on **masked, public** text only, or `mistral-embed` for a strictly EU-vendor path | the corpus is public data; user queries are PII-masked first |
-| Images (OCR) | **mistral-small-2603** (vision, EU) | keeps the image path in the EU |
+| Images (OCR) | Local OCR with Polish language data | Raw images stay local and extracted text is redacted before external processing |
 | Video / YouTube | **gemini-3.1-flash-lite** (optional bonus path) | the only practical video model; **disclose non-EEA processing**, and use it only for public videos |
 | Audio (uploaded) | **voxtral-small** via `mistral/eu` | EU transcription |
-| Benchmark / fallback | claude-haiku-5.5 | run once in the eval for comparison and as an outage fallback |
+| Benchmark / fallback | claude-haiku-5.5 | evaluate on approved fixtures. Enable live fallback only if it meets the [verification workflow](verification-pipeline.md) deployment policy |
 
 **Cost per check** (≈ 2k in / 0.4k out for step 1 + 5k in / 0.5k out for step 2): all Small ≈ **$0.0014 → about $1.4 per 1,000 checks**. With Large on step 2 ≈ **$4 per 1,000**. Video adds about $0.01-0.02 per 5-minute video. These estimates are to be replaced by the measured `usage.cost`.
 
 ## GDPR / compliance checklist
-- **Mask PII before any LLM or embedding call** (PESEL, phone, email, IBAN, names where detectable). Log only the masked question.
+- **Mask private data before outbound search, model calls and logging** according to the [workflow intake rules](verification-pipeline.md#1-validate-and-prepare-input).
 - **Use `data_collection: "deny"` + `zdr: true` on every request.** Pin Mistral EU for text.
 - **Data minimization:** send only claim text + passages, never user metadata. Discord user IDs are hashed.
-- **Retention:** logs kept N days (e.g. 30), plus a "delete my session" endpoint (required by the brief).
+- **Retention:** follow the proposed [workflow retention and session deletion rules](verification-pipeline.md#7-record-outcome-and-evaluate-review-eligibility).
 - **Transparency page:** list every processor (OpenRouter (US), Mistral (EU), Google (US, video only), Supabase (EU Frankfurt), Deno Deploy), what each one receives, and the retention. Disclose non-EEA transfers.
 - **The pilot path:** swap OpenRouter for Mistral's API directly, or self-hosted models (bge-m3, Bielik or Gemma), with one config change. This addresses the "reduce non-EEA dependence" bonus.

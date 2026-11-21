@@ -39,7 +39,7 @@ Format: `- [path](path): one-line summary`
 - [architecture/api-endpoints-verified.md](architecture/api-endpoints-verified.md): **every source endpoint tested by curl**, plus the POST /api/check flow and ingestion jobs
 - [architecture/model-selection.md](architecture/model-selection.md): OpenRouter models per step, prices, EU/ZDR endpoints, GDPR checklist
 - [architecture/multimodal-media.md](architecture/multimodal-media.md): images, YouTube and MP4 video, audio → text (OpenRouter Responses API, Gemini), limits
-- [architecture/verification-pipeline.md](architecture/verification-pipeline.md): **how a check works**: fact vs opinion, routed retrieval, code-decided verdicts (Idea)
+- [architecture/verification-pipeline.md](architecture/verification-pipeline.md): workflow graph, claim extraction, evidence eligibility, verdict rules, failure states and release checks (Idea)
 - [architecture/stack-direction.md](architecture/stack-direction.md): what the team said about the stack (Turborepo, Deno Deploy, OpenRouter, Supabase?)
 - [architecture/stack-research.md](architecture/stack-research.md): Deno Deploy (sunset Apr 2027), OpenRouter, Supabase, input handling, Discord, POST /api/check flow
 - [architecture/data-sources-research.md](architecture/data-sources-research.md): every source: access, license, priority, corpus plan; live official APIs

@@ -99,7 +99,7 @@ If nothing is found, set `published_at = null` and show "data publikacji nieznan
 
 **EXIF/metadata in Deno:** `npm:exifr@7.1.3` parses JPEG/HEIC/PNG/WebP EXIF, XMP and IPTC from a `Uint8Array` (`exifr.parse(buf, { gps: false, xmp: true })`). Pitfalls: screenshots and images re-shared via messengers usually have **no EXIF** (stripped), so absence proves nothing. Present `DateTimeOriginal`/`Software`/camera only as context. **Don't extract or log GPS** (PII; hard constraint 12). C2PA/Content Credentials would need a separate library. **Assumption:** not worth it in 24h.
 
-**Recommendation (Idea):** One vision-LLM call per image through OpenRouter (Gemini 3.1 Flash-Lite or Claude Haiku 5.5, swappable by config) with a JSON schema `{ocr_text, language, visible_dates[], visible_sources[], image_kind: screenshot|photo|meme|document, notes}`. The OCR text then enters the same text pipeline. Mention Mistral OCR as the EU alternative. Use exifr for metadata without GPS. If OCR fails → system state `ocr_unavailable`, never a verdict (scenario J). Don't claim reverse image search unless Google Vision Web Detection or a local pHash index is actually wired up.
+**Proposed OCR path:** follow the [workflow intake rules](verification-pipeline.md#1-validate-and-prepare-input) for local OCR and redaction.
 
 ---
 
@@ -174,7 +174,7 @@ Token assumptions per text query (**Assumption**, to be replaced by measured `us
 | Embeddings of 3-6 queries | `baai/bge-m3` | 300 / - | ~$0.000003 |
 | Verdict / NLI per claim (JSON schema: label, evidence_ids, stance per evidence, strength factors) | **quality:** `anthropic/claude-sonnet-5.5`; **budget:** `mistralai/mistral-medium-3.1`; **cheapest:** `google/gemini-3.1-flash-lite` | 8,400 / 1,200 | $0.0288 / $0.0063 / $0.0039 |
 | Polish plain-language answer | `anthropic/claude-haiku-5.5` | 3,000 / 700 | $0.00065 |
-| (image only) OCR/vision | `google/gemini-3.1-flash-lite` | ~1,500 / 500 | ~$0.0011 |
+| (image only) local OCR | CPU | Measure in the deployment profile | No external model usage |
 
 **Per 1,000 text queries:** quality ≈ **$30**, budget ≈ **$8**, cheapest ≈ **$5.6**. Add about 20% for retries and longer inputs. Images add about $1 per 1,000. Embedding the full EUvsDisinfo corpus once (~19k × ~600 tokens ≈ 11M tokens) costs about **$0.11** with bge-m3. Hosting: $0 on free tiers (Deno Deploy free, Supabase free), or $20 + $25/month on paid tiers.
 
@@ -283,7 +283,7 @@ apps/api (Deno)  ── channel adapter → normalizes to CheckRequest {input, c
 packages/core  check(request, deps)            ← deps = {llm, embed, store, fetcher, ocr, clock, log}
   1. intake
      - url   → safeFetch (SSRF rules) → Readability → {title, text, published_at, publisher}; robots/paywall → state
-     - image → exifr (no GPS) + vision OCR → text + visible dates
+     - image → local OCR → text + visible dates
      - PII masking (regex: PESEL, phone, email, IBAN, ID numbers) before any LLM call / log
   2. security: heuristics + injection classifier on user text and fetched/OCR text → flag + event log
   3. triage + claim extraction (JSON schema): claims[] with check_worthy, or system state
@@ -336,7 +336,7 @@ Response shape (Idea):
             "corpus_version": "2026-11-21", "channel": "web" }
 }
 ```
-`status`: `completed` | `partial` | `failed`. `system_state` (never a verdict): `needs_clarification` | `out_of_scope` | `url_unreachable` | `paywalled_or_blocked` | `ocr_unavailable` | `llm_config_error` | `rate_limited` | `budget_exhausted` | `provider_unavailable` | `retrieval_error` | `input_rejected`. `escalation.state`: `none` | `recommended` | `escalated` (only with a real `case_id`). Verdict enum is exactly the 5 labels from the brief.
+The [verification workflow](verification-pipeline.md) owns request and claim states, warnings, and the review lifecycle. Provider-specific errors map to technical reason codes.
 
 ---
 
