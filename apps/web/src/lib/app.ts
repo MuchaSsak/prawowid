@@ -1,23 +1,17 @@
 /**
  * The web channel: one composer (text + one optional image / video / audio file) that calls
- * POST /api/v1/check. Demo mode (the default for now) sends `mock`, so it works with no keys.
+ * POST /api/v1/check.
  * Contract: .agents/project-info/architecture/api-reference.md
  */
 import type { CheckRequest, CheckResponse, InputType } from "@prawdowid/core/types";
 import { MEDIA_MIME, type MediaType } from "@prawdowid/core/media";
+import { MOCK_SCENARIOS, type MockScenario, mockResponse, pickScenario } from "@prawdowid/core/mock";
 import { h } from "./dom.ts";
 import { announce, renderResult, stateCard } from "./render.ts";
 import { drawRosettes } from "./rosette.ts";
 
 const MAX_BYTES = 5 * 1024 * 1024; // LIMITS.maxImageBytes / maxMediaBytes in core
 const KIND_PL: Record<MediaType, string> = { image: "Zdjęcie", video: "Film", audio: "Nagranie" };
-const SEND_AS_PL: Record<InputType, string> = {
-  text: "tekst",
-  url: "link",
-  image: "zdjęcie",
-  video: "film",
-  audio: "nagranie",
-};
 /** Extensions as a fallback for files the OS reports without a MIME type. */
 const EXTRA_ACCEPT: Record<MediaType, string> = { image: "", video: ".mp4,.webm,.mov", audio: ".mp3,.wav,.m4a,.aac,.ogg,.oga,.weba" };
 const EXT_MIME: Record<string, string> = {
@@ -40,6 +34,32 @@ interface Attachment {
   previewUrl: string;
 }
 
+/** A round play / pause button instead of the browser's wide grey audio bar. */
+function audioButton(src: string): HTMLElement {
+  const audio = new Audio(src);
+  audio.preload = "metadata";
+  const PLAY = "M8 5.5v13l11-6.5z";
+  const PAUSE = "M8 5h3v14H8zM13 5h3v14h-3z";
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", PLAY);
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  svg.append(path);
+  const btn = h("button", { type: "button", class: "audio-btn", "aria-label": "Odtwórz nagranie", title: "Odtwórz nagranie" }, svg) as HTMLButtonElement;
+  const sync = () => {
+    const on = !audio.paused;
+    path.setAttribute("d", on ? PAUSE : PLAY);
+    btn.setAttribute("aria-label", on ? "Zatrzymaj nagranie" : "Odtwórz nagranie");
+    btn.title = btn.getAttribute("aria-label")!;
+  };
+  audio.addEventListener("play", sync);
+  audio.addEventListener("pause", sync);
+  audio.addEventListener("ended", sync);
+  btn.addEventListener("click", () => (audio.paused ? audio.play() : audio.pause()));
+  return btn;
+}
+
 function sessionId(): string {
   try {
     let id = localStorage.getItem("prawdowid_session");
@@ -50,21 +70,6 @@ function sessionId(): string {
     return id;
   } catch {
     return crypto.randomUUID();
-  }
-}
-
-function stored(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-function store(key: string, value: string) {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // private mode: the setting just isn't remembered
   }
 }
 
@@ -96,11 +101,6 @@ function formatSize(bytes: number): string {
 
 const isUrl = (s: string) => /^https?:\/\/\S+$/i.test(s);
 
-/** For the JSON panel: never dump megabytes of base64 into the page. */
-function shortenDataUrl(v: string): string {
-  return v.startsWith("data:") && v.length > 120 ? `${v.slice(0, 60)}… (${formatSize((v.length * 3) / 4)} base64)` : v;
-}
-
 export function initApp() {
   drawRosettes();
   const api = (document.body.dataset.api ?? "http://localhost:8787").replace(/\/$/, "");
@@ -118,30 +118,44 @@ export function initApp() {
   const dock = $<HTMLDivElement>("dock");
   const newChat = $<HTMLButtonElement>("new-chat");
   const srStatus = $<HTMLParagraphElement>("sr-status");
-  const scenario = $<HTMLSelectElement>("scenario");
-  const scenarioWrap = $<HTMLLabelElement>("scenario-wrap");
-  const modeHint = $<HTMLParagraphElement>("mode-hint");
-  const modeSummary = $<HTMLSpanElement>("mode-summary");
   const overlay = $<HTMLDivElement>("drop-overlay");
 
   let attachment: Attachment | null = null;
-  let mode: "mock" | "live" = stored("prawdowid_mode") === "live" ? "live" : "mock";
-  let serverMode: "mock" | "live" | null = null;
+
+  // ── ?test=true: sample data made in the browser, no API calls ──────────────
+  // Each plain text send shows the next scenario, so every edge case can be clicked through;
+  // `demo:<name>`, a link or a file picks its own scenario.
+  let testMode = new URLSearchParams(location.search).get("test") === "true";
+  const testBar = $<HTMLDivElement>("test-bar");
+  const testScenario = $<HTMLSpanElement>("test-scenario");
+  let testIndex = 0;
+  const nextScenario = (req: CheckRequest): MockScenario => {
+    const explicit = /^demo:/i.test(req.input.value.trim()) || req.input.type !== "text";
+    const s = explicit ? pickScenario(req) : MOCK_SCENARIOS[testIndex++ % MOCK_SCENARIOS.length];
+    testScenario.textContent = `${s} (${MOCK_SCENARIOS.indexOf(s) + 1}/${MOCK_SCENARIOS.length})`;
+    return s;
+  };
+  const setTestMode = (on: boolean) => {
+    testMode = on;
+    testBar.hidden = !on;
+    document.body.classList.toggle("is-test", on);
+  };
+  setTestMode(testMode);
+  $<HTMLButtonElement>("test-off").addEventListener("click", () => {
+    setTestMode(false);
+    const url = new URL(location.href);
+    url.searchParams.delete("test");
+    history.replaceState(null, "", url);
+  });
   let busy = false;
   let recording = false;
 
   // ── input type the request will use ────────────────────────────────────────
   const inputType = (): InputType => attachment?.kind ?? (isUrl(text.value.trim()) ? "url" : "text");
-  /** The line under the input: what will be sent, or how to attach a file. */
+  /** The line under the input is used only by the recorder; otherwise only the placeholder changes. */
   const refreshSendAs = () => {
     if (recording) return; // the recorder owns the line while it runs
-    const t = inputType();
-    const hasText = text.value.trim().length > 0;
-    sendAs.textContent = attachment
-      ? `Wyślemy ${SEND_AS_PL[t]}${hasText ? " z Twoim pytaniem" : ""}.`
-      : t === "url"
-      ? "Sprawdzimy artykuł spod tego linku."
-      : "Możesz też dołączyć zdjęcie, film lub nagranie do 5 MB albo nagrać wiadomość głosową.";
+    sendAs.textContent = "";
     const chat = document.body.classList.contains("is-chat");
     text.placeholder = attachment
       ? "Co sprawdzić w tym pliku? Możesz zostawić puste"
@@ -222,7 +236,7 @@ export function initApp() {
       ? h("img", { src: previewUrl, alt: "Podgląd dołączonego zdjęcia" })
       : kind === "video"
       ? h("video", { src: previewUrl, preload: "metadata", playsinline: true, title: "Kliknij, aby odtworzyć lub zatrzymać" })
-      : h("audio", { src: previewUrl, controls: true, preload: "metadata" });
+      : audioButton(previewUrl);
     if (media instanceof HTMLVideoElement) {
       media.addEventListener("click", () => (media.paused ? media.play() : media.pause()));
     }
@@ -361,54 +375,6 @@ export function initApp() {
     }
   });
 
-  // ── mode: demo (mock) vs live ──────────────────────────────────────────────
-  const refreshMode = () => {
-    for (const b of document.querySelectorAll<HTMLButtonElement>(".seg-btn")) {
-      b.setAttribute("aria-checked", String(b.dataset.mode === mode));
-    }
-    scenarioWrap.hidden = mode !== "mock";
-    modeSummary.textContent = mode === "mock" ? "Demo: odpowiedzi przykładowe" : "Na żywo: prawdziwe sprawdzenie";
-    modeHint.textContent = mode === "mock"
-      ? "Przykładowe odpowiedzi z API o fikcyjnym mieście, bez kosztów. Filmy i nagrania działają na razie tylko tutaj."
-      : serverMode === "mock"
-      ? "Serwer działa w trybie demo, więc i tak odpowie danymi przykładowymi."
-      : "Prawdziwe sprawdzenie w źródłach. Trwa 5 do 10 sekund.";
-    store("prawdowid_mode", mode);
-  };
-  for (const b of document.querySelectorAll<HTMLButtonElement>(".seg-btn")) {
-    b.addEventListener("click", () => {
-      mode = b.dataset.mode as "mock" | "live";
-      refreshMode();
-    });
-  }
-
-  // ── server mode (no UI: only changes the hint when the server itself runs in demo mode) ──
-  const checkHealth = async () => {
-    try {
-      const res = await fetch(`${api}/api/v1/health`, { signal: AbortSignal.timeout(6000) });
-      serverMode = ((await res.json()) as { mode: "live" | "mock" }).mode;
-    } catch {
-      serverMode = null;
-    }
-    refreshMode();
-  };
-
-  const loadScenarios = async () => {
-    try {
-      const res = await fetch(`${api}/api/v1/mock/scenarios`, { signal: AbortSignal.timeout(6000) });
-      const { scenarios } = await res.json() as { scenarios: Record<string, string> };
-      const saved = stored("prawdowid_scenario") ?? "";
-      scenario.replaceChildren(
-        h("option", { value: "" }, "dobierz sam"),
-        ...Object.entries(scenarios).map(([name, desc]) => h("option", { value: name, title: desc }, name.replaceAll("_", " "))),
-      );
-      if (saved in scenarios) scenario.value = saved;
-    } catch {
-      // the list is a convenience; "automatycznie" still works
-    }
-  };
-  scenario.addEventListener("change", () => store("prawdowid_scenario", scenario.value));
-
   // ── chat state: first screen is the big composer, then a thread with the composer docked ──
   const enterChat = () => {
     if (document.body.classList.contains("is-chat")) return;
@@ -434,10 +400,7 @@ export function initApp() {
     window.scrollTo({ top: 0 });
     text.focus();
   };
-  // Starting over clears the conversation, so ask first (easy to tap by accident).
-  newChat.addEventListener("click", () => {
-    if (!thread.childElementCount || window.confirm("Zacząć od nowa? Obecne odpowiedzi znikną z ekranu.")) leaveChat();
-  });
+  newChat.addEventListener("click", leaveChat);
 
   // Keep the last message clear of the docked composer, whatever its current height.
   new ResizeObserver(() => {
@@ -457,7 +420,7 @@ export function initApp() {
         ? h("img", { src: url, alt: "Dołączone zdjęcie" })
         : att.kind === "video"
         ? h("video", { src: url, controls: true, preload: "metadata", playsinline: true })
-        : h("audio", { src: url, controls: true, preload: "metadata" });
+        : audioButton(url);
     }
     return h(
       "div",
@@ -496,26 +459,6 @@ export function initApp() {
     return { el, body, status };
   };
 
-  const rawPanel = (req: CheckRequest, data: unknown, httpStatus: number | null): HTMLElement => {
-    const shown = { ...req, input: { ...req.input, value: shortenDataUrl(req.input.value) } };
-    return h(
-      "details",
-      { class: "raw" },
-      h("summary", {}, "Pokaż zapytanie i odpowiedź API"),
-      h(
-        "div",
-        { class: "raw-grid" },
-        h("div", {}, h("h3", {}, "POST /api/v1/check"), h("pre", {}, JSON.stringify(shown, null, 2))),
-        h(
-          "div",
-          {},
-          h("h3", {}, httpStatus ? `Odpowiedź (HTTP ${httpStatus})` : "Odpowiedź"),
-          h("pre", {}, data ? JSON.stringify(data, null, 2) : "(brak odpowiedzi)"),
-        ),
-      ),
-    );
-  };
-
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (busy) return;
@@ -538,7 +481,6 @@ export function initApp() {
       channel: "web",
     };
     if (att && typed) req.user_message = typed.slice(0, 2000);
-    if (mode === "mock") req.mock = scenario.value || true;
 
     // Post the user's message, clear the composer and dock it at the bottom.
     enterChat();
@@ -558,19 +500,22 @@ export function initApp() {
     const timer = setInterval(() => {
       stage = Math.min(stage + 1, stages.length - 1);
       bot.status.textContent = stages[stage];
-    }, mode === "mock" ? 250 : 2500);
+    }, testMode ? 250 : 2500);
 
-    let httpStatus: number | null = null;
-    let data: CheckResponse | null = null;
+    let data: CheckResponse;
     try {
-      const res = await fetch(`${api}/api/v1/check`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(req),
-        signal: AbortSignal.timeout(40_000),
-      });
-      httpStatus = res.status;
-      data = (await res.json()) as CheckResponse;
+      if (testMode) {
+        await new Promise((r) => setTimeout(r, 900));
+        data = mockResponse(req, nextScenario(req));
+      } else {
+        const res = await fetch(`${api}/api/v1/check`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(req),
+          signal: AbortSignal.timeout(40_000),
+        });
+        data = (await res.json()) as CheckResponse;
+      }
       renderResult(bot.body, data);
       srStatus.textContent = announce(data);
     } catch (err) {
@@ -579,12 +524,6 @@ export function initApp() {
         stateCard(
           timeout ? "Serwer nie odpowiedział na czas" : "Brak połączenia z serwerem",
           ["Spróbuj ponownie za chwilę. To nie jest ocena prawdziwości."],
-          h(
-            "details",
-            { class: "more tech" },
-            h("summary", {}, "Szczegóły techniczne"),
-            h("div", { class: "more-body tech-body" }, h("p", {}, timeout ? "Przekroczono czas oczekiwania (40 s)." : `Brak połączenia z API: ${api}.`)),
-          ),
         ),
       );
       srStatus.textContent = "Nie udało się uzyskać odpowiedzi.";
@@ -592,8 +531,6 @@ export function initApp() {
       clearInterval(timer);
       bot.status.remove();
       bot.el.classList.remove("is-waiting");
-      // The JSON goes inside "Szczegóły techniczne": useful to builders, noise to everyone else.
-      (bot.body.querySelector(".tech-body") ?? bot.body).append(rawPanel(req, data, httpStatus));
       busy = false;
       submit.disabled = false;
       form.classList.remove("is-busy");
@@ -615,43 +552,6 @@ export function initApp() {
     }
   });
 
-  $<HTMLButtonElement>("forget").addEventListener("click", async () => {
-    let ok = true;
-    try {
-      const id = stored("prawdowid_session");
-      if (id) await fetch(`${api}/api/v1/session/${encodeURIComponent(id)}`, { method: "DELETE" });
-      try {
-        localStorage.removeItem("prawdowid_session");
-      } catch {
-        // nothing stored
-      }
-    } catch {
-      ok = false;
-    }
-    enterChat();
-    thread.append(
-      h(
-        "div",
-        { class: "turn turn-bot" },
-        avatar(),
-        h(
-          "div",
-          { class: "bot-body" },
-          h(
-            "div",
-            { class: "system-banner" },
-            h("strong", {}, ok ? "Dane sesji usunięte" : "Nie udało się usunąć danych sesji"),
-            h("p", {}, ok ? "Usunęliśmy historię sprawdzeń tej sesji." : "Spróbuj ponownie za chwilę."),
-          ),
-        ),
-      ),
-    );
-    requestAnimationFrame(scrollToEnd);
-  });
-
-  refreshMode();
   refreshSendAs();
   autoGrow();
-  checkHealth();
-  loadScenarios();
 }

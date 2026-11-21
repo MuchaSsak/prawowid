@@ -147,23 +147,25 @@ function meter(level: keyof typeof STRENGTH): HTMLElement {
   const s = STRENGTH[level];
   const bars = h("span", { class: "meter-bars", "aria-hidden": "true" });
   for (let i = 1; i <= 3; i++) bars.append(h("span", { class: i <= s.bars ? "bar on" : "bar" }));
-  return h("p", { class: "meter", title: s.text }, bars, "Pewność: ", h("strong", {}, s.word));
+  return h("p", { class: "meter", title: s.text }, bars, "Pewność ", h("strong", {}, s.word));
 }
 
-/** The card's header: verdict (or system state) as a strip flush with the card edges. */
-function cardHead(tone: Tone, title: string, meaning: string, opts: { kicker?: string | null; id?: string; side?: HTMLElement | null } = {}) {
+/** The card's header: a quiet top line, the verdict as a status pill, the sentence, what it means. */
+function cardHead(
+  tone: Tone,
+  title: string,
+  meaning: string,
+  opts: { kicker?: string | null; id?: string; side?: HTMLElement | null; claim?: string } = {},
+) {
   return h(
     "header",
     { class: "card-head" },
-    icon(tone),
-    h(
-      "div",
-      { class: "head-text" },
-      opts.kicker ? h("p", { class: "card-eyebrow" }, opts.kicker) : null,
-      h("h3", { class: "verdict", id: opts.id, tabindex: "-1" }, title),
-      h("p", { class: "verdict-meaning" }, meaning),
-    ),
-    opts.side ?? null,
+    opts.kicker || opts.side
+      ? h("div", { class: "card-top" }, h("span", { class: "card-eyebrow" }, opts.kicker ?? ""), opts.side ?? null)
+      : null,
+    h("h3", { class: "verdict", id: opts.id, tabindex: "-1" }, icon(tone, "sm"), h("span", {}, title)),
+    opts.claim ? h("p", { class: "claim-text" }, opts.claim) : null,
+    h("p", { class: "verdict-meaning" }, meaning),
   );
 }
 
@@ -179,28 +181,34 @@ export function stateCard(title: string, lines: string[], extra: HTMLElement | n
   );
 }
 
-/** A big, plainly labelled button to the source, with the site's address under the label. */
-function sourceButton(c: Citation): HTMLElement | null {
+function sourceLink(c: Citation): HTMLElement | null {
   const host = hostname(c.url);
   if (!host) return null;
   return h(
     "a",
-    { class: "source-btn", href: c.url, target: "_blank", rel: "noopener noreferrer nofollow" },
-    h("span", { class: "source-btn-label" }, "Przeczytaj u źródła", h("span", { "aria-hidden": "true" }, " ↗")),
-    h("span", { class: "source-btn-host" }, host),
+    { class: "cite-link", href: c.url, target: "_blank", rel: "noopener noreferrer nofollow" },
+    host,
+    h("span", { "aria-hidden": "true" }, " ↗"),
     h("span", { class: "sr-only" }, " (otworzy się w nowej karcie)"),
   );
 }
 
 function citation(c: Citation): HTMLElement {
-  const st = STANCE[c.stance];
+  const link = sourceLink(c);
   return h(
     "li",
     { class: `cite stance-${c.stance}` },
     h("blockquote", {}, `„${c.excerpt}”`),
-    h("p", { class: "stance-chip" }, icon(st.icon, "sm"), st.text),
-    h("p", { class: "cite-meta" }, h("span", { class: "publisher" }, c.publisher), c.published_at ? `, ${date(c.published_at)}` : ""),
-    sourceButton(c),
+    h(
+      "p",
+      { class: "cite-meta" },
+      h("span", { class: "cite-stance" }, STANCE[c.stance].text),
+      " · ",
+      h("span", { class: "publisher" }, c.publisher),
+      c.published_at ? ` · ${date(c.published_at)}` : "",
+      link ? " · " : "",
+      link,
+    ),
   );
 }
 
@@ -266,12 +274,11 @@ function claimCard(c: ClaimResult, index: number, total: number, uid: string): H
     return h(
       "article",
       { class: "card card-state tone-state", id: `${uid}-${index}`, "aria-labelledby": id },
-      cardHead("state", STATE_TITLE[st], `${STATE_MEANING[st]} ${NOT_A_RATING}`, { kicker: kicker ?? "Nie udało się sprawdzić", id }),
+      cardHead("state", STATE_TITLE[st], `${STATE_MEANING[st]} ${NOT_A_RATING}`, { kicker: kicker ?? "Nie udało się sprawdzić", id, claim: c.text }),
       h(
         "div",
         { class: "card-body" },
-        h("div", { class: "section" }, h("p", { class: "label" }, "Sprawdzane zdanie:"), h("p", { class: "claim-text" }, c.text)),
-        h("div", { class: "advice" }, h("strong", {}, "Co teraz?"), h("p", {}, STATE_ADVICE[st])),
+        h("p", { class: "advice" }, h("strong", {}, "Co teraz: "), STATE_ADVICE[st]),
         detailsBlock("Szczegóły", c.system_message ? h("p", {}, c.system_message) : null, routesList(c)),
       ),
     );
@@ -279,12 +286,11 @@ function claimCard(c: ClaimResult, index: number, total: number, uid: string): H
 
   const v = c.verdict!;
   const fact = v !== "not_verifiable";
-  const reasons = c.strength?.reasons.length ? h("p", {}, `Na czym opieramy pewność: ${c.strength.reasons.join("; ")}.`) : null;
   const sources = c.citations.length
     ? h(
       "div",
       { class: "section" },
-      h("p", { class: "label" }, c.citations.length === 1 ? "Co mówi źródło" : "Co mówią źródła"),
+      h("p", { class: "label" }, c.citations.length === 1 ? "Źródło" : "Źródła"),
       h("ul", { class: "cites" }, ...c.citations.map(citation)),
     )
     : fact
@@ -298,20 +304,17 @@ function claimCard(c: ClaimResult, index: number, total: number, uid: string): H
       kicker,
       id,
       side: c.strength && SHOWS_STRENGTH.includes(v) ? meter(c.strength.level) : null,
+      claim: c.text,
     }),
     h(
     "div",
     { class: "card-body" },
-    h("div", { class: "section" }, h("p", { class: "label" }, "Sprawdziliśmy:"), h("p", { class: "claim-text" }, c.text)),
-    c.explanation
-      ? h("div", { class: "section" }, h("p", { class: "label" }, "Dlaczego tak oceniamy"), h("p", {}, c.explanation))
-      : null,
-    c.missing ? h("div", { class: "section" }, h("p", { class: "label" }, "Czego nie udało się ustalić"), h("p", {}, c.missing)) : null,
+    c.explanation ? h("p", { class: "explanation" }, c.explanation) : null,
+    c.missing ? h("div", { class: "section" }, h("p", { class: "label" }, "Czego nie ustaliliśmy"), h("p", {}, c.missing)) : null,
     ...c.warnings.map(warningBox),
     sources,
     contextMatches(c),
-    h("div", { class: "advice" }, h("strong", {}, "Co teraz?"), h("p", {}, VERDICT_ADVICE[v])),
-    reasons || c.routes.length ? detailsBlock("Szczegóły tej oceny", reasons, routesList(c)) : null,
+    h("p", { class: "advice" }, h("strong", {}, "Co teraz: "), VERDICT_ADVICE[v]),
     ),
   );
 }
@@ -439,30 +442,6 @@ export function renderResult(root: HTMLElement, r: CheckResponse) {
   }
 
   claims.forEach((c, i) => parts.push(claimCard(c, i, claims.length, uid)));
-
-  if (r.limitations.length) {
-    parts.push(detailsBlock("Czego nie sprawdzamy", h("ul", {}, ...r.limitations.map((l) => h("li", {}, l)))));
-  }
-  const m = r.meta;
-  const seconds = (m.latency_ms / 1000).toLocaleString("pl-PL", { maximumFractionDigits: 1 });
-  parts.push(
-    h(
-      "details",
-      { class: "more tech" },
-      h("summary", {}, "Szczegóły techniczne"),
-      h(
-        "div",
-        { class: "more-body tech-body" },
-        h(
-          "p",
-          {},
-          `Odpowiedź w ${seconds} s${m.cached ? " (z pamięci podręcznej)" : ""}, koszt ${m.cost_usd.toFixed(4)} USD`,
-          m.models.length ? `, modele: ${m.models.join(", ")}` : "",
-          `. Numer sprawdzenia: ${r.check_id.slice(0, 8)}.`,
-        ),
-      ),
-    ),
-  );
 
   root.replaceChildren(h("div", { class: "sheet" }, ...parts.filter((p): p is HTMLElement => p !== null)));
 }

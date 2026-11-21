@@ -109,3 +109,11 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | problem/overview.md: statistics for the submission 'why' section (Digital Poland 2026, NASK 2025, Eurostat 2023 to re-check)
 ## [2026-11-21] update | pitch/blender-scenes-prompt.md: Blender agent prompt for 4 looping background scenes (user brief; Fern style is our Inference, agent must verify)
 ## [2026-11-21] lint | clean: new pitch page indexed, no text/link drift
+## [2026-11-21] update | web UI declutter: demo switch, helper texts and footer delete button removed; new /prywatnosc page holds the erasure button; compact audio button (codebase.md, decision 009 note, open-questions)
+## [2026-11-21] lint | 1 finding: index entry for decision 009 still said web runs on mock -> fixed; skills in parity
+## [2026-11-21] update | web: ?test=true sample-data mode (browser-side mock, no API); /prywatnosc reduced to one line by the user; erasure gap logged in open-questions
+## [2026-11-21] lint | clean: codebase, open-questions in sync
+## [2026-11-21] update | web answers: smaller type, removed rating details / limitations / technical details disclosures and the JSON panel (codebase.md)
+## [2026-11-21] lint | clean
+## [2026-11-21] update | web answer cards restyled after Mobbin references (status pill, serif sentence headline, compact source rows); no confirm on 'Nowe pytanie' (codebase.md)
+## [2026-11-21] lint | clean

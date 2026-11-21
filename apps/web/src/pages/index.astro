@@ -15,6 +15,10 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
     <title>Prawdomat: sprawdź, zanim udostępnisz</title>
   </head>
   <body data-api={apiUrl}>
+    <div id="test-bar" class="test-bar" role="status" hidden>
+      Dane przykładowe włączone<span class="test-sep">·</span><span id="test-scenario"></span>
+      <button type="button" id="test-off" class="test-off">Wyłącz</button>
+    </div>
     <div class="frame">
       <header class="top">
         <div class="top-row">
@@ -75,32 +79,13 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
             <p id="form-error" class="form-error" role="alert" hidden></p>
             <p id="send-as" class="composer-note" aria-live="polite"></p>
 
-            <details class="settings" id="settings">
-              <summary>
-                <span id="mode-summary">Demo: odpowiedzi przykładowe</span>
-              </summary>
-              <div class="settings-body">
-              <div class="seg" role="radiogroup" aria-label="Rodzaj odpowiedzi">
-                <button type="button" role="radio" class="seg-btn" data-mode="mock" aria-checked="true">Demo</button>
-                <button type="button" role="radio" class="seg-btn" data-mode="live" aria-checked="false">Na żywo</button>
-              </div>
-              <label class="scenario" id="scenario-wrap">
-                <span>Scenariusz</span>
-                <select id="scenario">
-                  <option value="">dobierz sam</option>
-                </select>
-              </label>
-              <p id="mode-hint" class="mode-hint"></p>
-              </div>
-            </details>
           </div>
         </div>
       </main>
     </div>
 
     <footer class="foot">
-      <p>Prawdomat nie ocenia opinii i nie zastępuje własnego osądu. Zawsze otwórz cytowane źródła. Twoich plików nie zapisujemy.</p>
-      <button type="button" id="forget" class="text-link">Usuń dane mojej sesji</button>
+      <p>Zachęcamy cię do weryfikowania informacji w internecie. Sprawdzaj źródła! <a href="/prywatnosc" class="text-link">Polityka Prywatności</a></p>
     </footer>
 
     <div id="drop-overlay" class="drop-overlay" hidden>
