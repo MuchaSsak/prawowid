@@ -5,11 +5,11 @@
  */
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { CheckRequest } from "@prawdowid/core/types";
-import { mockResponse } from "../../../packages/core/src/mock/fixtures.ts";
-import { createApp } from "../src/app.ts";
-import { createClient } from "../src/client.ts";
-import { loadConfig } from "../src/config.ts";
-import { setLogSink } from "../src/log.ts";
+import { mockResponse } from "../../../packages/core/src/mock/fixtures.js";
+import { createApp } from "../src/app.js";
+import { createClient } from "../src/client.js";
+import { loadConfig } from "../src/config.js";
+import { setLogSink } from "../src/log.js";
 
 const hex = (b: ArrayBuffer) => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
 let keys: CryptoKeyPair;

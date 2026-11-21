@@ -6,7 +6,7 @@
  *
  * Reads DISCORD_APPLICATION_ID, DISCORD_BOT_TOKEN and DISCORD_GUILD_ID from .env. Prints names only.
  */
-import { DEMO_SCENARIOS } from "../src/demo.ts";
+import { DEMO_SCENARIOS } from "../src/demo.js";
 
 const appId = process.env.DISCORD_APPLICATION_ID;
 const token = process.env.DISCORD_BOT_TOKEN;

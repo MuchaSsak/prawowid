@@ -11,12 +11,12 @@
 import type { Adapter, Chat, Message, SlashCommandEvent, Thread } from "chat";
 import type { WhatsAppRawMessage } from "@chat-adapter/whatsapp";
 import type { MessengerRawMessage } from "@chat-adapter/messenger";
-import { type BotConfig, LIMITS, type Platform } from "./config.ts";
-import type { PrawdowidClient } from "./client.ts";
-import { converse, type Turn } from "./conversation.ts";
-import { demoText } from "./demo.ts";
-import type { IncomingMessage } from "./intake.ts";
-import { logEvent, quietLogger } from "./log.ts";
+import { type BotConfig, LIMITS, type Platform } from "./config.js";
+import type { PrawdowidClient } from "./client.js";
+import { converse, type Turn } from "./conversation.js";
+import { demoText } from "./demo.js";
+import type { IncomingMessage } from "./intake.js";
+import { logEvent, quietLogger } from "./log.js";
 
 export interface PlatformDeps {
   config: BotConfig;

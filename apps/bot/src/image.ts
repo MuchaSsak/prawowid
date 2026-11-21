@@ -6,7 +6,7 @@
  *     stops at 25 MB), so the size is re-checked after the download.
  *   - Every platform: the type is verified from the first bytes, never from the declared MIME type.
  */
-import { LIMITS } from "./config.ts";
+import { LIMITS } from "./config.js";
 
 export type ImageMime = "image/jpeg" | "image/png" | "image/webp";
 
