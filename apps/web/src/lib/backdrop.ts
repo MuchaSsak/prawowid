@@ -9,7 +9,7 @@
  * never blocks the page; this file only reads the page (size, colors, motion) and sends it over.
  * Browsers without OffscreenCanvas run the same renderer here on the main thread.
  */
-import { createBackdropRenderer, type BackdropState, type RGB } from "./backdrop-gl.ts";
+import { createBackdropRenderer, type BackdropState, type FailReason, type RGB } from "./backdrop-gl.ts";
 
 function toRgb(ctx: CanvasRenderingContext2D, value: string, fallback: RGB): RGB {
   ctx.fillStyle = "#000";
@@ -19,7 +19,22 @@ function toRgb(ctx: CanvasRenderingContext2D, value: string, fallback: RGB): RGB
   return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255) as RGB;
 }
 
-export function initBackdrop(host: HTMLElement): void {
+/**
+ * What the backdrop learned about the GPU: "gpu" (it is drawing), "software" (no GPU: the page also
+ * keeps the hero video and film grain off) or "unknown" (it failed for another reason, or took longer
+ * than 4 s: the page keeps its other effects, as before).
+ */
+export type GpuVerdict = "gpu" | "software" | "unknown";
+
+export function initBackdrop(host: HTMLElement): Promise<GpuVerdict> {
+  let settle!: (v: GpuVerdict) => void;
+  const verdict = new Promise<GpuVerdict>((resolve) => (settle = resolve));
+  setTimeout(() => settle("unknown"), 4000);
+  start(host, settle);
+  return verdict;
+}
+
+function start(host: HTMLElement, settle: (v: GpuVerdict) => void): void {
   const canvas = document.createElement("canvas");
   canvas.className = "backdrop";
   canvas.setAttribute("aria-hidden", "true");
@@ -47,9 +62,13 @@ export function initBackdrop(host: HTMLElement): void {
     };
   };
 
-  const ready = () => requestAnimationFrame(() => canvas.classList.add("is-on"));
+  const ready = () => {
+    settle("gpu");
+    requestAnimationFrame(() => canvas.classList.add("is-on"));
+  };
   let alive = true;
-  const fail = () => {
+  const fail = (reason: FailReason) => {
+    settle(reason === "software" ? "software" : "unknown");
     alive = false;
     canvas.remove(); // the CSS gradient stays
   };
@@ -59,13 +78,13 @@ export function initBackdrop(host: HTMLElement): void {
     try {
       const offscreen = canvas.transferControlToOffscreen();
       const worker = new Worker(new URL("./backdrop.worker.ts", import.meta.url), { type: "module" });
-      const stop = () => { worker.terminate(); fail(); };
-      worker.onmessage = (e: MessageEvent<string>) => (e.data === "ready" ? ready() : stop());
-      worker.onerror = stop;
+      const stop = (reason: FailReason) => { worker.terminate(); fail(reason); };
+      worker.onmessage = (e: MessageEvent<string>) => (e.data === "ready" ? ready() : stop(e.data === "software" ? "software" : "error"));
+      worker.onerror = () => stop("error");
       worker.postMessage({ canvas: offscreen, dpr, state: read() }, [offscreen]);
       send = (state) => worker.postMessage({ state });
     } catch {
-      return fail();
+      return fail("error");
     }
   } else {
     const update = createBackdropRenderer(canvas, dpr, ready, fail);

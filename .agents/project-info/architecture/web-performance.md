@@ -13,6 +13,8 @@ Mobile = Moto G emulation with simulated slow 4G and 4x CPU; desktop = Lighthous
 
 Home on mobile: FCP 3.2 → 1.7 s, LCP 3.5 → 2.0 s, TBT 150 → 0 ms. Font bytes on the home page 350 → 110 KB.
 
+**PageSpeed Insights has no GPU** (user's run on the `adfb370` deploy, 2026-11-21 23:28: mobile 69, TBT 38 s). Its headless Chrome renders WebGL in software (SwiftShader), so a shader loop, video decoding and the blended animated grain cost seconds of CPU; a local Lighthouse on a GPU machine never shows this. Reproduce with Chrome flags `--disable-gpu --enable-unsafe-swiftshader`: the old deploy then gets TBT 1.5-11 s, the current code mobile 99-100 / desktop 100 with TBT 0 (the live Vercel deploy of `a529c6a` scored 100/100 that way). The backdrop now reports a GPU verdict (`initBackdrop` in `src/lib/backdrop.ts`): without a GPU (no context under `failIfMajorPerformanceCaveat`, or a renderer named SwiftShader/llvmpipe/WARP...) the CSS gradient stays, the hero video is not even fetched and the grain is not added; the poster is the still, the same as under reduced motion. With a GPU everything runs as before, video and grain starting a few hundred ms after load once the verdict is in.
+
 **Deliberate ceilings** (not bugs):
 - Admin SEO stays at 63: the pages are `noindex` on purpose (Lighthouse "page is blocked from indexing").
 - `/admin/dokumenty` best practices 78-79: the Google Sheets preview iframe sets Google's own `NID` cookie (third-party cookie + inspector issue). Removing it would mean dropping or click-to-load previews, a visible change. Tried `credentialless` iframes (2026-11-21): best practices went to 96, but the Sheets preview turned into Google's cookie-consent prompt, so it was reverted.
@@ -40,4 +42,4 @@ Home on mobile: FCP 3.2 → 1.7 s, LCP 3.5 → 2.0 s, TBT 150 → 0 ms. Font byt
 - Functional paths: normal, no OffscreenCanvas, no GPU, reduced motion, `?test=true` answer; zero console errors. `astro check` clean.
 
 ## Re-checking
-Build (`bun run build` in `apps/web`), `bun --bun astro preview`, then run Lighthouse (CLI or the Chrome DevTools panel) on `/`, `/prywatnosc/`, `/admin/analityka/`, `/admin/dokumenty/` in mobile and desktop mode. After upgrading `@fontsource-variable/*`, rerun `scripts/build-fonts.py` (needs `pip install fonttools brotli`).
+Build (`bun run build` in `apps/web`), `bun --bun astro preview`, then run Lighthouse (CLI or the Chrome DevTools panel) on `/`, `/prywatnosc/`, `/admin/analityka/`, `/admin/dokumenty/` in mobile and desktop mode, once normally and once with Chrome started as `--disable-gpu --enable-unsafe-swiftshader` (what PageSpeed Insights sees). The local preview is uncompressed, so live FCP/LCP are lower than local. After upgrading `@fontsource-variable/*`, rerun `scripts/build-fonts.py` (needs `pip install fonttools brotli`).

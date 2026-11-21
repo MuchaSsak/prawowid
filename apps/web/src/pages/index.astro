@@ -115,15 +115,18 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
       import { initApp } from "../lib/app.ts";
       import { initHeroVideo } from "../lib/hero-video.ts";
       initApp();
-      initHeroVideo(document.getElementById("hero-video") as HTMLVideoElement | null);
 
-      // The WebGL backdrop (and the ogl library) waits until the page has loaded and the main thread
-      // is idle: creating a GL context and compiling the shader is the costliest work on the page, and
-      // the canvas fades in over the CSS gradient anyway, so starting it a moment later looks the same.
-      const startBackdrop = () => import("../lib/backdrop.ts").then((m) => m.initBackdrop(document.body));
-      const whenIdle = () => ("requestIdleCallback" in window ? requestIdleCallback(startBackdrop, { timeout: 1500 }) : setTimeout(startBackdrop, 200));
-      if (document.readyState === "complete") whenIdle();
-      else addEventListener("load", whenIdle, { once: true });
+      // After page load: the WebGL backdrop starts (in a worker; its canvas fades in over the CSS
+      // gradient) and reports whether there is a GPU. Only then do the hero video and the film grain
+      // start; without a GPU they would cost seconds of CPU, so the poster stays as a still.
+      const video = document.getElementById("hero-video") as HTMLVideoElement | null;
+      const startEffects = () =>
+        import("../lib/backdrop.ts")
+          .then((m) => m.initBackdrop(document.body))
+          .catch(() => "unknown" as const)
+          .then((verdict) => initHeroVideo(video, verdict !== "software"));
+      if (document.readyState === "complete") startEffects();
+      else addEventListener("load", startEffects, { once: true });
     </script>
   </body>
 </html>

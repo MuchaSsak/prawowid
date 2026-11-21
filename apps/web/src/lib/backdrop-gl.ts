@@ -102,15 +102,35 @@ const cancelFrame: (id: number) => void =
   typeof cancelAnimationFrame === "function" ? (id) => cancelAnimationFrame(id) : (id) => clearTimeout(id);
 
 /**
+ * Why the renderer stopped. "software": no GPU (no fast context, or the context is a CPU renderer
+ * such as SwiftShader or llvmpipe), so the page also keeps its other GPU-heavy effects (the hero
+ * video and the film grain) off. "error": the shader failed or the context was lost; nothing is known
+ * about the GPU, so the page keeps its other effects.
+ */
+export type FailReason = "software" | "error";
+
+// Renderer names of CPU-only WebGL: Chrome's SwiftShader, Mesa's llvmpipe/softpipe, Windows' WARP.
+const SOFTWARE_RENDERER = /swiftshader|llvmpipe|softpipe|software|basic render|warp|mesa offscreen/i;
+
+function isSoftware(gl: WebGLRenderingContext): boolean {
+  try {
+    const info = gl.getExtension("WEBGL_debug_renderer_info");
+    const name = String(info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
+    return SOFTWARE_RENDERER.test(name);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Starts the renderer on `canvas` and returns the function that feeds it the page state. Calls
- * `onReady` after the first frame is drawn and `onFail` when there is no fast WebGL, the shader does
- * not link or the context is lost (the CSS gradient then stays).
+ * `onReady` after the first frame is drawn and `onFail` when it gives up (the CSS gradient stays).
  */
 export function createBackdropRenderer(
   canvas: HTMLCanvasElement | OffscreenCanvas,
   dpr: number,
   onReady: () => void,
-  onFail: () => void,
+  onFail: (reason: FailReason) => void,
 ): (state: BackdropState) => void {
   let gl: WebGLRenderingContext | null = null;
   try {
@@ -118,8 +138,12 @@ export function createBackdropRenderer(
   } catch {
     gl = null;
   }
-  if (!gl) {
-    onFail();
+  // No context with failIfMajorPerformanceCaveat, or one that renders on the CPU: no usable GPU.
+  // (Headless Chrome on GPU-less servers, e.g. PageSpeed Insights, hands out SwiftShader contexts
+  // despite the flag, and a shader loop there costs tens of seconds of CPU.)
+  if (!gl || isSoftware(gl)) {
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    onFail("software");
     return () => {};
   }
   const g = gl;
@@ -142,7 +166,7 @@ export function createBackdropRenderer(
     if (failed) return;
     failed = true;
     apply = null;
-    onFail();
+    onFail("error");
   };
   canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); fail(); });
 
