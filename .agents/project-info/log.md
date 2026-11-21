@@ -228,3 +228,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | Clean for the freshness update. Checked routing, index, source references, links and skill parity.
 ## [2026-11-21] update | Clarified source attribution, in-flight disable, document freshness and rollout prerequisites after Fable review.
 ## [2026-11-21] lint | Verified review cases, wiki links and skill parity after the source registry revision.
+## [2026-11-22] update | Added a Polish translation of the source registry proposal (architecture/source-platform.pl.md); the English page stays canonical.
+## [2026-11-22] lint | Clean: links, index entries, section parity of the translation and skill parity checked.

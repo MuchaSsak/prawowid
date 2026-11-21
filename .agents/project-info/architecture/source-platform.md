@@ -1,6 +1,6 @@
 # Source registry and evidence access
 
-How operators manage evidence sources and how Prawdomat finds the right version of a record.
+How operators manage evidence sources and how Prawdomat finds the right version of a record. Polish translation: [source-platform.pl.md](source-platform.pl.md).
 
 **Idea.** Add and disable approved sources without deploying Prawdomat. Give the verifier and operators a shared way to query the data. This proposal would move the evidence allowlist from code into a private registry and requires reviewing [the allowlist decision](../decisions/008-trusted-source-allowlist.md) and [the configuration decision](../decisions/003-config-in-code.md) before rollout. Use the current catalog as the initial registry contents.
 

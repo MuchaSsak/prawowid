@@ -52,6 +52,7 @@ Format: `- [path](path): one-line summary`
 - [architecture/api-reference.md](architecture/api-reference.md): **for channel builders**: every endpoint, header, request field, env var (incl. `MOCK_CLIENTS`), mock scenario, Deno Deploy setup, versioning rules
 - [architecture/extensibility.md](architecture/extensibility.md): extension points for channels, models, evidence sources and storage
 - [architecture/source-platform.md](architecture/source-platform.md): proposed private source registry, activation without deployments, and shared access to live and indexed evidence
+- [architecture/source-platform.pl.md](architecture/source-platform.pl.md): Polish translation of the source registry proposal (the English page wins on conflict)
 - [architecture/codebase.md](architecture/codebase.md): **what is built**: code layout, evidence routes (Google Fact Check, ELI, Eurostat, NBP, GUS), the number check, interim verdict choices, measured latency/cost, next steps
 - [architecture/web-performance.md](architecture/web-performance.md): Lighthouse scores before/after for every web page, what changed and why (inlined CSS, poster preload, video/grain after load, WebGL backdrop in a worker, pinned and Polish-subset fonts, CLS/LCP fixes, SEO files), deliberate ceilings, how to re-check
 - [architecture/technical-approach-research.md](architecture/technical-approach-research.md): pipeline best practice, models, retrieval, injection defense, eval harness, IFCN/EFCSN
