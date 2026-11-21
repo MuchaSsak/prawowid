@@ -150,4 +150,7 @@ Deno.test("media: data URL format, MIME per type and size cap (no decoding)", ()
   assert(mediaInputError("video", "data:video/mp4;base64," + "A".repeat(6_990_508))?.includes("za duże"));
   assert(mediaInputError("video", "data:video/mp4;base64,AAA*")?.includes("uszkodzony"));
   assert(mediaInputError("audio", "data:audio/mpeg;base64,AAAAA")?.includes("uszkodzony"));
+  // Unpadded base64 is valid (atob accepts it), and image headers take no MIME parameters.
+  assertEquals(mediaInputError("audio", "data:audio/mpeg;base64,AAAAAA"), null);
+  assert(mediaInputError("image", "data:image/png;foo=bar;base64,AAAA")?.includes("nagłówek"));
 });

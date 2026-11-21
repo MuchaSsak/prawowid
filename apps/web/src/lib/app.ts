@@ -180,6 +180,7 @@ export function initApp() {
   // Reads are async: a newer file, or "Nowe pytanie", makes an older read obsolete.
   let attachSeq = 0;
   let loadingFile = false;
+  const LOADING_NOTICE = "Chwileczkę, wczytujemy plik.";
   const attach = async (file: File | undefined) => {
     if (!file) return;
     const seq = ++attachSeq;
@@ -212,6 +213,7 @@ export function initApp() {
     }
     if (seq !== attachSeq) return;
     loadingFile = false;
+    if (formError.textContent === LOADING_NOTICE) showError(null);
     clearAttachment();
     const previewUrl = URL.createObjectURL(file);
     attachment = { kind, file, dataUrl, previewUrl };
@@ -249,7 +251,7 @@ export function initApp() {
   const MAX_RECORDING_S = 120; // ~0.5 MB of Opus, far under the 5 MB cap
   let recorder: MediaRecorder | null = null;
   let micBusy = false; // permission prompt open: ignore further clicks
-  let discardRecording = false; // set by "Nowe pytanie": stop without attaching
+  let micGen = 0; // bumped by "Nowe pytanie": a late permission grant or stop event is dropped
   let recTimer: ReturnType<typeof setInterval> | undefined;
   const setRecording = (on: boolean) => {
     recording = on;
@@ -272,6 +274,7 @@ export function initApp() {
       return;
     }
     let stream: MediaStream;
+    const gen = micGen;
     micBusy = true;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -280,6 +283,10 @@ export function initApp() {
       return;
     } finally {
       micBusy = false;
+    }
+    if (gen !== micGen) {
+      stream.getTracks().forEach((t) => t.stop());
+      return;
     }
     const type = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"].find((t) => MediaRecorder.isTypeSupported(t));
     let rec: MediaRecorder;
@@ -298,10 +305,7 @@ export function initApp() {
       clearInterval(recTimer);
       recorder = null;
       setRecording(false);
-      if (discardRecording) {
-        discardRecording = false;
-        return;
-      }
+      if (gen !== micGen) return;
       const mime = (rec.mimeType || type || "audio/webm").split(";")[0];
       const stamp = new Date().toTimeString().slice(0, 5).replace(":", "");
       attach(new File(chunks, `nagranie-${stamp}.${mime.split("/")[1]}`, { type: mime }));
@@ -318,6 +322,8 @@ export function initApp() {
     recTimer = setInterval(tick, 250);
   });
   $<HTMLButtonElement>("attachment-remove").addEventListener("click", () => {
+    attachSeq++; // a replacement still loading must not reappear
+    loadingFile = false;
     clearAttachment();
     text.focus();
   });
@@ -413,10 +419,8 @@ export function initApp() {
   const leaveChat = () => {
     attachSeq++; // drop a file that is still loading
     loadingFile = false;
-    if (recorder?.state === "recording") {
-      discardRecording = true;
-      recorder.stop();
-    }
+    micGen++; // pending permission or a queued stop event must not attach into the new chat
+    if (recorder?.state === "recording") recorder.stop();
     for (const url of bubbleUrls.splice(0)) URL.revokeObjectURL(url);
     document.body.classList.remove("is-chat");
     newChat.hidden = true;
@@ -515,7 +519,7 @@ export function initApp() {
     e.preventDefault();
     if (busy) return;
     if (loadingFile) {
-      showError("Chwileczkę, wczytujemy plik.");
+      showError(LOADING_NOTICE);
       return;
     }
     const typed = text.value.trim();
@@ -595,7 +599,7 @@ export function initApp() {
       // Show the answer from its top and move focus to its heading (screen readers read the
       // result next; on phones no keyboard pops up), unless the person already started typing
       // the next question: then leave their focus and scroll alone.
-      if (!text.value.trim() && !attachment && !recording) {
+      if (!text.value.trim() && !attachment && !recording && !loadingFile) {
         bot.el.scrollIntoView({ behavior: "smooth", block: "start" });
         (bot.body.querySelector(".answer-title, .verdict") as HTMLElement | null)?.focus({ preventScroll: true });
       }

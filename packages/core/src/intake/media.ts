@@ -31,11 +31,18 @@ export function mediaInputError(type: MediaType, value: string): string | null {
   const m = value.match(/^data:([\w/+.-]+)(?:;[\w=.-]+)*;base64,/);
   if (!m) return `${l.noun}: oczekujemy pliku jako data URL (data:<typ>;base64,…).`;
   if (!MEDIA_MIME[type].includes(m[1].toLowerCase())) return `${l.noun}: obsługujemy formaty ${l.formats}.`;
+  // Live image intake (image.ts parseDataUrl) takes no MIME parameters; keep mock and live alike.
+  if (type === "image" && m[0] !== `data:${m[1]};base64,`) return `${l.noun}: nieprawidłowy nagłówek pliku.`;
   const payload = value.slice(m[0].length);
   if (!payload) return `${l.noun}: plik jest pusty.`;
-  if (payload.length % 4 !== 0 || !/^[A-Za-z0-9+/]+={0,2}$/.test(payload)) return `${l.noun}: plik jest uszkodzony (nieprawidłowe dane).`;
-  // Decoded size: 3 bytes per 4 characters, minus the "=" padding.
-  const bytes = (payload.length / 4) * 3 - (payload.endsWith("==") ? 2 : payload.endsWith("=") ? 1 : 0);
+  // Padding is optional (atob accepts both forms); a padded payload must be whole 4-char groups,
+  // and 1 leftover character can never encode a byte.
+  const pad = payload.endsWith("==") ? 2 : payload.endsWith("=") ? 1 : 0;
+  const chars = payload.length - pad;
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(payload) || (pad && payload.length % 4 !== 0) || chars % 4 === 1) {
+    return `${l.noun}: plik jest uszkodzony (nieprawidłowe dane).`;
+  }
+  const bytes = Math.floor((chars * 3) / 4); // decoded size
   if (bytes > l.max) return `${l.noun} jest ${l.big} (maks. ${Math.round(l.max / 1024 / 1024)} MB).`;
   return null;
 }
