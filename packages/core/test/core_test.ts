@@ -145,6 +145,9 @@ Deno.test("media: data URL format, MIME per type and size cap (no decoding)", ()
   assert(mediaInputError("audio", "data:video/mp4;base64,AAAA")?.includes("MP3"));
   assert(mediaInputError("video", "https://example.com/a.mp4")?.includes("data URL"));
   assert(mediaInputError("video", "data:video/mp4;base64,")?.includes("pusty"));
-  const big = "data:video/mp4;base64," + "A".repeat(Math.ceil((5 * 1024 * 1024 * 4) / 3) + 8);
-  assert(mediaInputError("video", big)?.includes("za duże"));
+  // Exactly 5 MiB (5,242,880 bytes, one "=" of padding) passes; one byte more does not.
+  assertEquals(mediaInputError("video", "data:video/mp4;base64," + "A".repeat(6_990_507) + "="), null);
+  assert(mediaInputError("video", "data:video/mp4;base64," + "A".repeat(6_990_508))?.includes("za duże"));
+  assert(mediaInputError("video", "data:video/mp4;base64,AAA*")?.includes("uszkodzony"));
+  assert(mediaInputError("audio", "data:audio/mpeg;base64,AAAAA")?.includes("uszkodzony"));
 });

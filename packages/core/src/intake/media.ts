@@ -31,9 +31,11 @@ export function mediaInputError(type: MediaType, value: string): string | null {
   const m = value.match(/^data:([\w/+.-]+)(?:;[\w=.-]+)*;base64,/);
   if (!m) return `${l.noun}: oczekujemy pliku jako data URL (data:<typ>;base64,…).`;
   if (!MEDIA_MIME[type].includes(m[1].toLowerCase())) return `${l.noun}: obsługujemy formaty ${l.formats}.`;
-  const b64 = value.length - m[0].length;
-  const bytes = Math.floor((b64 * 3) / 4);
+  const payload = value.slice(m[0].length);
+  if (!payload) return `${l.noun}: plik jest pusty.`;
+  if (payload.length % 4 !== 0 || !/^[A-Za-z0-9+/]+={0,2}$/.test(payload)) return `${l.noun}: plik jest uszkodzony (nieprawidłowe dane).`;
+  // Decoded size: 3 bytes per 4 characters, minus the "=" padding.
+  const bytes = (payload.length / 4) * 3 - (payload.endsWith("==") ? 2 : payload.endsWith("=") ? 1 : 0);
   if (bytes > l.max) return `${l.noun} jest ${l.big} (maks. ${Math.round(l.max / 1024 / 1024)} MB).`;
-  if (b64 === 0) return `${l.noun}: plik jest pusty.`;
   return null;
 }

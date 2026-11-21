@@ -18,16 +18,3 @@ export function h<K extends keyof HTMLElementTagNameMap>(
   }
   return el;
 }
-
-/** Only http(s) links are rendered as links; anything else becomes plain text. */
-export function safeLink(url: string, text: string): HTMLElement {
-  try {
-    const u = new URL(url);
-    if (u.protocol === "http:" || u.protocol === "https:") {
-      return h("a", { href: u.toString(), target: "_blank", rel: "noopener noreferrer nofollow" }, text);
-    }
-  } catch {
-    // fall through
-  }
-  return h("span", {}, text);
-}

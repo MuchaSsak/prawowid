@@ -223,17 +223,17 @@ function detailsBlock(summary: string, ...children: (Node | null)[]): HTMLElemen
   return h("details", { class: "more" }, h("summary", {}, summary), h("div", { class: "more-body" }, ...children));
 }
 
-function claimCard(c: ClaimResult, index: number, total: number): HTMLElement {
+function claimCard(c: ClaimResult, index: number, total: number, uid: string): HTMLElement {
   const from = provenanceLabel(c.provenance);
   const kicker = [total > 1 ? `Zdanie ${index + 1} z ${total}` : null, from].filter(Boolean).join(", ") || null;
-  const id = `claim-${index}-h`;
+  const id = `${uid}-${index}-h`;
 
   // System state: dashed frame, no verdict color, says plainly it is not a rating.
   if (c.system_state) {
     const st = c.system_state;
     return h(
       "article",
-      { class: "card card-state tone-state", id: `claim-${index}`, "aria-labelledby": id },
+      { class: "card card-state tone-state", id: `${uid}-${index}`, "aria-labelledby": id },
       cardHead("state", STATE_TITLE[st], `${STATE_MEANING[st]} ${NOT_A_RATING}`, { kicker: kicker ?? "Nie udało się sprawdzić", id }),
       h(
         "div",
@@ -261,7 +261,7 @@ function claimCard(c: ClaimResult, index: number, total: number): HTMLElement {
 
   return h(
     "article",
-    { class: `card tone-${v}`, id: `claim-${index}`, "aria-labelledby": id },
+    { class: `card tone-${v}`, id: `${uid}-${index}`, "aria-labelledby": id },
     cardHead(v, VERDICT_TITLE[v], VERDICT_MEANING[v], {
       kicker,
       id,
@@ -300,7 +300,7 @@ function routesList(c: ClaimResult): HTMLElement | null {
 }
 
 /** One row per sentence; tapping it jumps to its card. */
-function overview(claims: ClaimResult[]): HTMLElement {
+function overview(claims: ClaimResult[], uid: string): HTMLElement {
   return h(
     "ol",
     { class: "overview" },
@@ -315,7 +315,7 @@ function overview(claims: ClaimResult[]): HTMLElement {
         h("span", { class: "overview-go", "aria-hidden": "true" }, "›"),
       );
       btn.addEventListener("click", () => {
-        const card = document.getElementById(`claim-${i}`);
+        const card = document.getElementById(`${uid}-${i}`);
         card?.scrollIntoView({ behavior: "smooth", block: "start" });
         (card?.querySelector(".verdict") as HTMLElement | null)?.focus({ preventScroll: true });
       });
@@ -338,6 +338,8 @@ export function renderResult(root: HTMLElement, r: CheckResponse) {
   // carry [DEMO] and point to example.org, which the source button shows as the address.
   const notes = r.warnings.filter((w) => w.type !== "demo_data");
   const claims = r.claims;
+  // Ids must be unique across every answer in the thread (overview rows jump to their own cards).
+  const uid = `c${r.check_id.replace(/[^a-z0-9]/gi, "").slice(0, 12)}`;
 
   // Request-level system state (no claims): dashed frame, says plainly it is not a rating.
   if (r.system_message) {
@@ -345,7 +347,7 @@ export function renderResult(root: HTMLElement, r: CheckResponse) {
     parts.push(
       stateCard(r.system_message.title, [
         /nie jest ocen/i.test(text) ? text : `${text} ${NOT_A_RATING}`,
-        ...(r.status === "needs_clarification" ? ["Odpowiedz w polu na dole ekranu."] : []),
+        ...(r.status === "needs_clarification" ? ["Napisz całe pytanie jeszcze raz, z brakującymi szczegółami."] : []),
       ]),
     );
   }
@@ -379,7 +381,7 @@ export function renderResult(root: HTMLElement, r: CheckResponse) {
     parts.push(
       h("h2", { class: "answer-title", tabindex: "-1" }, `Sprawdziliśmy ${n} ${plural(n, "zdanie", "zdania", "zdań")}`),
       unrated ? h("p", { class: "answer-sub" }, `Bez oceny: ${unrated} z ${n} zdań.`) : null,
-      overview(claims),
+      overview(claims, uid),
     );
   } else if (claims.length === 1) {
     parts.push(h("h2", { class: "sr-only answer-title", tabindex: "-1" }, "Wynik sprawdzenia"));
@@ -403,7 +405,7 @@ export function renderResult(root: HTMLElement, r: CheckResponse) {
     );
   }
 
-  claims.forEach((c, i) => parts.push(claimCard(c, i, claims.length)));
+  claims.forEach((c, i) => parts.push(claimCard(c, i, claims.length, uid)));
 
   if (r.limitations.length) {
     parts.push(detailsBlock("Czego nie sprawdzamy", h("ul", {}, ...r.limitations.map((l) => h("li", {}, l)))));

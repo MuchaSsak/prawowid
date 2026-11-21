@@ -177,8 +177,13 @@ export function initApp() {
     refreshSendAs();
   };
 
+  // Reads are async: a newer file, or "Nowe pytanie", makes an older read obsolete.
+  let attachSeq = 0;
+  let loadingFile = false;
   const attach = async (file: File | undefined) => {
     if (!file) return;
+    const seq = ++attachSeq;
+    loadingFile = false;
     showError(null);
     const mime = fileMime(file);
     const kind = kindOf(mime);
@@ -194,9 +199,21 @@ export function initApp() {
       showError("Ten plik jest pusty.");
       return;
     }
+    loadingFile = true;
+    let dataUrl: string;
+    try {
+      dataUrl = await readAsDataUrl(file, mime);
+    } catch {
+      if (seq === attachSeq) {
+        loadingFile = false;
+        showError("Nie udało się wczytać pliku. Spróbuj jeszcze raz.");
+      }
+      return;
+    }
+    if (seq !== attachSeq) return;
+    loadingFile = false;
     clearAttachment();
     const previewUrl = URL.createObjectURL(file);
-    const dataUrl = await readAsDataUrl(file, mime);
     attachment = { kind, file, dataUrl, previewUrl };
 
     const media = kind === "image"
@@ -231,6 +248,8 @@ export function initApp() {
   // ── voice message: record in the browser, attach as audio ─────────────────
   const MAX_RECORDING_S = 120; // ~0.5 MB of Opus, far under the 5 MB cap
   let recorder: MediaRecorder | null = null;
+  let micBusy = false; // permission prompt open: ignore further clicks
+  let discardRecording = false; // set by "Nowe pytanie": stop without attaching
   let recTimer: ReturnType<typeof setInterval> | undefined;
   const setRecording = (on: boolean) => {
     recording = on;
@@ -246,20 +265,32 @@ export function initApp() {
       recorder.stop();
       return;
     }
+    if (micBusy) return;
     showError(null);
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
       showError("Ta przeglądarka nie pozwala nagrywać. Dołącz gotowy plik z nagraniem.");
       return;
     }
     let stream: MediaStream;
+    micBusy = true;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch {
       showError("Nie mamy dostępu do mikrofonu. Zezwól na mikrofon w ustawieniach przeglądarki albo dołącz plik z nagraniem.");
       return;
+    } finally {
+      micBusy = false;
     }
     const type = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"].find((t) => MediaRecorder.isTypeSupported(t));
-    const rec = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+    let rec: MediaRecorder;
+    try {
+      rec = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+      rec.start();
+    } catch {
+      stream.getTracks().forEach((t) => t.stop());
+      showError("Nie udało się rozpocząć nagrywania. Dołącz plik z nagraniem.");
+      return;
+    }
     const chunks: Blob[] = [];
     rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
     rec.onstop = () => {
@@ -267,12 +298,15 @@ export function initApp() {
       clearInterval(recTimer);
       recorder = null;
       setRecording(false);
+      if (discardRecording) {
+        discardRecording = false;
+        return;
+      }
       const mime = (rec.mimeType || type || "audio/webm").split(";")[0];
       const stamp = new Date().toTimeString().slice(0, 5).replace(":", "");
       attach(new File(chunks, `nagranie-${stamp}.${mime.split("/")[1]}`, { type: mime }));
     };
     recorder = rec;
-    rec.start();
     const started = Date.now();
     setRecording(true);
     const tick = () => {
@@ -377,6 +411,13 @@ export function initApp() {
     autoGrow();
   };
   const leaveChat = () => {
+    attachSeq++; // drop a file that is still loading
+    loadingFile = false;
+    if (recorder?.state === "recording") {
+      discardRecording = true;
+      recorder.stop();
+    }
+    for (const url of bubbleUrls.splice(0)) URL.revokeObjectURL(url);
     document.body.classList.remove("is-chat");
     newChat.hidden = true;
     thread.replaceChildren();
@@ -401,10 +442,12 @@ export function initApp() {
   const scrollToEnd = () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
 
   /** The user's side of a turn: what they typed plus a small preview of the file. */
+  const bubbleUrls: string[] = []; // revoked on "Nowe pytanie"
   const userBubble = (typed: string, att: Attachment | null): HTMLElement => {
     let media: HTMLElement | null = null;
     if (att) {
       const url = URL.createObjectURL(att.file);
+      bubbleUrls.push(url);
       media = att.kind === "image"
         ? h("img", { src: url, alt: "Dołączone zdjęcie" })
         : att.kind === "video"
@@ -471,6 +514,10 @@ export function initApp() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (busy) return;
+    if (loadingFile) {
+      showError("Chwileczkę, wczytujemy plik.");
+      return;
+    }
     const typed = text.value.trim();
     const type = inputType();
     if (!attachment && !typed) {
@@ -545,10 +592,13 @@ export function initApp() {
       busy = false;
       submit.disabled = false;
       form.classList.remove("is-busy");
-      // Show the answer from its top, and move focus to its heading (screen readers read the
-      // result next; on phones no keyboard pops up over it).
-      bot.el.scrollIntoView({ behavior: "smooth", block: "start" });
-      (bot.body.querySelector(".answer-title, .verdict") as HTMLElement | null)?.focus({ preventScroll: true });
+      // Show the answer from its top and move focus to its heading (screen readers read the
+      // result next; on phones no keyboard pops up), unless the person already started typing
+      // the next question: then leave their focus and scroll alone.
+      if (!text.value.trim() && !attachment && !recording) {
+        bot.el.scrollIntoView({ behavior: "smooth", block: "start" });
+        (bot.body.querySelector(".answer-title, .verdict") as HTMLElement | null)?.focus({ preventScroll: true });
+      }
     }
   });
 
