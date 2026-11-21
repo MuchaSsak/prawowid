@@ -279,7 +279,7 @@ export function initApp() {
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch {
-      showError("Nie mamy dostępu do mikrofonu. Zezwól na mikrofon w ustawieniach przeglądarki albo dołącz plik z nagraniem.");
+      if (gen === micGen) showError("Nie mamy dostępu do mikrofonu. Zezwól na mikrofon w ustawieniach przeglądarki albo dołącz plik z nagraniem.");
       return;
     } finally {
       micBusy = false;
@@ -324,6 +324,7 @@ export function initApp() {
   $<HTMLButtonElement>("attachment-remove").addEventListener("click", () => {
     attachSeq++; // a replacement still loading must not reappear
     loadingFile = false;
+    if (formError.textContent === LOADING_NOTICE) showError(null);
     clearAttachment();
     text.focus();
   });
