@@ -30,7 +30,7 @@ Legend here: ✅ built and tested · ⚠️ built, not yet ready for the jury ·
 | Corpus ≥100 docs, ≥10 domains, ≥2 types, auditable source list | ingestion plan ([api-endpoints-verified.md](../architecture/api-endpoints-verified.md)); the trusted-source catalog is public at `GET /api/v1/sources` ([decision 008](../decisions/008-trusted-source-allowlist.md)) | ⚠️ catalog built, corpus ingestion still needed; domain count to verify after ingest |
 | Publication and retrieval timestamps; warn about archival material | `published_at`, `retrieved_at`; `archival_material` warning | ✅ |
 | Security: input validation, separated instructions, tool limits, secrets, rate limiting, event logging | all in the flow; `.env` + `.gitignore` | ✅ |
-| Privacy: minimisation, PII masking, retention, deletable session | masking before any LLM call, 30-day `pg_cron`, `DELETE /api/v1/session/{id}` | ✅ |
+| Privacy: minimisation, PII masking, retention, deletable session | masking before any LLM call, 30-day `pg_cron`, `DELETE /api/v1/session/{id}`, called by the "Usuń dane sesji" button in the landing footer (toast on success, then a fresh session id) | ⚠️ `/prywatnosc` is still a placeholder, so nothing tells the user what is kept or for how long; deletion reaches only the in-memory store of the instance that answers (until Supabase) |
 | Observability: latency, model use, retrieval errors, abstentions, cost per answer | `meta` + `check_events`, OpenRouter `usage.cost` | ✅ |
 | Accessibility: responsive, contrast, plain language | tone rules in the contract | ⚠️ UI and contrast still to be done and checked (WCAG AA) |
 | Same result across channels | same core, `temperature 0`, cache by normalised input, canonical Polish verdict label | ✅ |

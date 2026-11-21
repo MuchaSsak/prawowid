@@ -219,3 +219,22 @@ Deno.test("GET /api/v1/admin/checks: the check log needs the admin token and hol
   for (const k of ["check_id", "created_at", "status", "claims"]) assert(k in row, k);
 });
 
+
+Deno.test("GET /api/v1/admin/analytics: token required, range validated, aggregates returned, CORS allows the admin page", async () => {
+  assertEquals((await get("/api/v1/admin/analytics")).status, 401);
+  const auth = { Authorization: "Bearer test-admin-token" };
+  assertEquals((await get("/api/v1/admin/analytics?range=5y", auth)).status, 400);
+  const res = await get("/api/v1/admin/analytics?range=24h", auth);
+  assertEquals(res.status, 200);
+  const body = await res.json();
+  assertEquals(body.range, "24h");
+  assertEquals(body.sample, false);
+  assertEquals(body.heatmap.length, 7);
+  const pre = await app.fetch(
+    new Request("http://x/api/v1/admin/analytics", {
+      method: "OPTIONS",
+      headers: { Origin: "https://web.example", "Access-Control-Request-Method": "GET", "Access-Control-Request-Headers": "authorization" },
+    }),
+  );
+  assert((pre.headers.get("access-control-allow-headers") ?? "").toLowerCase().includes("authorization"));
+});

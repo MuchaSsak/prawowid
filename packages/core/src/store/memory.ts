@@ -45,6 +45,13 @@ export class MemoryCheckStore implements CheckStore {
   listRecent(limit: number) {
     return Promise.resolve(this.checks.slice(-limit).reverse());
   }
+  listSince(since: Date) {
+    const t = since.getTime();
+    return Promise.resolve({
+      checks: this.checks.filter((c) => Date.parse(c.created_at) > t),
+      events: this.events.filter((e) => Date.parse(e.created_at) > t),
+    });
+  }
   prune(now: Date) {
     const cutoff = now.getTime() - LIMITS.retentionDays * 86_400_000;
     this.checks = this.checks.filter((c) => Date.parse(c.created_at) >= cutoff);

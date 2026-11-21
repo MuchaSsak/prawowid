@@ -24,7 +24,7 @@ export interface AuditLine {
   /** sha256 of the masked question: groups repeated questions without storing them. */
   input_sha256: string;
   input_chars: number;
-  claims: CheckLogRow["claims"];
+  claims: Omit<CheckLogRow["claims"][number], "text">[];
   latency_ms: number;
   models: string[];
   prompt_versions: string[];
@@ -41,7 +41,8 @@ export async function auditLine(row: CheckLogRow): Promise<AuditLine> {
     status: row.status,
     input_sha256: (await sha256Hex(row.masked_input)).slice(0, 16),
     input_chars: row.masked_input.length,
-    claims: row.claims,
+    // Claim text is derived from the question: it stays in the deletable store only.
+    claims: row.claims.map(({ text: _text, ...rest }) => rest),
     latency_ms: row.latency_ms,
     models: row.models,
     prompt_versions: row.prompt_versions,
@@ -74,6 +75,9 @@ export class LoggingCheckStore implements CheckStore {
   }
   listRecent(limit: number) {
     return this.inner.listRecent(limit);
+  }
+  listSince(since: Date) {
+    return this.inner.listSince(since);
   }
   prune(now: Date) {
     return this.inner.prune(now);

@@ -45,8 +45,10 @@
   color-scheme: light dark;
 }
 
+/* Pages with <html data-theme="light"> (the admin panel) stay light: no dark mode there. */
+:root[data-theme="light"] { color-scheme: light; }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --page: #050d1a;
     --panel: #0e1a2d;
     --panel-hi: #14233a;
@@ -114,6 +116,11 @@ button { font-family: inherit; letter-spacing: inherit; }
   background: radial-gradient(120% 80% at 50% 28%, var(--panel-hi) 0%, var(--panel) 62%);
   isolation: isolate;
 }
+/* The living backdrop (src/lib/backdrop.ts) paints over the CSS gradient, which stays as the
+   fallback without WebGL. Fixed to the viewport in chat, where the frame grows with the thread. */
+.backdrop { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
+.backdrop.is-on { opacity: 1; }
+body.is-chat .backdrop { position: fixed; }
 .top { position: relative; z-index: 2; }
 .top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 32px 48px 0; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font: 400 1.625rem/1 var(--serif); letter-spacing: -.03em; color: var(--ink); text-decoration: none; }
@@ -177,6 +184,8 @@ main { flex: 1; display: flex; flex-direction: column; }
 
 .text-link { padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--ink); cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
 .text-link:hover, .text-link:focus-visible { text-decoration-color: currentColor; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 50; margin: 0; padding: 10px 16px; border-radius: 999px; background: var(--ink); color: var(--page); font-weight: 600; box-shadow: 0 6px 24px rgb(0 0 0 / .18); }
+.toast[hidden] { display: none; }
 
 .foot { display: grid; justify-items: center; padding: 14px 24px 18px; text-align: center; font-size: .8125rem; line-height: 1.5; color: var(--ink-2); }
 .foot p { margin: 0 auto; max-width: 34em; }
@@ -380,6 +389,24 @@ body.is-chat .form-error { margin-top: 8px; }
   .claim-text { font-size: 1.1875rem; }
   .vicon-lg { width: 30px; height: 30px; }
   .answer-title { font-size: 1.375rem; }
+}
+
+@media (max-width: 720px) {
+  /* Tall phones: sit the hero in the optical centre instead of leaving the bottom half empty. */
+  body:not(.is-chat) main { justify-content: center; padding-bottom: 6vh; }
+  body:not(.is-chat) .intro { padding-top: 24px; }
+}
+
+@media (max-width: 400px) {
+  .intro h1 { font-size: clamp(2.75rem, 14vw, 3.25rem); }
+  .composer textarea, body.is-chat .composer textarea { font-size: 1rem; padding-left: 10px; }
+  .icon-btn { width: 40px; }
+  body.is-chat .icon-btn { width: 38px; }
+  /* Icon-only send so the text field keeps its width. */
+  body.is-chat .send { width: 48px; padding: 0; }
+  body.is-chat .send-label { display: none; }
+  .test-bar { gap: 6px; font-size: .8125rem; }
+  .test-sep, #test-scenario { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

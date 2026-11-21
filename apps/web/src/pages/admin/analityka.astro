@@ -1,0 +1,125 @@
+---
+import "@fontsource-variable/newsreader/opsz.css";
+import "@fontsource-variable/inter-tight";
+import "../../styles/global.css";
+import "../../styles/admin.css";
+
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
+const ranges = [
+  ["24h", "24 h"],
+  ["7d", "7 dni"],
+  ["30d", "30 dni"],
+  ["90d", "90 dni"],
+  ["1y", "Rok"],
+];
+---
+<!doctype html>
+<html lang="pl" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Analityka · Panel Prawdomat</title>
+  </head>
+  <body class="admin" data-api={apiUrl}>
+    <div id="test-bar" class="test-bar" role="status" hidden>
+      Dane przykładowe włączone
+      <button type="button" id="test-off" class="test-off">Wyłącz</button>
+    </div>
+
+    <div class="admin-shell">
+      <aside class="side">
+        <a class="brand" href="/">
+          <svg class="mark" data-rosette="mark" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+          Prawdomat
+        </a>
+        <p class="side-label">Panel</p>
+        <nav aria-label="Panel">
+          <a class="side-link" href="/admin/analityka" aria-current="page">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>
+            Analityka
+          </a>
+        </nav>
+        <div class="side-foot">
+          <button type="button" id="logout" class="side-link side-btn" hidden>Wyloguj</button>
+          <a class="side-link" href="/">← Strona główna</a>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+        <header class="admin-head">
+          <h1>Analityka</h1>
+          <div class="filters">
+            <div class="seg-control" role="group" aria-label="Okres">
+              {ranges.map(([key, label]) => (
+                <button type="button" data-range={key} aria-pressed="false">{label}</button>
+              ))}
+            </div>
+            <button type="button" id="sample-switch" class="switch" role="switch" aria-checked="false">
+              <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+              Dane przykładowe
+            </button>
+            <button type="button" id="refresh" class="icon-btn" aria-label="Odśwież">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" /></svg>
+            </button>
+          </div>
+        </header>
+
+        <p id="notice" class="notice" role="status" hidden></p>
+
+        <section id="gate" class="gate" hidden>
+          <form id="gate-form" class="gate-card">
+            <h2>Klucz administratora</h2>
+            <label class="sr-only" for="token">Klucz administratora</label>
+            <div class="gate-row">
+              <input id="token" name="token" type="password" autocomplete="current-password" placeholder="ADMIN_TOKEN" required />
+              <button type="submit" class="pill-btn">Otwórz</button>
+            </div>
+            <p id="gate-error" class="gate-error" role="alert" hidden></p>
+            <button type="button" id="gate-sample" class="text-btn">Pokaż dane przykładowe</button>
+          </form>
+        </section>
+
+        <div id="content" class="dash" hidden>
+          <section class="kpis" id="kpis" aria-label="Najważniejsze liczby"></section>
+
+          <section class="a-card span-2">
+            <div class="card-title"><h2>Ruch</h2><p id="volume-sub" class="sub"></p></div>
+            <div id="volume"></div>
+          </section>
+
+          <section class="a-card">
+            <div class="card-title"><h2>Kiedy ludzie sprawdzają</h2><p class="sub">Dzień tygodnia i godzina, czas polski</p></div>
+            <div id="heatmap"></div>
+          </section>
+
+          <section class="a-card">
+            <div class="card-title"><h2>Tematy</h2><p class="sub">Zmiana wobec poprzedniego okresu</p></div>
+            <div id="topics"></div>
+          </section>
+
+          <section class="a-card span-2">
+            <div class="card-title"><h2>Werdykty według tematu</h2><p class="sub">Jak często zdania z danego tematu okazują się prawdziwe albo fałszywe</p></div>
+            <div id="mix"></div>
+          </section>
+
+          <section class="a-card">
+            <div class="card-title"><h2>Najczęściej sprawdzane</h2><p class="sub">Powtarzające się twierdzenia, dane osobowe zamaskowane</p></div>
+            <div id="top-claims"></div>
+          </section>
+
+          <section class="a-card">
+            <div class="card-title"><h2>Bezpieczeństwo i rzetelność</h2></div>
+            <div id="integrity"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      import { initAnalytics } from "../../lib/admin/analytics.ts";
+      initAnalytics();
+    </script>
+  </body>
+</html>

@@ -122,3 +122,10 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | PII masking: "zadzwoń"/"dzwońcie" (any form of dzwonić) now count as phone cues; found by the new check-log test, a spaced 3-3-3 count of people is still kept
 ## [2026-11-21] update | merged origin/main (check log, vector DB package) with web UI work; log conflict resolved by keeping both sides
 ## [2026-11-21] fix | .env.example restored (6c92038 had replaced it); vector DB vars appended as a section
+## [2026-11-21] update | web deployed on Vercel (user); codebase next step 1 lists the Vercel build vars (PUBLIC_API_URL, PUBLIC_SITE_URL) and WEB_ORIGINS on the API
+## [2026-11-21] decision | 011 admin panel: one analytics page (/admin/analityka, light only), aggregates via GET /api/v1/admin/analytics, sample switch built in the browser, claim text kept out of the host audit line; codebase, api-reference, index, open-questions updated
+## [2026-11-21] lint | clean: decision 011 indexed and linked, routing table and skill parity intact, no stale "not callable from a browser" claims left (the two index/README "dead links" are format examples)
+## [2026-11-21] update | web: OGL living backdrop (slow shader in place of the static hero gradient), Seo.astro with Open Graph/Twitter tags + og.png banner (PUBLIC_SITE_URL), mobile fixes from a Playwright pass at 320-1440 px; codebase web row and .env.example updated
+## [2026-11-21] lint | clean: web backdrop/OG/mobile entry fits the codebase web row, routing table, index and skill parity intact (the two "dead links" are format examples)
+## [2026-11-21] update | web: "Usuń dane sesji" footer button calls DELETE /api/v1/session/:id with a toast; compliance-matrix privacy row now ⚠️ (placeholder /prywatnosc, per-instance memory store)
+## [2026-11-21] lint | 2 findings: codebase web row and open-questions still said the web UI had no delete-session button -> fixed

@@ -7,7 +7,8 @@
     ".": "./src/mod.ts",
     "./types": "./src/types.ts",
     "./media": "./src/intake/media.ts",
-    "./mock": "./src/mock/fixtures.ts"
+    "./mock": "./src/mock/fixtures.ts",
+    "./analytics": "./src/analytics/mod.ts"
   },
   "scripts": {
     "check": "deno check src/mod.ts",

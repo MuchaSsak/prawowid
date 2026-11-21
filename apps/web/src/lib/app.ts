@@ -122,6 +122,26 @@ export function initApp() {
 
   let attachment: Attachment | null = null;
 
+  // ── "Usuń dane sesji": DELETE /api/v1/session/:id, then a fresh id ─────────
+  const toast = $<HTMLParagraphElement>("toast");
+  let toastTimer = 0;
+  const showToast = (msg: string) => {
+    toast.textContent = msg;
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => (toast.hidden = true), 3000);
+  };
+  $<HTMLButtonElement>("forget-session").addEventListener("click", async () => {
+    try {
+      const res = await fetch(`${api}/api/v1/session/${encodeURIComponent(sessionId())}`, { method: "DELETE" });
+      if (!res.ok) throw new Error(String(res.status));
+      localStorage.removeItem("prawdowid_session");
+      showToast("Dane sesji usunięte.");
+    } catch {
+      showToast("Nie udało się usunąć danych. Spróbuj ponownie.");
+    }
+  });
+
   // ── ?test=true: sample data made in the browser, no API calls ──────────────
   // Each plain text send shows the next scenario, so every edge case can be clicked through;
   // `demo:<name>`, a link or a file picks its own scenario.

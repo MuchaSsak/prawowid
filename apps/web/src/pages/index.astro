@@ -2,17 +2,18 @@
 import "@fontsource-variable/newsreader/opsz.css";
 import "@fontsource-variable/inter-tight";
 import "../styles/global.css";
+import Seo from "../components/Seo.astro";
 
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
 ---
 <!doctype html>
 <html lang="pl">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="description" content="Prawdomat: bezpłatne sprawdzanie faktów ze źródłami." />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>Prawdomat: sprawdź, zanim udostępnisz</title>
+    <Seo
+      title="Prawdomat: sprawdź, zanim udostępnisz"
+      ogTitle="Prawdomat · Sprawdź, zanim udostępnisz"
+      description="Wklej wypowiedź, link, zdjęcie albo nagranie. Prawdomat sprawdza fakty i pokazuje, co mówią o tym wiarygodne źródła. Bezpłatnie."
+    />
   </head>
   <body data-api={apiUrl}>
     <div id="test-bar" class="test-bar" role="status" hidden>
@@ -85,7 +86,8 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
     </div>
 
     <footer class="foot">
-      <p>Zachęcamy cię do weryfikowania informacji w internecie. Sprawdzaj źródła! <a href="/prywatnosc" class="text-link">Polityka Prywatności</a></p>
+      <p>Zachęcamy cię do weryfikowania informacji w internecie. Sprawdzaj źródła! <a href="/prywatnosc" class="text-link">Polityka Prywatności</a> · <button id="forget-session" type="button" class="text-link">Usuń dane sesji</button></p>
+      <p id="toast" class="toast" role="status" hidden></p>
     </footer>
 
     <div id="drop-overlay" class="drop-overlay" hidden>
@@ -97,7 +99,9 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
 
     <script>
       import { initApp } from "../lib/app.ts";
+      import { initBackdrop } from "../lib/backdrop.ts";
       initApp();
+      initBackdrop(document.querySelector<HTMLElement>(".frame")!);
     </script>
   </body>
 </html>

@@ -15,7 +15,8 @@ Every endpoint, header, request field, environment variable and mock scenario of
 | `GET /api/v1/sources` | the trusted-source allowlist (only these publishers can be evidence) and the statistics we look up; added 2026-11-21, additive to v1 | `{ contract_version, policy, sources: [{ id, name, domains[], kind, tier, country, credentials, access, access_note, terms }], statistics: [{ key, label, unit, definition, sources[] }] }` |
 | `GET /api/v1/mock/scenarios` | mock scenario list | `{ how_to_pick[], scenarios: { name: description } }` |
 | `DELETE /api/v1/session/:id` | delete a session's logs and cached results | `{ deleted: true, checks: n }` |
-| `GET /api/v1/admin/checks?limit=50` | the check log for the team (MVP "zapis przebiegu"): masked question, time, channel, status, verdicts and cited source ids; needs `Authorization: Bearer <ADMIN_TOKEN>` (401 otherwise), 404 when `ADMIN_TOKEN` is not set; not callable from a browser (CORS). This instance's memory only; added 2026-11-21, additive to v1 | `{ note, checks: CheckLogRow[] }`, newest first |
+| `GET /api/v1/admin/checks?limit=50` | the check log for the team (MVP "zapis przebiegu"): masked question, time, channel, status, verdicts and cited source ids; needs `Authorization: Bearer <ADMIN_TOKEN>` (401 otherwise), 404 when `ADMIN_TOKEN` is not set; browser-callable only from `WEB_ORIGINS` (CORS allows `Authorization` for the admin page, [decision 011](../decisions/011-admin-analytics.md)). This instance's memory only; added 2026-11-21, additive to v1 | `{ note, checks: CheckLogRow[] }`, newest first |
+| `GET /api/v1/admin/analytics?range=24h\|7d\|30d\|90d\|1y` | aggregates for the admin page ([decision 011](../decisions/011-admin-analytics.md)): stat tiles with the previous period, volume buckets (hour/day/week/month, Europe/Warsaw, edge buckets `partial`), weekday × hour heatmap, topics (claim type) with growth, a 12-slice spark and verdict counts, the masked text of claims asked ≥2×, integrity counts, channels. Same token rules as above, 400 on an unknown range; added 2026-11-21, additive | `AnalyticsReport` (`packages/core/src/analytics/build.ts`) |
 
 Unknown paths: `404 { error, see }`.
 
@@ -79,7 +80,7 @@ Pick a scenario (first match wins):
 | `EUVSDISINFO_TOKEN` | no | EUvsDisinfo known-incident context (`context_matches`); without it that route is `skipped` and nothing else changes |
 | `PRAWDOWID_MODE` | no | `mock` makes every check a mock (default `live`) |
 | `MOCK_DELAY_MS` | no | simulated mock latency (default 600) |
-| `ADMIN_TOKEN` | no (secret) | enables `GET /api/v1/admin/checks`. Independently of it, every live check writes one JSON audit line to the host log (`event: "prawdowid.check"`: time, channel, status, verdicts, source ids, a hash and the length of the masked question, never its text, so sessions stay deletable) |
+| `ADMIN_TOKEN` | no (secret) | enables `GET /api/v1/admin/checks` and `GET /api/v1/admin/analytics` (the admin page asks for it). Independently of it, every live check writes one JSON audit line to the host log (`event: "prawdowid.check"`: time, channel, status, verdicts, source ids, a hash and the length of the masked question, never its text, so sessions stay deletable) |
 | `CLIENT_KEYS` | no | `name:key,name2:key2` for server clients |
 | `MOCK_CLIENTS` | no | comma-separated client names (from `CLIENT_KEYS`) that always get mock answers, even when `PRAWDOWID_MODE` is live; `bot` holds the messaging bot in mock until its spend caps exist ([messaging-bot](messaging-bot.md)) |
 | `WEB_ORIGINS` | no | comma-separated browser origins for CORS (default localhost:4321) |

@@ -11,6 +11,7 @@
  *   DELETE /api/v1/session/:id       delete a session's logs and cached results
  *   GET    /api/v1/admin/checks      recent check log rows (masked question, time, sources, verdicts);
  *                                    needs Authorization: Bearer <ADMIN_TOKEN>, 404 when no token is set
+ *   GET    /api/v1/admin/analytics   ?range=24h|7d|30d|90d|1y aggregates for the admin page (same token)
  *
  * Env (all optional except the LLM key in live mode):
  *   OPENROUTER_API_KEY, GOOGLE_FACT_CHECK_API_KEY   secrets (live mode)
@@ -22,7 +23,7 @@
  *   WEB_ORIGINS=https://…,…                         browser origins allowed by CORS
  *   ADMIN_TOKEN=<secret>                            enables GET /api/v1/admin/checks (the check log)
  */
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 import { cors } from "hono/cors";
 import { bodyLimit } from "hono/body-limit";
 import {
@@ -32,6 +33,9 @@ import {
   contractJsonSchema,
   isMediaType,
   loadConfig,
+  type AnalyticsRange,
+  ANALYTICS_RANGES,
+  buildAnalytics,
   LoggingCheckStore,
   mediaInputError,
   MemoryCheckStore,
@@ -117,7 +121,8 @@ app.use(
   cors({
     origin: (o) => (ALLOWED_ORIGINS.includes(o) ? o : null),
     allowMethods: ["GET", "POST", "DELETE"],
-    allowHeaders: ["Content-Type", "X-Client-Key", "X-End-User"],
+    // Authorization: the admin page sends ADMIN_TOKEN; origins stay limited to WEB_ORIGINS.
+    allowHeaders: ["Content-Type", "X-Client-Key", "X-End-User", "Authorization"],
   }),
 );
 
@@ -230,18 +235,39 @@ async function sameSecret(a: string, b: string): Promise<boolean> {
   return diff === 0;
 }
 
-// The check log for the team (MVP: question, time, sources, result). Server-to-server only: the
-// Authorization header is not allowed by CORS, so a browser page cannot call it.
-app.get("/api/v1/admin/checks", async (c) => {
+/** Admin routes: 404 when ADMIN_TOKEN is unset, 401 on a wrong token (constant-time compare). */
+async function adminDenied(c: Context): Promise<Response | null> {
   if (!ADMIN_TOKEN) return c.json({ error: "not found", see: "GET /" }, 404);
   if (!(await sameSecret(c.req.header("authorization") ?? "", `Bearer ${ADMIN_TOKEN}`))) {
     return c.json({ error: "unauthorized" }, 401);
   }
+  return null;
+}
+
+// The check log for the team (MVP: question, time, sources, result).
+app.get("/api/v1/admin/checks", async (c) => {
+  const denied = await adminDenied(c);
+  if (denied) return denied;
   const limit = Math.min(Math.max(Number(c.req.query("limit") ?? 50) || 50, 1), 200);
   return c.json({
     note: "Masked questions, newest first. This instance's memory only (30-day retention); every check is also an audit line in the host log (event prawdowid.check).",
     checks: await store.listRecent(limit),
   });
+});
+
+// Aggregates for the admin analytics page (decision 011). Browser-callable from WEB_ORIGINS with the
+// admin token; returns counts plus the masked text of the most repeated claims, nothing per person.
+app.get("/api/v1/admin/analytics", async (c) => {
+  const denied = await adminDenied(c);
+  if (denied) return denied;
+  const range = c.req.query("range") ?? "7d";
+  if (!(ANALYTICS_RANGES as readonly string[]).includes(range)) {
+    return c.json({ error: `range must be one of ${ANALYTICS_RANGES.join(", ")}` }, 400);
+  }
+  const now = new Date();
+  const span = { "24h": 1, "7d": 7, "30d": 30, "90d": 90, "1y": 365 }[range as AnalyticsRange] * 86_400_000;
+  const { checks, events } = await store.listSince(new Date(now.getTime() - 2 * span));
+  return c.json(buildAnalytics(checks, events, { range: range as AnalyticsRange, now }));
 });
 
 app.delete("/api/v1/session/:id", async (c) => {
