@@ -49,7 +49,7 @@ export function templateExplanation(verdict: Verdict, decisive: VerifiedPassage[
       return `Fakt wyjściowy się zgadza, ale twierdzenie zmienia jego kontekst${diff ? `: ${diff}` : ""} (${pubs}).`;
     }
     case "insufficient_evidence":
-      return "Nie znaleźliśmy wystarczających dowodów, by potwierdzić lub obalić to twierdzenie.";
+      return "Nie znaleźliśmy wystarczających dowodów, by potwierdzić lub obalić to twierdzenie. Brak wyniku w przeszukanych źródłach nie oznacza, że to nieprawda.";
     case "not_verifiable":
       return "To opinia, ocena lub prognoza, a nie twierdzenie o faktach.";
   }

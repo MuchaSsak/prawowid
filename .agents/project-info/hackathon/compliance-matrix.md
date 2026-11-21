@@ -25,7 +25,7 @@ Legend: ✅ covered by design · ⚠️ risk or partly covered · ❌ gap, work 
 | Notify a designated user on high-risk or repeated unanswered questions | `risk` field + similarity dedupe → `private.moderator_cases` + webhook to the moderator the admin sets | ⚠️ the admin setting (who the moderator is) still needs designing |
 | Prompt injection resistance | data boundary in every prompt, JSON-only models with no tools, `injection_signals` + regex scan, logged events | ✅ (needs ≥90% on our attack set) |
 | Channel handling separate from verification; model swappable without a rebuild | `packages/core` + adapters; model IDs in env | ✅ |
-| Corpus ≥100 docs, ≥10 domains, ≥2 types, auditable source list | ingestion plan ([api-endpoints-verified.md](../architecture/api-endpoints-verified.md)); source catalog page in the repo | ⚠️ needs building; domain count to verify after ingest |
+| Corpus ≥100 docs, ≥10 domains, ≥2 types, auditable source list | ingestion plan ([api-endpoints-verified.md](../architecture/api-endpoints-verified.md)); the trusted-source catalog is public at `GET /api/v1/sources` ([decision 007](../decisions/007-trusted-source-allowlist.md)) | ⚠️ catalog built, corpus ingestion still needed; domain count to verify after ingest |
 | Publication and retrieval timestamps; warn about archival material | `published_at`, `retrieved_at`; `archival_material` warning | ✅ |
 | Security: input validation, separated instructions, tool limits, secrets, rate limiting, event logging | all in the flow; `.env` + `.gitignore` | ✅ |
 | Privacy: minimisation, PII masking, retention, deletable session | masking before any LLM call, 30-day `pg_cron`, `DELETE /api/v1/session/{id}` | ✅ |
@@ -50,7 +50,7 @@ Legend: ✅ covered by design · ⚠️ risk or partly covered · ❌ gap, work 
 | Requirement | Our design | Status |
 |---|---|---|
 | No test answers in prompts, no hardcoded examples | prompts use rules, and few-shot examples (if any) are synthetic | ✅ (rule 16) |
-| Metrics: macro-F1 ≥0.75, citation coverage ≥95%, correctness ≥85%, abstention ≥80%, injection ≥90%, latency ≤30 s, cost per 100 | | ⚠️ built: 37-case set + `eval/run.ts` computes them ([evaluation/benchmark.md](../evaluation/benchmark.md)); macro-F1 0.66 is below 0.75 and citation correctness needs human labels |
+| Metrics: macro-F1 ≥0.75, citation coverage ≥95%, correctness ≥85%, abstention ≥80%, injection ≥90%, latency ≤30 s, cost per 100 | | ⚠️ built: 50-case set + `eval/run.ts` computes them ([evaluation/benchmark.md](../evaluation/benchmark.md)); macro-F1 0.71 (run 3) is below 0.75 and citation correctness needs human labels |
 | Disclose unsupported cases | a "Czego nie obsługujemy" section | ❌ to write |
 
 ## Source coverage gaps (affect accuracy, not the gate)

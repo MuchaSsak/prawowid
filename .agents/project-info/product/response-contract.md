@@ -88,7 +88,7 @@ Every field is always present (no optional fields in the response); `null` means
   "limitations": ["…"],
   "escalation": { "state": "none|recommended", "reason": "…" | null },
   "input": { "type": "text|url|image", "title": "…" | null, "url": "…" | null, "published_at": "…" | null, "description": "image description" | null },
-  "meta": { "latency_ms": 8400, "stages_ms": { "extract": 2900 }, "models": ["mistralai/…"], "prompt_versions": ["claim-extraction@1"],
+  "meta": { "latency_ms": 8400, "stages_ms": { "extract": 2900 }, "models": ["mistralai/…"], "prompt_versions": ["claim-extraction@2"],
             "cost_usd": 0.0009, "cached": false, "mode": "live|mock" }
 }
 ```

@@ -12,8 +12,8 @@ import { maskPii } from "../guard/pii.ts";
 import { extractImage } from "../intake/image.ts";
 import { fetchArticle, IntakeError, type ResolveHost } from "../intake/url.ts";
 import { LlmError, type LlmUsage } from "../llm/openrouter.ts";
-import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v1.ts";
-import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v1.ts";
+import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v2.ts";
+import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v2.ts";
 import type { CheckEventRow, CheckStore, CorpusStore } from "../store/types.ts";
 import {
   type CheckRequest,
@@ -34,6 +34,7 @@ import {
   summaryText,
   templateExplanation,
 } from "./render.ts";
+import { numericGuard } from "./numeric.ts";
 import { retrieve } from "./retrieve.ts";
 import { decideVerdict } from "./verdict.ts";
 
@@ -158,6 +159,23 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       if (truncated) {
         response.warnings.push({ type: "partial_analysis", text: `Przeanalizowaliśmy pierwsze ${LIMITS.maxMaterialChars} znaków tekstu.` });
       }
+      // A chat message often carries a link ("sprawdź też tę stronę: …"). The linked page is read as
+      // material through the same guarded fetch (SSRF, robots.txt, size); any instruction inside it
+      // is data and is caught by the injection scan below. A failed fetch never blocks the text.
+      const link = value.match(/https?:\/\/[^\s<>"'\])]+/)?.[0]?.replace(/[.,;:!?]+$/, "");
+      if (link) {
+        try {
+          const a = await fetchArticle(link, { resolveHost: deps.resolveHost, signal: deadline.signal });
+          material.push({ provenance: "article", text: a.text });
+          response.input = { ...response.input, title: a.title, url: a.url, published_at: a.published_at };
+        } catch (err) {
+          event("intake_error", { kind: err instanceof IntakeError ? err.kind : "error", from: "link_in_text" });
+          response.warnings.push({
+            type: "partial_analysis",
+            text: `Nie udało się odczytać strony z linku${err instanceof IntakeError ? ` (${err.message})` : ""}. Sprawdziliśmy tylko treść wiadomości.`,
+          });
+        }
+      }
     } else if (inputType === "url") {
       const a = await fetchArticle(value, { resolveHost: deps.resolveHost, signal: deadline.signal });
       material = [{ provenance: "article", text: a.text }];
@@ -179,6 +197,9 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
         response.warnings.push({ type: "illegible_media", text: "Nie udało się odczytać obrazu w całości; część tekstu może być pominięta." });
       }
       const dates = img.data.visible_dates.length ? `\n[Daty widoczne na obrazie: ${img.data.visible_dates.join(", ")}]` : "";
+      if (img.data.visible_dates.length) {
+        response.limitations.push("Data widoczna na obrazie nie potwierdza sama w sobie, kiedy materiał naprawdę opublikowano.");
+      }
       material = img.data.ocr_text.trim() ? [{ provenance: "image#1", text: img.data.ocr_text + dates }] : [];
       if (!material.length && !userMessageRaw.trim()) {
         mark("intake", tIntake);
@@ -335,6 +356,10 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       entities: c.entities,
       search_queries_pl: c.search_queries_pl.length ? c.search_queries_pl : [c.text],
       search_query_en: c.search_query_en,
+      indicator: c.indicator,
+      geo: c.geo,
+      claimed_value: c.claimed_value,
+      currency: c.currency,
     };
     const r = await retrieve(query, CONNECTORS, ctx);
     base.routes = r.routes;
@@ -354,7 +379,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
         verdict_label: VERDICT_LABEL_PL.insufficient_evidence,
         strength: { level: "low", reasons: ["brak pasujących źródeł"] },
         explanation: templateExplanation("insufficient_evidence", []),
-        missing: "W przeszukanych źródłach nie ma informacji o tym twierdzeniu.",
+        missing: "W przeszukanych źródłach nie ma informacji o tym twierdzeniu. Brak wyniku nie oznacza, że to nieprawda.",
       };
     }
     if (deadline.signal.aborted) {
@@ -385,7 +410,11 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     }
     for (const s of assessed.assessment.injection_signals) event("injection_detected", { claim: c.id, ...s, by: "model" });
 
-    const d = decideVerdict(assessed.passages, { optionalRouteMissing });
+    // Official data records: code compares the claimed number with the value for the claim period.
+    const guard = numericGuard(c.claimed_value, assessed.passages);
+    for (const g of guard.downgrades) event("number_check", { claim: c.id, ...g });
+    const d = decideVerdict(guard.passages, { optionalRouteMissing });
+    d.warnings.push(...guard.warnings);
     const proposed = assessed.assessment.proposed_verdict;
     let explanation = assessed.assessment.explanation;
     let missingOverride: string | null = null;
@@ -402,7 +431,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       }
     }
     const order = new Map(d.decisive.map((p, i) => [p.record.source_id, i]));
-    const citations: Citation[] = assessed.passages
+    const citations: Citation[] = guard.passages
       .filter((p) => p.stance !== "irrelevant")
       .sort((a, b) => (order.get(a.record.source_id) ?? 99) - (order.get(b.record.source_id) ?? 99))
       .map((p) => ({

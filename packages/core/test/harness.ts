@@ -25,6 +25,10 @@ export type ModelScript = {
 export type SourceScript = {
   googleFactCheck?: (query: string, lang: string | null) => unknown | Response;
   sejmEli?: (title: string) => unknown | Response;
+  /** ec.europa.eu (Eurostat), api.nbp.pl / static.nbp.pl, bdl.stat.gov.pl. */
+  eurostat?: (url: URL) => unknown | Response;
+  nbp?: (url: URL) => unknown | Response;
+  gus?: (url: URL) => unknown | Response;
   web?: (url: URL) => Response | undefined;
 };
 
@@ -74,6 +78,20 @@ export function stubFetch(model: ModelScript, sources: SourceScript = {}) {
       const r = sources.sejmEli?.(url.searchParams.get("title") ?? "");
       return r instanceof Response ? r : json(r ?? { count: 0, items: [] });
     }
+    if (url.hostname === "ec.europa.eu") {
+      const r = sources.eurostat?.(url);
+      return r instanceof Response ? r : r === undefined ? new Response("no script", { status: 500 }) : json(r);
+    }
+    if (url.hostname === "api.nbp.pl" || url.hostname === "static.nbp.pl") {
+      const r = sources.nbp?.(url);
+      if (r instanceof Response) return r;
+      if (r === undefined) return new Response("no script", { status: 500 });
+      return typeof r === "string" ? new Response(r, { headers: { "content-type": "text/xml" } }) : json(r);
+    }
+    if (url.hostname === "bdl.stat.gov.pl") {
+      const r = sources.gus?.(url);
+      return r instanceof Response ? r : r === undefined ? new Response("no script", { status: 500 }) : json(r);
+    }
     const page = sources.web?.(url);
     if (page) return page;
     return new Response("not found", { status: 404 });
@@ -87,8 +105,14 @@ export function deps(keys: { openrouter?: boolean; google?: boolean } = { openro
   const env: Record<string, string> = {};
   if (keys.openrouter) env.OPENROUTER_API_KEY = "test-key";
   if (keys.google) env.GOOGLE_FACT_CHECK_API_KEY = "test-key";
+  const config = loadConfig({ get: (k) => env[k] });
+  // Synthetic fact-check publishers in tests live on *.example; they are allowlisted here only.
+  config.trustedSources = [...config.trustedSources, {
+    id: "test_factchecker", name: "Test fact-checker", domains: ["example"], kind: "fact_checker", tier: "factcheck",
+    country: "PL", credentials: "test", access: "google_factcheck", access_note: "test", terms: "test",
+  }];
   return {
-    config: loadConfig({ get: (k) => env[k] }),
+    config,
     store: new MemoryCheckStore(),
     corpus: new MemoryCorpusStore(),
     resolveHost: () => Promise.resolve(["93.184.215.14"]),
@@ -103,6 +127,10 @@ export interface ClaimSpec {
   type?: string | null;
   risk?: "high" | "normal";
   time?: string;
+  indicator?: string | null;
+  geo?: string | null;
+  claimed_value?: number | null;
+  currency?: string | null;
 }
 
 export function extraction(claims: ClaimSpec[], extra: Record<string, unknown> = {}) {
@@ -120,6 +148,10 @@ export function extraction(claims: ClaimSpec[], extra: Record<string, unknown> =
       entities: [],
       search_queries_pl: (c.class ?? "fact") === "fact" ? ["zapytanie testowe"] : [],
       search_query_en: (c.class ?? "fact") === "fact" ? "test query" : "",
+      indicator: c.indicator ?? null,
+      geo: c.geo ?? null,
+      claimed_value: c.claimed_value ?? null,
+      currency: c.currency ?? null,
       risk: c.risk ?? "normal",
       ambiguities: [],
       why_not_verifiable: (c.class ?? "fact") === "fact" ? null : "To opinia.",
@@ -171,3 +203,28 @@ export function eliAct(title: string, address = "WDU20240000001", entryIntoForce
 }
 
 export const T = { sanitizeOps: false, sanitizeResources: false };
+
+/** A JSON-stat cube with one geo × time series (and optional other geos), as Eurostat returns it. */
+export function jsonStat(rows: { geo: string; time: string; value: number; flag?: string }[], updated = "2026-11-06T23:00:00+0100") {
+  const geos = [...new Set(rows.map((r) => r.geo))];
+  const times = [...new Set(rows.map((r) => r.time))].sort();
+  const value: Record<string, number> = {};
+  const status: Record<string, string> = {};
+  for (const r of rows) {
+    const k = geos.indexOf(r.geo) * times.length + times.indexOf(r.time);
+    value[String(k)] = r.value;
+    if (r.flag) status[String(k)] = r.flag;
+  }
+  return {
+    id: ["freq", "geo", "time"],
+    size: [1, geos.length, times.length],
+    value,
+    status,
+    updated,
+    dimension: {
+      freq: { category: { index: { A: 0 } } },
+      geo: { category: { index: Object.fromEntries(geos.map((g, i) => [g, i])) } },
+      time: { category: { index: Object.fromEntries(times.map((t, i) => [t, i])) } },
+    },
+  };
+}

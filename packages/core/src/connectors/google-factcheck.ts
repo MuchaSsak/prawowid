@@ -2,8 +2,10 @@
  * Google Fact Check Tools API (ClaimReview from Demagog, AFP Sprawdzam, Konkret24, …).
  * Verified endpoint: architecture/api-endpoints-verified.md. Needs GOOGLE_FACT_CHECK_API_KEY with the
  * "Fact Check Tools API" enabled in the Google Cloud project.
+ * Only publishers on the trusted-source allowlist (sources/catalog.ts) are kept; the catalog sets the tier.
  */
 import { LIMITS } from "../config.ts";
+import { trustedSourceFor } from "../sources/catalog.ts";
 import { type Connector, ConnectorError, fetchJson, type SourceRecord } from "./types.ts";
 
 interface ClaimReviewResponse {
@@ -61,7 +63,9 @@ export const googleFactCheck: Connector = {
         for (const r of c.claimReview ?? []) {
           if (!r.url || seen.has(r.url)) continue;
           seen.add(r.url);
-          const publisher = r.publisher?.name || r.publisher?.site || "fact-checker";
+          const trusted = trustedSourceFor(r.url, ctx.config.trustedSources);
+          if (!trusted) continue;
+          const publisher = r.publisher?.name || trusted.name;
           // The passage is assembled only from fields of the API response, labelled, so a quote is verifiable.
           const text = [
             `Sprawdzane twierdzenie: "${c.text ?? ""}"`,
@@ -78,8 +82,9 @@ export const googleFactCheck: Connector = {
             url: r.url,
             published_at: r.reviewDate ?? null,
             retrieved_at: retrieved,
-            tier: "factcheck",
-            origin_key: `factcheck:${(r.publisher?.site || publisher).toLowerCase()}:${r.url}`,
+            tier: trusted.tier,
+            // One publisher is one origin: two articles by the same newsroom are not independent.
+            origin_key: `publisher:${trusted.id}`,
             text,
           });
         }

@@ -7,3 +7,5 @@ export type { CheckLogRow, CheckStore, CorpusStore } from "./store/types.ts";
 export { CONNECTORS } from "./connectors/mod.ts";
 export { CheckRequestSchema, CheckResponseSchema, contractJsonSchema } from "./contract.ts";
 export { MOCK_SCENARIO_DESCRIPTIONS, MOCK_SCENARIOS, type MockScenario, mockResponse, pickScenario } from "./mock/fixtures.ts";
+export { publicCatalog, type TrustedSource, TRUSTED_SOURCES, trustedSourceFor } from "./sources/catalog.ts";
+export { INDICATORS } from "./connectors/stats-catalog.ts";

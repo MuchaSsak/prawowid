@@ -28,6 +28,7 @@ export type CheckEventType =
   | "quote_rejected"
   | "span_rejected"
   | "verdict_disagreement"
+  | "number_check"
   | "route_error"
   | "llm_error"
   | "intake_error"

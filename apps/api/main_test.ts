@@ -41,6 +41,16 @@ Deno.test("GET /api/v1/schema: request + response JSON Schema", async () => {
   for (const k of ["status", "claims", "meta", "escalation", "warnings"]) assert(s.response.properties[k], k);
 });
 
+Deno.test("GET /api/v1/sources: the open allowlist with access and terms per source, plus the statistics catalog", async () => {
+  const res = await get("/api/v1/sources");
+  assertEquals(res.status, 200);
+  const s = await res.json();
+  const ids = s.sources.map((x: { id: string }) => x.id);
+  for (const id of ["reuters", "ap", "pap", "sprawdzam_to", "demagog", "eurostat", "nbp", "gus"]) assert(ids.includes(id), id);
+  for (const x of s.sources) assert(x.access && x.terms && x.tier, x.id);
+  assert(s.statistics.some((x: { key: string }) => x.key === "unemployment_rate"));
+});
+
 Deno.test("GET /api/v1/mock/scenarios lists every scenario", async () => {
   const s = await (await get("/api/v1/mock/scenarios")).json();
   assertEquals(Object.keys(s.scenarios).sort(), [...MOCK_SCENARIOS].sort());

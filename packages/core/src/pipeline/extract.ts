@@ -3,8 +3,9 @@ import { z } from "zod";
 import { LIMITS } from "../config.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
 import { containsVerbatim, normalizeForMatch } from "../guard/normalize.ts";
-import { claimExtractionSystem } from "../prompts/claim-extraction.v1.ts";
+import { claimExtractionSystem } from "../prompts/claim-extraction.v2.ts";
 import { CLAIM_TYPES } from "../types.ts";
+import { INDICATOR_KEYS } from "../connectors/stats-catalog.ts";
 
 export interface Material {
   provenance: string;
@@ -23,6 +24,10 @@ export const ExtractedClaim = z.strictObject({
   entities: z.array(z.string()),
   search_queries_pl: z.array(z.string()),
   search_query_en: z.string(),
+  indicator: z.enum(INDICATOR_KEYS).nullable(),
+  geo: z.string().nullable(),
+  claimed_value: z.number().nullable(),
+  currency: z.string().nullable(),
   risk: z.enum(["high", "normal"]),
   ambiguities: z.array(z.string()),
   why_not_verifiable: z.string().nullable(),

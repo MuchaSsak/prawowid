@@ -23,7 +23,17 @@ Exact calls we can make, **each one tested by hand with curl on 2026-11-21** (st
 | **EUR-Lex HTML** | `GET https://eur-lex.europa.eu/legal-content/PL/TXT/HTML/?uri=CELEX:…` | **202 with an empty body**, likely a bot challenge. **Don't scrape it** (no-bypass rule) | ✗ |
 | **EU Cellar SPARQL** | `GET https://publications.europa.eu/webapi/rdf/sparql?query=…&format=application/sparql-results+json` | **200** | The official EU-law route instead of EUR-Lex HTML |
 
-**Blocked or avoid:** Demagog (robots.txt disallows AI bots; use the Google Fact Check API metadata instead), EUR-Lex HTML (challenge), `gov.pl/web/gov/ostrzezenia` (JS-rendered), odyseusz.gov.pl travel advice (JS app; capture by hand). See [data-sources-research.md](data-sources-research.md).
+**Blocked or avoid:** AP (apnews.com), Reuters (reuters.com) and PAP (pap.pl) block AI agents and automated collection (robots.txt, bot challenges; Reuters requires written consent); sprawdzamto.pl forbids scraping without consent in its terms (details: [data-sources-research.md](data-sources-research.md#trusted-source-catalog-allowlist-2026-11-21)). Demagog (robots.txt disallows AI bots; use the Google Fact Check API metadata instead), EUR-Lex HTML (challenge), `gov.pl/web/gov/ostrzezenia` (JS-rendered), odyseusz.gov.pl travel advice (JS app; capture by hand). See [data-sources-research.md](data-sources-research.md).
+
+## Official statistics routes (verified 2026-11-21)
+Used by the connectors `eurostat.ts`, `nbp.ts`, `gus.ts`. Live smoke test (free, no keys): `deno run --allow-net packages/core/test/live/smoke-stats.ts`.
+| Call | Verified result | Notes |
+|---|---|---|
+| Eurostat `GET …/data/{dataset}?format=JSON&lang=EN&geo=PL&{filters}&sinceTimePeriod=YYYY` (or `lastTimePeriod=N`) | **200 JSON-stat 2.0**: `id`, `size`, flat `value` index, `status` flags (p, e, b…), `updated`. All 13 catalog datasets return one value per year for PL (e.g. une_rt_a 2024 = 2,9%; prc_hicp_aind `RCH_A_AVG` 2024 = 3,7%; gov_10dd_edpt1 debt 2024 = 54,8% PKB) | Same call **without `geo`** and with `time=YYYY` returns all countries + `EU27_2020`: used for the EU average and rank. An unknown geo returns 200 with an empty `value`. Minimum wage (earn_mw_cur) is half-yearly: `2025-S1` |
+| NBP `GET https://api.nbp.pl/api/exchangerates/rates/a/{cur}/{start}/{end}/?format=json` | **200**: `rates[{no, effectiveDate, mid}]`; a whole year (2024-01-01…12-31) works in one call | A single weekend date → **404 "Brak danych"**, so we ask for a 7-day window and take the last quote ≤ the date. Unknown currency → 404 |
+| NBP `GET https://api.nbp.pl/api/cenyzlota/{start}/{end}/?format=json` | **200**: `[{data, cena}]` (e.g. 2025-06-02 = 395,56 zł/g) | Queried in ≤ 91-day chunks |
+| NBP `GET https://static.nbp.pl/dane/stopy/stopy_procentowe.xml` and `…/stopy_procentowe_archiwum.xml` | **200 XML**: current `<pozycja id="ref" oprocentowanie="3,75" obowiazuje_od="2026-03-05">`; the archive lists every change since 1998-02-26 (last entry 2026-03-05) | **Returns 406 to `Accept: application/json`**: fetch without that header |
+| GUS BDL `GET https://bdl.stat.gov.pl/api/v1/data/by-variable/72305?unit-level=0&format=json` | **Unreachable on 2026-11-21 afternoon** (curl status 000, Deno TLS handshake EOF); earlier the same day var 72305 gave 37 489 087 for 2024 | Optional route; an outage is disclosed, never a verdict |
 
 ## End-to-end flow: `POST /api/v1/check`
 

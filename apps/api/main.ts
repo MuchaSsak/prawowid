@@ -30,6 +30,8 @@ import {
   MemoryCorpusStore,
   MOCK_SCENARIO_DESCRIPTIONS,
   mockResponse,
+  INDICATORS,
+  publicCatalog,
   runCheck,
 } from "@prawdowid/core";
 
@@ -110,7 +112,7 @@ app.get("/", (c) =>
     service: "Prawdowid API",
     contract_version: CONTRACT_VERSION,
     mode: MODE,
-    docs: "GET /api/v1/schema, GET /api/v1/mock/scenarios, POST /api/v1/check",
+    docs: "GET /api/v1/schema, GET /api/v1/sources, GET /api/v1/mock/scenarios, POST /api/v1/check",
   }));
 
 app.get("/api/v1/health", (c) =>
@@ -127,6 +129,22 @@ app.get("/api/v1/health", (c) =>
   }));
 
 app.get("/api/v1/schema", (c) => c.json(contractJsonSchema()));
+
+// Open source catalog: the only publishers whose material can become evidence, and the statistics
+// we look up. Additive to contract v1 (decision 006).
+app.get("/api/v1/sources", (c) =>
+  c.json({
+    contract_version: CONTRACT_VERSION,
+    policy: "Dowodem może być tylko materiał z tej listy. Nie przeszukujemy otwartej sieci.",
+    sources: publicCatalog(config.trustedSources),
+    statistics: INDICATORS.map((i) => ({
+      key: i.key,
+      label: i.label_pl,
+      unit: i.unit,
+      definition: i.definition,
+      sources: [i.eurostat && "eurostat", i.nbp && "nbp", i.gus_var && "gus"].filter(Boolean),
+    })),
+  }));
 
 app.get("/api/v1/mock/scenarios", (c) =>
   c.json({

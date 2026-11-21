@@ -12,6 +12,7 @@ Every endpoint, header, request field, environment variable and mock scenario of
 | `GET /api/v1/health` | is it configured? | `{ ok, contract_version, mode: "live"\|"mock", configured: { openrouter, google_fact_check } (booleans only), models, storage }` |
 | `POST /api/v1/check` | run a check | `CheckResponse` ([shape](../product/response-contract.md#json-shape-contract-v1-post-apiv1check--200)) |
 | `GET /api/v1/schema` | JSON Schema of request and response | `{ contract_version, request, response }` |
+| `GET /api/v1/sources` | the trusted-source allowlist (only these publishers can be evidence) and the statistics we look up; added 2026-11-21, additive to v1 | `{ contract_version, policy, sources: [{ id, name, domains[], kind, tier, country, credentials, access, access_note, terms }], statistics: [{ key, label, unit, definition, sources[] }] }` |
 | `GET /api/v1/mock/scenarios` | mock scenario list | `{ how_to_pick[], scenarios: { name: description } }` |
 | `DELETE /api/v1/session/:id` | delete a session's logs and cached results | `{ deleted: true, checks: n }` |
 
@@ -28,6 +29,7 @@ Request body (JSON, max 8 MB):
   "mock": true | "<scenario>"  // optional: return mock data (see below)
 }
 ```
+A bot can forward a chat message as `text` even when it contains a link: the server also reads the first link in the text (same guards as `url`). If the page cannot be read, the answer carries a `partial_analysis` warning and the text is still checked.
 - `text`: up to 50,000 chars (the first 12,000 are analysed, with a `partial_analysis` warning).
 - `url`: a public http(s) article. Tracking params are stripped; private-looking params, IP addresses, local hosts and robots.txt-disallowed pages are refused (`input_rejected`).
 - `image`: a `data:image/(jpeg|png|webp);base64,…` URL, max 5 MB. Metadata is stripped before the vision call; the image is not stored.

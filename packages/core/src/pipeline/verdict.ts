@@ -81,8 +81,10 @@ export function decideVerdict(passages: VerifiedPassage[], opts: { optionalRoute
       decisive: [...flat(sup), ...flat(against)],
     };
   }
-  // A lone "misleading" reading does not override a refutation backed by more independent origins.
-  if (meets(mis) && !(meets(ref) && ref.length > mis.length)) {
+  // "Misleading" means the underlying fact is true. A refutation that meets the threshold with at
+  // least as many independent origins contests that premise, so it wins a tie (benchmark: "partly
+  // false" from one fact-checker vs "false" from another).
+  if (meets(mis) && !(meets(ref) && ref.length >= mis.length)) {
     return { verdict: "misleading", rule: "misleading_threshold", strength: strengthFor(mis, ref), warnings, decisive: flat(mis) };
   }
   if (meets(sup)) {

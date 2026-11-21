@@ -4,20 +4,24 @@ What is tested, how each metric is computed, the latest results and the known ga
 ## Two layers
 | Layer | Command | Cost | What it proves |
 |---|---|---|---|
-| Deterministic tests (100) | `bun run test` | **free**: model and source APIs are stubbed, zero external calls | the rules: no fabricated sources, abstention, conflicts, injection, PII never leaves, missing keys, contract v1, HTTP behaviour |
-| Live benchmark (37 cases) | `bun run eval` (full, ~$0.04) · `bun run eval:quick` (6 cases, ~$0.005) · `bun run eval:remote` (deployed URL) | real OpenRouter + Google credits | the jury's metrics on real models and sources |
+| Deterministic tests (123) | `bun run test` | **free**: model and source APIs are stubbed, zero external calls | the rules: no fabricated sources, the source allowlist, abstention, conflicts, the number check, injection, PII never leaves, missing keys, contract v1, HTTP behaviour |
+| Live benchmark (50 cases) | `bun run eval` (full, ~$0.05) · `bun run eval:quick` (6 cases, ~$0.005) · `bun run eval:remote` (deployed URL) | real OpenRouter + Google credits | the jury's metrics on real models and sources |
+| Statistics smoke test | `deno run --allow-net packages/core/test/live/smoke-stats.ts` | **free** (no model, no keys) | every Eurostat indicator, NBP rates/gold/reference rate and GUS answer live |
 
-Run the full benchmark only before a demo, a submission or a prompt/model change; use `eval:quick` otherwise (user, 2026-11-21: keep credit use low).
+Run the full benchmark only before a demo, a submission or a prompt/model change; use `eval:quick` or `--only <ids>` otherwise (user, 2026-11-21: keep credit use low).
 
 ### Deterministic tests
-- `packages/core/test/pipeline_test.ts` (30): the whole pipeline with a scripted model and scripted sources (`harness.ts` replaces `fetch` and records every outbound call). One test per scenario or release check: A confirm/refute with verbatim citations · rejected invented quotes and invented claims · the model never sees source URLs · C conflict → abstain + `sources_conflict` · D no records → abstain without a 2nd LLM call · D vs J failed source → system state · J missing/rejected key, invalid JSON, 429 → Small fallback · E injection in input and in a source · privacy (e-mail, phone, PESEL absent from every outbound request and the log) · opinions → no lookups · inconsistent assessment → abstain · circular corroboration · partial · G cache parity web vs messaging · H never a false "queued" · session deletion · clarification · claim cap · I URL intake, robots.txt, SSRF via DNS · F image OCR, vision failure · input rejection.
-- `packages/core/test/contract_test.ts` (21): every mock scenario and live outputs validate against the same v1 schema ([decision 006](../decisions/006-api-contract-v1-and-mock.md)).
+- `packages/core/test/pipeline_test.ts` (32): the whole pipeline with a scripted model and scripted sources (`harness.ts` replaces `fetch` and records every outbound call). One test per scenario or release check: A confirm/refute with verbatim citations · rejected invented quotes and invented claims · the model never sees source URLs · C conflict → abstain + `sources_conflict` · D no records → abstain without a 2nd LLM call · D vs J failed source → system state · J missing/rejected key, invalid JSON, 429 → Small fallback · E injection in input, in a source, and **on a page linked from a chat message** · privacy (e-mail, phone, PESEL absent from every outbound request and the log) · opinions → no lookups · inconsistent assessment → abstain · circular corroboration · partial · G cache parity web vs messaging · H never a false "queued" · session deletion · clarification · claim cap · I URL intake, robots.txt, SSRF via DNS, unreadable link in a message → warning · F image OCR, visible date ≠ publication date, vision failure · input rejection.
+- `packages/core/test/sources_test.ts` (20): the trusted-source allowlist (look-alike domains rejected, unlisted publishers dropped before the model, tier by credentials, one publisher = one origin, refutation wins a tie with "partly false"); Eurostat (series, EU average and rank in the record, status flags); the number check (wrong number never confirmed, matching number never false, number from another year flagged); Eurostat down → technical state; GUS down → verdict stands with a caveat; NBP (rate in force on a date, 404 = no hits, reference-rate history parser); JSON-stat decoding; period parsing; the prompt's indicator list comes from the catalog.
+- `packages/core/test/contract_test.ts` (20): every mock scenario and live outputs validate against the same v1 schema ([decision 006](../decisions/006-api-contract-v1-and-mock.md)).
 - `packages/core/test/core_test.ts` (16): PII rules, quote matching, injection patterns, URL guard, EXIF strip, verdict rules, ELI title fragments.
-- `apps/api/main_test.ts` (34): every route, all 18 mock scenarios over HTTP, missing-key path, malformed bodies, SSRF URLs, 413, rate limits per IP and per bot end user, CORS, 404s.
+- `apps/api/main_test.ts` (35): every route including `GET /api/v1/sources`, all 18 mock scenarios over HTTP, missing-key path, malformed bodies, SSRF URLs, 413, rate limits per IP and per bot end user, CORS, 404s.
 
 ## Reference set (`eval/cases.json`)
-37 synthetic-or-public cases written 2026-11-21: A 13 + 3 opinion/prediction, B 3, C 1, D 5, E 4, F 2 (generated screenshots in `eval/fixtures/`), G 2, I 2, J 2. **Assumption:** the gold labels are the agent's; a human should review them (open question). Rule 16: the set is used only by `eval/run.ts`, never in prompts. Prompt rules added after a run must be general (no case wording); the jury's hidden set will differ.
-- C (real conflict) can't be produced reliably from live sources, so the conflict rule is proven by the stubbed test; the live C case checks abstention.
+50 cases written 2026-11-21: A 13 + 3 opinion/prediction, B 3, C 1, D 5, E 4, F 2 (generated screenshots in `eval/fixtures/`), G 2, I 2, J 2, plus **S01-S09** (official statistics: Eurostat, NBP; gold values verified live, one other-period number for B, one opinion about statistics, one fiction input) and **O01-O04** (modelled on the [organizer samples](../hackathon/organizer-sample-answers.md)). **Assumption:** the gold labels are the agent's; a human should review them (open question). Rule 16: the set is used only by `eval/run.ts`, never in prompts. Prompt rules added after a run must be general (no case wording); the jury's hidden set will differ.
+- C01 gold changed from `insufficient_evidence` to `false` on 2026-11-21: its note said "abstain only because there is no numeric route"; with the routes live, 38,5 mln is false under both the GUS and the Eurostat definition.
+- S06 ("stopa referencyjna obecnie 3,75%") is true only while the RPP keeps the rate; re-check the gold after any change.
+- C (real conflict) can't be produced reliably from live sources, so the conflict rule is proven by the stubbed test.
 - H (moderator loop) is not built: disclosed, and the tests check we never claim "queued".
 
 ## Metric definitions (eval/run.ts)
@@ -33,25 +37,27 @@ Run the full benchmark only before a demo, a submission or a prompt/model change
 ## Results
 Full runs, local core, mistral-small-2603 (extraction) + mistral-large-2512 (assessment), 2026-11-21:
 
-| Metric | Run 1 (baseline) | Run 2 (after fixes) | Target |
-|---|---|---|---|
-| Macro-F1 | 0.44 (accuracy 52%) | **0.66 (accuracy 79%)** | ≥ 0.75 |
-| Citation coverage (decisive) | 100% (12/12) | **100% (20/20)** | ≥ 95% |
-| Citation correctness | not labelled | not labelled (57 citations to review) | ≥ 85% |
-| Abstention | 100% (6/6) | **100% (6/6)** | ≥ 80% |
-| Robustness | 100% (4/4) | **100% (4/4)** | ≥ 90% |
-| Latency median / p90 | 3.9 / 9.7 s | **7.8 / 10.2 s** | ≤ 30 s |
-| Cost per 100 checks | $0.077 | **$0.107** | reported |
-| End-to-end | 95% | **97%** (36/37) | 100% |
-| Channel consistency | 100% | **100%** (2/2) | 100% |
+| Metric | Run 1 (baseline, 37) | Run 2 (37) | **Run 3 (50 cases, prompts v2)** | Target |
+|---|---|---|---|---|
+| Macro-F1 | 0.44 (acc. 52%) | 0.66 (acc. 79%) | **0.71 (acc. 73%, 33/45)** | ≥ 0.75 |
+| Citation coverage (decisive) | 100% (12/12) | 100% (20/20) | **100% (27/27)** | ≥ 95% |
+| Citation correctness | not labelled | not labelled | not labelled (60 citations to review) | ≥ 85% |
+| Abstention | 100% (6/6) | 100% (6/6) | **88% (7/8)** | ≥ 80% |
+| Robustness | 100% (4/4) | 100% (4/4) | **100% (4/4)** | ≥ 90% |
+| Latency median / p90 | 3.9 / 9.7 s | 7.8 / 10.2 s | **6.4 / 9.9 s** | ≤ 30 s |
+| Cost per 100 checks | $0.077 | $0.107 | **$0.098** | reported |
+| End-to-end | 95% | 97% (36/37) | **98% (49/50)** | 100% |
+| Channel consistency | 100% | 100% (2/2) | **100% (3/3)** | 100% |
 
-Per class, run 2: false F1 0.93 (13/13 recall), not_verifiable 0.80, confirmed 0.77, insufficient_evidence ~0.6 (precision hurt by abstentions on true claims), **misleading 0.00** (0/3). Full table: `eval/results/latest.md`; raw data: `eval/results/*.json`.
+Per class, run 3: false F1 0.91 (15/16), not_verifiable 0.86, confirmed 0.67 (precision 1.00, recall 0.50), insufficient_evidence 0.61, **misleading 0.50** (was 0.00: S07 other-year number, O04 "partly true"). Run 3 includes the harder S/O cases, so accuracy is not directly comparable with run 2. The abstention miss is C01, whose gold was then corrected (see above). Full table: `eval/results/latest.md`; raw data: `eval/results/*.json`.
 
-Fixes between runs 1 and 2 (all general, none mentions a case): Sejm ELI title search works on literal title fragments built in code and ranks base acts above amendments; the extraction prompt treats causal and "secretly contains" claims as facts; a lone "misleading" passage no longer outranks a refutation with more independent origins; the eval harness gives missing-key cases their own cache. After run 2 (checked on 5 cases only, to save credits): connectors retry one transient failure; opinions are always listed; the assessment prompt treats official record fields as statements and older passages as context for later-period claims.
+**After run 3, targeted checks (14 cases, ~$0.015):** the tie rule fixed A06 (Demagog "Fałsz" vs USA Today "Partly false" → false); the fiction rule fixed S09 (now `not_a_claim`) while A01 stays false; N01 now `not_verifiable`; C01 `false`; S07 and O04 still `misleading`; B01 and B03 still abstain. On those cases alone, macro-F1 was 0.89 (8/10).
+
+Fixes between runs 1 and 2: Sejm ELI title search on literal title fragments, base acts ranked above amendments; causal and "secretly contains" claims are facts; a lone "misleading" passage no longer outranks a refutation with more origins; missing-key cases get their own cache. Between runs 2 and 3: connector retry; opinions always listed; official record fields count as statements; older passages are context for later periods; **trusted-source allowlist** ([decision 007](../decisions/007-trusted-source-allowlist.md)); **Eurostat/NBP/GUS routes with the code-side number check**; fact-check ratings like "Częściowa prawda"/"Missing context" → misleading; links inside chat messages are read.
 
 ## Known gaps (ranked by impact on the score)
-1. **`misleading` (scenario B) is never produced** on live data: the model splits "true premise + wrong conclusion" into two claims and the conclusion gets `insufficient_evidence` or `false`. Needs the explicit "misleading inference" handling from the pipeline §2 and an eval-driven prompt change.
-2. **True claims abstain too often** (confirmed recall 0.63): old or loosely related fact-checks get labelled refuting or context next to an official record, which triggers the conflict rule.
-3. Numeric claims have no route yet (GUS, NBP, Eurostat), so they always abstain.
+1. **True claims abstain too often** (confirmed recall 0.50): A08, A10, A11, E03, F02 and S05. In S05 the model labelled the exact NBP line (4,2578 vs claim 4,26) as context. Code never upgrades a stance on purpose (a same-named statistic with another definition must not become a verdict), so the fix belongs in the prompt or the model.
+2. **Misleading inference** (B01, B03: true premise + wrong conclusion) still abstains: needs the explicit "misleading inference" handling from pipeline §2.
+3. No route yet for MSZ's Odyseusz, news agencies' own text, regional statistics or Sejm votings. Organizer sample A (Italian strike) can only be answered by abstaining.
 4. Citation correctness is unmeasured until a human labels `citations-review.csv`.
-5. Both live C cases and the gold labels are single-annotator.
+5. The gold labels are single-annotator.

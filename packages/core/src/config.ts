@@ -3,6 +3,7 @@
  * defaults here. A model can be swapped with an optional MODEL_<STEP> env var, no rebuild
  * (hard constraint 19).
  */
+import { TRUSTED_SOURCES, type TrustedSource } from "./sources/catalog.ts";
 
 /** Minimal env reader so the core stays runtime-agnostic (Deno, Bun, Node, edge). */
 export interface Env {
@@ -63,6 +64,8 @@ export const USER_AGENT = "PrawdowidBot/0.1 (+fact-checking for citizens; hackat
 
 export interface Config {
   models: Record<ModelStep, string>;
+  /** Allowlist of publishers whose records may become evidence (sources/catalog.ts). */
+  trustedSources: TrustedSource[];
   secrets: {
     openrouterApiKey?: string;
     googleFactCheckApiKey?: string;
@@ -78,6 +81,7 @@ export function loadConfig(env: Env): Config {
       evidence_assessment: model("evidence_assessment"),
       image_extraction: model("image_extraction"),
     },
+    trustedSources: TRUSTED_SOURCES,
     secrets: {
       openrouterApiKey: secret("OPENROUTER_API_KEY"),
       googleFactCheckApiKey: secret("GOOGLE_FACT_CHECK_API_KEY"),

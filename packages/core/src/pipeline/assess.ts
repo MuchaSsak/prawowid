@@ -4,7 +4,7 @@ import { LIMITS } from "../config.ts";
 import type { SourceRecord } from "../connectors/types.ts";
 import { containsVerbatim } from "../guard/normalize.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
-import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v1.ts";
+import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v2.ts";
 import type { Stance } from "../types.ts";
 
 export const Assessment = z.strictObject({
