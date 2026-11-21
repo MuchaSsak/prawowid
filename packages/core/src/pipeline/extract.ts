@@ -3,7 +3,7 @@ import { z } from "zod";
 import { LIMITS } from "../config.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
 import { containsVerbatim, normalizeForMatch } from "../guard/normalize.ts";
-import { claimExtractionSystem } from "../prompts/claim-extraction.v3.ts";
+import { claimExtractionSystem } from "../prompts/claim-extraction.v4.ts";
 import { CLAIM_TYPES } from "../types.ts";
 import { INDICATOR_KEYS } from "../connectors/stats-catalog.ts";
 
@@ -31,6 +31,8 @@ export const ExtractedClaim = z.strictObject({
   claimed_value: z.number().nullable(),
   currency: z.string().nullable(),
   risk: z.enum(["high", "normal"]),
+  /** "Did <source> check X?": the source the user asked about; X is the claim (prompt rule 7). */
+  asked_checker: z.string().nullable(),
   /** Scope taken from the surrounding material; each must quote the fragment that fixes it. */
   assumptions: z.array(z.strictObject({ text: z.string(), source_span: z.string() })),
   ambiguities: z.array(z.string()),

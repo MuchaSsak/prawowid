@@ -39,6 +39,7 @@ export type CheckEventType =
   | "quote_rejected"
   | "span_rejected"
   | "verdict_disagreement"
+  | "rating_override"
   | "number_check"
   /** Known-incident context shown next to a claim (EUvsDisinfo); never evidence. */
   | "context_match"

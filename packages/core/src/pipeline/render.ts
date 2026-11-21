@@ -1,6 +1,7 @@
 /** Polish templates for system messages and fallback explanations (response-contract.md). */
 import type { ClaimSystemState, RequestStatus, SystemMessage, Verdict } from "../types.ts";
 import type { VerifiedPassage } from "./assess.ts";
+import { factcheckFields, isAskedChecker } from "./factcheck.ts";
 
 export const NOT_A_VERDICT = "To nie jest ocena treści.";
 
@@ -99,6 +100,45 @@ export function leadWord(verdict: Verdict, plain: PlainAnswer, question: boolean
   if (verdict === "confirmed" && plain === "yes") return yes;
   if ((verdict === "false" || verdict === "misleading") && plain === "no") return no;
   return null;
+}
+
+/** Leading word when the model's own verdict is stale (code took a stance from a fact-check rating). */
+export function plainFromVerdict(verdict: Verdict): PlainAnswer {
+  return verdict === "confirmed" ? "yes" : verdict === "false" ? "no" : "neither";
+}
+
+/** Explanation from the fact-checker's rating, used when the model's explanation is stale. */
+export function factcheckExplanation(decisive: VerifiedPassage[]): string | null {
+  for (const p of decisive) {
+    if (p.record.route !== "google_factcheck") continue;
+    const rating = factcheckFields(p.record.text).rating;
+    if (rating) return `${p.record.publisher} ocenia to twierdzenie jako „${rating}”.`;
+  }
+  return null;
+}
+
+// ── "Czy Demagog sprawdzał, czy X?" (organizer samples F, J; claim-extraction@4 rule 7) ──────────
+// The verdict stays the verdict on X. The answer to the question asked comes first: "Tak." with the
+// publisher and its rating when a fact-check by that publisher of this claim was found; otherwise
+// that we did not find one, without "Tak."/"Nie." and never "there is no such article".
+export function askedCheckerAnswer(asked: string, passages: VerifiedPassage[]): { lead: string; found: boolean } {
+  const hit = passages.find((p) =>
+    p.record.route === "google_factcheck" && ["supports", "refutes", "misleading"].includes(p.stance) &&
+    isAskedChecker(asked, p.record.publisher)
+  );
+  if (hit) {
+    const rating = factcheckFields(hit.record.text).rating;
+    return {
+      found: true,
+      lead: rating
+        ? `Tak. ${hit.record.publisher} sprawdził to twierdzenie i ocenił je jako „${rating}”.`
+        : `Tak. ${hit.record.publisher} sprawdził to twierdzenie.`,
+    };
+  }
+  return {
+    found: false,
+    lead: `Nie znaleźliśmy weryfikacji ${asked.trim()} na ten temat w indeksie Google Fact Check (to nie znaczy, że jej nie ma).`,
+  };
 }
 
 /** The model is told not to start with Tak/Nie; any such word is removed so only code decides it. */

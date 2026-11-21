@@ -13,8 +13,8 @@ import { extractImage } from "../intake/image.ts";
 import { isMediaType, mediaInputError } from "../intake/media.ts";
 import { fetchArticle, IntakeError, type ResolveHost } from "../intake/url.ts";
 import { LlmError, type LlmUsage } from "../llm/openrouter.ts";
-import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v3.ts";
-import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v3.ts";
+import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v4.ts";
+import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v4.ts";
 import type { CheckEventRow, CheckStore, CorpusStore } from "../store/types.ts";
 import {
   type CheckRequest,
@@ -31,6 +31,9 @@ import { assessClaim } from "./assess.ts";
 import { periodNote, referenceDate, resolveTime } from "./dates.ts";
 import { type ExtractedClaim, extractClaims, type Material } from "./extract.ts";
 import {
+  askedCheckerAnswer,
+  factcheckExplanation,
+  plainFromVerdict,
   BASE_LIMITATIONS,
   isQuestion,
   leadWord,
@@ -442,7 +445,9 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
         verdict: "insufficient_evidence",
         verdict_label: VERDICT_LABEL_PL.insufficient_evidence,
         strength: { level: "low", reasons: ["brak pasujących źródeł"] },
-        explanation: templateExplanation("insufficient_evidence", []),
+        explanation: c.asked_checker
+          ? `${askedCheckerAnswer(c.asked_checker, []).lead} ${templateExplanation("insufficient_evidence", [])}`
+          : templateExplanation("insufficient_evidence", []),
         missing: "W przeszukanych źródłach nie ma informacji o tym twierdzeniu. Brak wyniku nie oznacza, że to nieprawda.",
       });
     }
@@ -482,21 +487,29 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     const proposed = assessed.assessment.proposed_verdict;
     let explanation = assessed.assessment.explanation;
     let missingOverride: string | null = null;
+    // Code took a stance from a fact-checker's rating (factcheck.ts): the model's verdict, explanation
+    // and plain answer were built on the checked statement, so they are stale, not inconsistent.
+    const stale = assessed.ratingOverrides > 0;
+    if (stale) event("rating_override", { claim: c.id, count: assessed.ratingOverrides, model: proposed });
     if (proposed !== d.verdict) {
       event("verdict_disagreement", { claim: c.id, code: d.verdict, model: proposed, rule: d.rule });
-      explanation = templateExplanation(d.verdict, d.decisive);
+      explanation = (stale ? factcheckExplanation(d.decisive) : null) ?? templateExplanation(d.verdict, d.decisive);
       // Pipeline §4: an inconsistent assessment (passage labels point one way, the model's own
       // reading the opposite way) is not eligible for a factual verdict.
-      if (opposite(d.verdict, proposed)) {
+      if (!stale && opposite(d.verdict, proposed)) {
         d.verdict = "insufficient_evidence";
         d.strength = { level: "low", reasons: ["ocena źródeł była niespójna"] };
         explanation = templateExplanation("insufficient_evidence", []);
         missingOverride = "Ocena źródeł była niejednoznaczna. Sprawdź cytowane źródła samodzielnie.";
       }
     }
-    // The leading word only when code and model agree on the verdict.
-    const lead = proposed === d.verdict ? leadWord(d.verdict, assessed.assessment.plain_answer, asksQuestion) : null;
-    explanation = withLead(explanation, lead);
+    // The leading word only when code and model agree on the verdict (or the verdict came from a rating).
+    const plain = stale && proposed !== d.verdict ? plainFromVerdict(d.verdict) : assessed.assessment.plain_answer;
+    const lead = proposed === d.verdict || stale ? leadWord(d.verdict, plain, asksQuestion) : null;
+    explanation = c.asked_checker
+      // "Did <checker> check X?": answer that question first; the verdict on X follows.
+      ? `${askedCheckerAnswer(c.asked_checker, guard.passages).lead} ${withLead(explanation, null)}`
+      : withLead(explanation, lead);
     const order = new Map(d.decisive.map((p, i) => [p.record.source_id, i]));
     const citations: Citation[] = guard.passages
       .filter((p) => p.stance !== "irrelevant")

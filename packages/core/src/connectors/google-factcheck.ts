@@ -5,6 +5,7 @@
  * Only publishers on the trusted-source allowlist (sources/catalog.ts) are kept; the catalog sets the tier.
  */
 import { LIMITS } from "../config.ts";
+import { fetchArticle } from "../intake/url.ts";
 import { trustedSourceFor } from "../sources/catalog.ts";
 import { type Connector, ConnectorError, fetchJson, type SourceRecord } from "./types.ts";
 
@@ -90,6 +91,39 @@ export const googleFactCheck: Connector = {
         }
       }
     }
-    return out;
+    return enrichWithArticles(out, ctx.signal);
   },
 };
+
+/**
+ * The ClaimReview index holds only the checked statement, the rating and a title. The reasons a
+ * fact-checker gives (the real figure and year, the original date of a recording, that a dispatch was
+ * still online) are in its article. For the first few fact-check hits, the opening of the article is
+ * appended to the passage, so the assessment can quote the fact-checker's own findings.
+ * Fetched through the guarded URL intake (robots.txt, SSRF, size and time caps), used for this check
+ * only and never stored (hard constraints 13, 14). A failed fetch keeps the index fields alone.
+ */
+export const ARTICLE_LABEL = "Fragment artykułu weryfikacji:";
+
+async function enrichWithArticles(records: SourceRecord[], signal: AbortSignal | undefined): Promise<SourceRecord[]> {
+  const picks = records.filter((r) => r.tier === "factcheck").slice(0, LIMITS.factcheckArticlesPerClaim);
+  await Promise.all(picks.map(async (r) => {
+    try {
+      const deadline = AbortSignal.timeout(LIMITS.factcheckArticleTimeoutMs);
+      const a = await fetchArticle(r.url, { signal: signal ? AbortSignal.any([signal, deadline]) : deadline });
+      const excerpt = clipAtSentence(a.text, LIMITS.factcheckArticleChars);
+      if (excerpt) r.text = `${r.text}\n${ARTICLE_LABEL}\n${excerpt}`;
+    } catch {
+      // The index fields alone still carry the rating.
+    }
+  }));
+  return records;
+}
+
+function clipAtSentence(text: string, max: number): string {
+  const t = text.trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max);
+  const end = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf(".\n"));
+  return end > max * 0.5 ? cut.slice(0, end + 1) : cut;
+}

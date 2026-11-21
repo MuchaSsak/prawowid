@@ -8,7 +8,7 @@ Legend here: ✅ built and tested · ⚠️ built, not yet ready for the jury ·
 
 | Requirement | State in the code (2026-11-21) | Status |
 |---|---|---|
-| Text or URL input via a responsive web UI | `apps/web` (Astro chat flow, layouts for ≤720 px and ≥1024 px) → `POST /api/v1/check` | ⚠️ the web app opens in **demo (mock) mode by default** ([codebase](../architecture/codebase.md)); the submitted version must default to live and point at the deployed API |
+| Text or URL input via a responsive web UI | `apps/web` (Astro chat flow, layouts for ≤720 px and ≥1024 px) → `POST /api/v1/check` | ⚠️ the web app is always live now (sample data only with `?test=true`, [codebase](../architecture/codebase.md)); the deployed build must point at the deployed API (`PUBLIC_API_URL`) |
 | A second channel or demo adapter (not Telegram or WeChat) | `apps/bot`: Discord `/sprawdz`, WhatsApp, Messenger and a console channel over the same API; tested with a real Discord app locally ([messaging-bot](../architecture/messaging-bot.md)) | ⚠️ **not deployed** (Vercel planned for M1); the console channel counts as a demo adapter, but the jury needs a channel it can try |
 | Detect one or more claims | `claim-extraction@3`, tests in `pipeline_test.ts` | ✅ |
 | A described set with ≥2 source types; show the materials used | fact-checks (Google Fact Check), legal acts (Sejm ELI), official statistics (Eurostat, NBP, GUS), EUvsDisinfo as context; the list at `GET /api/v1/sources`; verified quotes and links in every answer | ✅ |

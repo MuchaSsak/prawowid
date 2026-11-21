@@ -56,6 +56,10 @@ export const LIMITS = {
   urlFetchTimeoutMs: 8_000,
   urlMaxBytes: 3 * 1024 * 1024,
   urlMaxRedirects: 3,
+  /** Fact-check hits whose article opening is added to the passage (connectors/google-factcheck.ts). */
+  factcheckArticlesPerClaim: 3,
+  factcheckArticleChars: 1_800,
+  factcheckArticleTimeoutMs: 3_500,
   /** Same normalized input within this window returns the same canonical result (scenario G). */
   cacheTtlMs: 5 * 60_000,
   /** decisions/001: 30-day retention for logs. */

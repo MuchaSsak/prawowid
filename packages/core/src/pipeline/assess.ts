@@ -4,8 +4,9 @@ import { LIMITS } from "../config.ts";
 import type { SourceRecord } from "../connectors/types.ts";
 import { containsVerbatim } from "../guard/normalize.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
-import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v3.ts";
+import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v4.ts";
 import type { Stance } from "../types.ts";
+import { factcheckFields, ratingStance } from "./factcheck.ts";
 
 export const Assessment = z.strictObject({
   passages: z.array(z.strictObject({
@@ -33,12 +34,16 @@ export interface VerifiedPassage {
   quoteRejected: boolean;
   difference: string | null;
   data_period: string | null;
+  /** The model quoted a fact-check's checked statement; code used the rating instead. */
+  ratingOverride?: boolean;
 }
 
 export interface AssessmentResult {
   passages: VerifiedPassage[];
   assessment: Assessment;
   usage: LlmUsage;
+  /** Passages whose stance code took from the fact-checker's rating; the model's verdict is then stale. */
+  ratingOverrides: number;
 }
 
 export async function assessClaim(args: {
@@ -74,6 +79,7 @@ export async function assessClaim(args: {
   });
 
   const byId = new Map(data.passages.map((p) => [p.passage_id, p]));
+  let ratingOverrides = 0;
   const passages: VerifiedPassage[] = args.records.map((record, i) => {
     const p = byId.get(ids[i]);
     if (!p) {
@@ -81,7 +87,7 @@ export async function assessClaim(args: {
     }
     const needsQuote = p.stance !== "irrelevant";
     const ok = !needsQuote || containsVerbatim(record.text, p.quote);
-    return {
+    const verified: VerifiedPassage = {
       record,
       stance: ok ? p.stance : "irrelevant",
       modelStance: p.stance,
@@ -90,6 +96,22 @@ export async function assessClaim(args: {
       difference: p.difference,
       data_period: p.data_period,
     };
+    // A fact-check's checked statement is the claim under review, not evidence. A decisive stance
+    // quoted only from it means the model read the statement instead of the rating: the rating decides.
+    if (ok && record.route === "google_factcheck" && DECISIVE.includes(verified.stance)) {
+      const f = factcheckFields(record.text);
+      const fromRating = f.rating ? ratingStance(f.rating) : null;
+      if (f.claimLine && f.ratingLine && fromRating && containsVerbatim(f.claimLine, p.quote)) {
+        ratingOverrides++;
+        verified.stance = fromRating;
+        verified.quote = f.ratingLine;
+        verified.ratingOverride = true;
+        if (fromRating === "misleading" && !verified.difference) verified.difference = `ocena weryfikatora: ${f.rating}`;
+      }
+    }
+    return verified;
   });
-  return { passages, assessment: data, usage };
+  return { passages, assessment: data, usage, ratingOverrides };
 }
+
+const DECISIVE: Stance[] = ["supports", "refutes", "misleading"];

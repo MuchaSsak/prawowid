@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "about": "Organizer-style set: the organizer samples (X, sources/2026-11-21-czy-we-wloszech-strajk-generalny.docx) with style checks, and variants on other topics (R) using real fact-checks found in the Google Fact Check index on 2026-11-21. Used ONLY by eval/run.ts (deno task eval:organizer), never in prompts or code (rule 16). Gold labels by the agent; a human should review them (evaluation/benchmark.md). Fact-check ratings can change and the index can drop items: re-check a failing R case in Fact Check Explorer before blaming the pipeline.",
+  "about": "Organizer-style set: the organizer samples (X, sources/2026-11-21-czy-we-wloszech-strajk-generalny.docx) with style checks, and variants on other topics (R) using real fact-checks found in the Google Fact Check index on 2026-11-21. X = the organizer doc's own questions (must pass), R = other topics. Used ONLY by eval/run.ts (deno task eval:organizer), never in prompts or code (rule 16). Gold labels by the agent; a human should review them (evaluation/benchmark.md). Fact-check ratings can change and the index can drop items: re-check a failing R case in Fact Check Explorer before blaming the pipeline.",
   "cases": [
     {
       "id": "X01",
@@ -66,12 +66,15 @@
         "type": "text",
         "value": "Czy Demagog sprawdzał, czy Wrocław był jedynym miastem z darmowymi przejazdami dla 65-latków?"
       },
-      "gold": "confirmed",
+      "gold": "false",
       "lead": "Tak.",
       "publisher_any": [
         "Demagog"
       ],
-      "note": "Organizer sample J with the API working: 'Tak, Demagog to sprawdził'."
+      "note": "Organizer sample J with the API working: 'Tak, Demagog to sprawdził i ocenił twierdzenie jako fałsz'. The verdict is on the checked claim (false), the answer starts 'Tak.' (claim-extraction@4 rule 7, user 2026-11-21).",
+      "text_includes": [
+        "sprawdził"
+      ]
     },
     {
       "id": "X06",
@@ -127,6 +130,51 @@
         "Demagog"
       ],
       "note": "Organizer sample E (instruction in the message instead of a controlled URL)."
+    },
+    {
+      "id": "X09",
+      "scenario": "C",
+      "input": {
+        "type": "text",
+        "value": "Czy Wrocław wydaje na komunikację około 700 mln zł. Dlaczego w analizie Demagoga jest 650 mln zł?"
+      },
+      "gold": "misleading",
+      "lead": null,
+      "publisher_any": [
+        "Demagog"
+      ],
+      "text_includes": [
+        "650"
+      ],
+      "note": "Organizer sample C, exact wording from the doc: explain both figures (approximation vs 2023 spending), Demagog 'Częściowa prawda'. No leading word."
+    },
+    {
+      "id": "X10",
+      "scenario": "H",
+      "input": {
+        "type": "text",
+        "value": "Czy Pcim wprowadza zakaz wjazdu diesli do centrum?"
+      },
+      "gold": "insufficient_evidence",
+      "lead": null,
+      "text_excludes": [
+        "zapisaliśmy",
+        "trafiło do kolejki"
+      ],
+      "note": "Organizer sample H, the paraphrased repeat from the doc."
+    },
+    {
+      "id": "X11",
+      "scenario": "A",
+      "input": {
+        "type": "text",
+        "value": "Czy PAP usunęła depeszę o wypowiedzi polityka?"
+      },
+      "gold": null,
+      "text_excludes": [
+        "nie ma takiego"
+      ],
+      "note": "Organizer sample A (PAP), placeholders unknown: exploratory, to see which fact-check comes back. Set a gold once the real Demagog item is identified."
     },
     {
       "id": "R01",
@@ -346,7 +394,10 @@
       "publisher_any": [
         "Demagog"
       ],
-      "note": "Pattern of sample J. Google Fact Check Explorer, checked 2026-11-21."
+      "note": "Pattern of sample J. Google Fact Check Explorer, checked 2026-11-21. Verdict on the checked claim (true); answer starts 'Tak.'.",
+      "text_includes": [
+        "sprawdził"
+      ]
     },
     {
       "id": "R16",

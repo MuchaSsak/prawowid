@@ -705,3 +705,126 @@ Deno.test({ ...T, name: "lead: no leading word when code and model disagree on t
   assert(!LEAD.test(c.explanation), c.explanation);
 } });
 
+
+// ── Fact-check passages (organizer samples C, F, J; evidence-assessment@4, claim-extraction@4) ──
+const SPEND = "Przykładowo wydaje na komunikację około 900 mln zł rocznie.";
+const FC_URL = "https://demagog.example/wydatki";
+const FC_ARTICLE = `<html><head><title>Wydatki na komunikację</title></head><body><article><h1>Wydatki na komunikację</h1>
+  <p>W 2023 roku miasto przeznaczyło na transport zbiorowy 820 mln zł. Wypowiedź oceniamy jako częściową prawdę.</p>
+  <p>Polityk podał przybliżoną kwotę, a dane z budżetu miasta dotyczą jednej pozycji i jednego roku, co wyjaśniamy niżej.</p></article></body></html>`;
+const fcWeb = (u: URL) =>
+  u.hostname === "demagog.example"
+    ? u.pathname === "/robots.txt" ? new Response("User-agent: *\nAllow: /") : new Response(FC_ARTICLE, { headers: { "content-type": "text/html" } })
+    : undefined;
+
+Deno.test({ ...T, name: "fact-check: the article opening is added to the passage, so its findings can be quoted", async fn() {
+  let seen = "";
+  const s = stubFetch(
+    {
+      extraction: () => extraction([{ text: SPEND }]),
+      assessment: (inp) => {
+        seen = inp.passages[0].text;
+        return assess({ Demagog: { stance: "misleading", quote: "Wypowiedź oceniamy jako częściową prawdę." } }, "misleading", { plain_answer: "neither" })(inp);
+      },
+    },
+    { googleFactCheck: () => factCheck("Demagog", "Częściowa prawda", SPEND, FC_URL), web: fcWeb },
+  );
+  try {
+    const r = await runCheck(text(SPEND), deps());
+    valid(r);
+    assert(seen.includes("Fragment artykułu weryfikacji:") && seen.includes("820 mln zł"), seen);
+    assertEquals(r.claims[0].verdict, "misleading");
+    assertEquals(r.claims[0].citations[0].excerpt, "Wypowiedź oceniamy jako częściową prawdę.");
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "fact-check: an unreadable article keeps the index fields; the check still completes", async fn() {
+  const s = stubFetch(
+    { extraction: () => extraction([{ text: CLAIM }]), assessment: assess({ Demagog: { stance: "refutes", needle: "Ocena" } }, "false", { plain_answer: "no" }) },
+    { googleFactCheck: () => factCheck("Demagog", "Fałsz", CLAIM, "https://demagog.example/most"), web: () => new Response("down", { status: 503 }) },
+  );
+  try {
+    const r = await runCheck(text(CLAIM), deps());
+    assertEquals(r.claims[0].verdict, "false");
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "fact-check: quoting the checked statement as support is overridden by the rating (partly true → misleading, no 'To prawda.')", async fn() {
+  const s = stubFetch(
+    {
+      extraction: () => extraction([{ text: SPEND }]),
+      // The model's mistake: the checked statement itself quoted as support, verdict confirmed, plain "yes".
+      assessment: assess({ Demagog: { stance: "supports", needle: "Sprawdzane twierdzenie" } }, "confirmed", { plain_answer: "yes", explanation: "To prawda, kwota się zgadza." }),
+    },
+    { googleFactCheck: () => factCheck("Demagog", "Częściowa prawda", SPEND, FC_URL) },
+  );
+  try {
+    const r = await runCheck(text(SPEND), deps());
+    valid(r);
+    const c = r.claims[0];
+    assertEquals(c.verdict, "misleading");
+    assertEquals(c.citations[0].excerpt, "Ocena (Demagog): Częściowa prawda.");
+    assertEquals(c.explanation, "Demagog ocenia to twierdzenie jako „Częściowa prawda”.");
+    assert(!LEAD.test(c.explanation), c.explanation);
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "fact-check: the checked statement quoted under a 'Fałsz' rating → false with 'Nie.', not an abstention", async fn() {
+  const s = stubFetch(
+    {
+      extraction: () => extraction([{ text: CLAIM }]),
+      assessment: assess({ Demagog: { stance: "supports", needle: "Sprawdzane twierdzenie" } }, "confirmed", { plain_answer: "yes" }),
+    },
+    { googleFactCheck: () => factCheck("Demagog", "Fałsz", CLAIM, "https://demagog.example/most") },
+  );
+  try {
+    const r = await runCheck(text(`Czy ${CLAIM}`), deps());
+    assertEquals(r.claims[0].verdict, "false");
+    assert(r.claims[0].explanation.startsWith("Nie. "), r.claims[0].explanation);
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "asked checker: 'Did Demagog check X?' → 'Tak.' with the publisher and rating; the verdict is on X", async fn() {
+  const q = `Czy Demagog sprawdzał, czy ${CLAIM.toLowerCase()}`;
+  const s = stubFetch(
+    {
+      extraction: () => extraction([{ text: CLAIM, span: CLAIM.toLowerCase().replace(/\.$/, ""), asked_checker: "Demagog" }]),
+      assessment: assess({ Demagog: { stance: "refutes", needle: "Ocena" } }, "false", { plain_answer: "no" }),
+    },
+    { googleFactCheck: () => factCheck("Demagog", "Fałsz", CLAIM, "https://demagog.example/most") },
+  );
+  try {
+    const r = await runCheck(text(q), deps());
+    valid(r);
+    const c = r.claims[0];
+    assertEquals(c.verdict, "false");
+    assert(c.explanation.startsWith("Tak. Demagog sprawdził to twierdzenie i ocenił je jako „Fałsz”."), c.explanation);
+    assertEquals(c.citations[0].url, "https://demagog.example/most");
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "asked checker: no fact-check by that publisher → says so, no 'Tak.', never 'no such article'", async fn() {
+  const s = stubFetch(
+    { extraction: () => extraction([{ text: CLAIM, asked_checker: "Demagog" }]) },
+    { googleFactCheck: () => ({}) },
+  );
+  try {
+    const r = await runCheck(text(`Czy Demagog to sprawdzał? ${CLAIM}`), deps());
+    const c = r.claims[0];
+    assertEquals(c.verdict, "insufficient_evidence");
+    assert(c.explanation.startsWith("Nie znaleźliśmy weryfikacji Demagog"), c.explanation);
+    assert(!/nie ma takiego/i.test(c.explanation));
+  } finally {
+    s.restore();
+  }
+} });

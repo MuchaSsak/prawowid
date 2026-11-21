@@ -191,3 +191,17 @@ Deno.test("check log: every saved check is one audit line with time, status, ver
   assertEquals((await store.listRecent(5)).length, 0);
 });
 
+
+Deno.test("fact-check ratings map to stances; partial ratings never become support or refutation", async () => {
+  const { ratingStance, factcheckFields, isAskedChecker } = await import("../src/pipeline/factcheck.ts");
+  for (const r of ["Fałsz", "Fałsz.", "False", "Nieprawda", "Pants on Fire", "Mostly false"]) assertEquals(ratingStance(r), "refutes", r);
+  for (const r of ["Częściowa prawda", "Częściowy fałsz", "Manipulacja", "Brak kontekstu", "Missing context", "Partly false", "Half true", "Misleading"]) {
+    assertEquals(ratingStance(r), "misleading", r);
+  }
+  for (const r of ["Prawda", "True", "Correct"]) assertEquals(ratingStance(r), "supports", r);
+  for (const r of ["Nieweryfikowalne", "Satire", "Unproven"]) assertEquals(ratingStance(r), null, r);
+  const f = factcheckFields('Sprawdzane twierdzenie: "X"\nOcena (Demagog): Częściowa prawda.\nTytuł weryfikacji: T');
+  assertEquals(f.rating, "Częściowa prawda");
+  assertEquals(f.ratingLine, "Ocena (Demagog): Częściowa prawda.");
+  assert(isAskedChecker("Demagog", "Demagog") && isAskedChecker("AFP", "AFP Sprawdzam") && isAskedChecker("Demagoga", "Demagog") && !isAskedChecker("Reuters", "Demagog"));
+});
