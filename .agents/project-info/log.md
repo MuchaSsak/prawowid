@@ -24,3 +24,6 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | Opus round 4 scored 8.9; addressed its remaining gaps in cross-session result reuse, local OCR and reworded report dedupe
 ## [2026-11-21] lint | checked wiki routing, index, source citations and links; aligned OCR recommendations with local intake
 ## [2026-11-21] update | merged Fabian's PR #1 (hardened workflow) with local prompts/response-contract work; verification-pipeline keeps his structure plus prompt links, balancing principles, claim type/risk fields, official-statement route and decision 001 link
+
+## [2026-11-21] update | proposed vision transcription for approved public images and code-first checks for typed evidence, with an independent verifier for material prose
+## [2026-11-21] lint | checked 39 Markdown pages and aligned intake, model selection and prompt guidance

@@ -36,7 +36,7 @@ Client (web / Discord adapter)
 2. Normalize input
    url   → SSRF-safe GET → Readability text + published_at (meta/JSON-LD/event-date)
            + collect images, <video> mp4, YouTube iframes (oEmbed for title/author)
-   image → local OCR → text
+   image → eligible public asset → approved vision transcription → redact text
    video → YouTube URL: /responses input_video (Google AI Studio) → transcript
            mp4: download (≤50 MB, ≤10 min) → base64 → /responses → transcript   [async]
 3. Guard: PII mask, injection scan (log to injection_events), wrap as untrusted
