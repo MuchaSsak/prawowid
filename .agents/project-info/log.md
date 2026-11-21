@@ -183,3 +183,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] update | messaging-bot-runbook: Vercel Hobby team blocks PR deployments by non-member Git authors (PR #7 checks); not a code failure
 ## [2026-11-21] update | bot on Vercel crashed on every route: Vercel Hono zero-config used src/app.ts (no default export) as entrypoint; renamed to src/routes.ts; missing BOT_ID_SECRET now reported on /health (503) instead of throwing; / and /favicon.ico added; runbook + messaging-bot updated
 ## [2026-11-21] lint | 2 findings: messaging-bot status table and test count were stale (fixed); README format-example link is expected
+## [2026-11-21] update | bot live on Vercel: Hono entry must import hono itself (build error fixed in src/index.ts); /health 200 ok, Messenger enabled, Discord vars not set

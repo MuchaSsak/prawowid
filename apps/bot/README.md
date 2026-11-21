@@ -20,7 +20,7 @@ PRAWDOWID_API_URL=http://localhost:8787 bun run bot:console "demo:false"   # ter
 
 ## Run the webhook server
 - `bun run bot:dev`: a Bun server on `http://localhost:8788` (`BOT_PORT`). Put it behind a tunnel to test with real platforms.
-- Vercel: Root Directory `apps/bot`, entry `src/index.ts` (zero-config Hono), region `fra1`, `maxDuration` 300 s (`vercel.json`). Register **only the production URL** on the platforms.
+- Vercel: Root Directory `apps/bot`, entry `src/index.ts` (zero-config Hono; the entry must import `hono` itself), region `fra1`, `maxDuration` 300 s (`vercel.json`). Register **only the production URL** on the platforms.
 
 Routes: `GET /health`, `POST /webhooks/discord`, `GET|POST /webhooks/whatsapp`, `GET|POST /webhooks/messenger`. A platform is enabled only when all its env vars are set (see `.env.example`).
 
