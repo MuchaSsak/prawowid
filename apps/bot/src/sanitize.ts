@@ -15,8 +15,10 @@ const INVISIBLE = /[­͏؜ᅟᅠ឴឵᠎​-‏‪-‮⁠-⁯ㅤ︀-️﻿ﾠ]/
 const CONTROL = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F]/g;
 const URL_RE = /\b(?:https?|ftp):\/\/[^\s<>"]+|\bwww\.[^\s<>"]+/gi;
 const MD_LINK = /!?\[([^\]]*)\]\(([^)]*)\)/g;
-/** host-like tokens: at least one 2+ char label, then a letter-only TLD. Skips "m.in", "1.5", "art.5". */
-const BARE_DOMAIN = /\b((?:[\p{L}\p{N}-]{2,}\.)+)(\p{L}{2,24})\b/gu;
+/** host-like tokens: labels then a letter-only TLD ("a.pl", "x.com"). Skips "1.5" and "art.5". */
+const BARE_DOMAIN = /(?<![\p{L}\p{N}-])((?:[\p{L}\p{N}-]+\.)+)(\p{L}{2,24})(?![\p{L}\p{N}])/gu;
+/** Polish abbreviations that look like domains. */
+const NOT_DOMAINS = new Set(["m.in", "m.st"]);
 
 function defangHost(raw: string): string {
   try {
@@ -31,13 +33,15 @@ export function sanitizeText(input: unknown, maxChars = 600): string {
   if (typeof input !== "string") return "";
   let s = input.normalize("NFKC").replace(INVISIBLE, "").replace(CONTROL, " ");
   s = s.replace(/[\r\n\t]+/g, " ");
-  // Markdown links → their label (the target is dropped), then raw URLs → defanged host.
+  // Markdown links → their label (the target is dropped).
   s = s.replace(MD_LINK, (_m, label: string) => label);
-  s = s.replace(URL_RE, (m) => defangHost(m));
-  s = s.replace(BARE_DOMAIN, (_m, labels: string, tld: string) => `${labels.replaceAll(".", "[.]")}${tld}`);
-  // Markdown and chat formatting characters.
+  // Formatting characters go before the link passes, so `example.*org*` can't re-form a domain.
   // Underscores only at word edges (`_italic_`), so identifiers like OPENROUTER_API_KEY survive.
   s = s.replace(/[*~`|]/g, "").replace(/(?<![\p{L}\p{N}])_+|_+(?![\p{L}\p{N}])/gu, "").replace(/^\s*[#>]+\s*/g, "");
+  // Raw URLs → defanged host, then bare domains.
+  s = s.replace(URL_RE, (m) => defangHost(m));
+  s = s.replace(BARE_DOMAIN, (m, labels: string, tld: string) =>
+    NOT_DOMAINS.has(m.toLowerCase()) ? m : `${labels.replaceAll(".", "[.]")}${tld}`);
   // Mentions and Discord entity syntax: `@` → fullwidth `＠` (applied after NFKC, so it stays),
   // and angle brackets → look-alikes so `<@id>`, `<#id>` and `<url>` can never form.
   s = s.replace(/@/g, "＠").replace(/</g, "‹").replace(/>/g, "›");

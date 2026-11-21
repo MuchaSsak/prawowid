@@ -104,6 +104,30 @@ describe("render: versioning (unknown values) and hostile content", () => {
     expect(out).not.toContain("http://plain");
   });
 
+  test("long citation URLs drop the links before the footer is ever cut", () => {
+    const res = mock("escalation");
+    const long = (n: number) => `https://example.org/${"a".repeat(1500)}/${n}`;
+    res.claims[0].citations = [1, 2, 3].map((n) => ({ ...mock("false").claims[0].citations[0], url: long(n) }));
+    const out = renderResponse(res, { surface: "discord", webUrl: "https://w.example" });
+    expect(out.length).toBeLessThanOrEqual(1900);
+    expect(out).toContain(ESCALATION_TEXT);
+    expect(out).toContain("Prywatność: /pomoc");
+    expect(out.endsWith("…")).toBe(false);
+  });
+
+  test("an all-failed technical_error shows each claim's system notice, never a verdict", () => {
+    const res = mock("partial");
+    res.status = "technical_error";
+    res.system_message = { title: "Nie udało się zakończyć sprawdzania", text: "Szczegóły przy twierdzeniach. To nie jest ocena treści." };
+    res.claims = res.claims.filter((c) => c.verdict === null);
+    res.claims.push({ ...mock("false").claims[0] }); // a stray verdict must not show under a request state
+    const out = renderResponse(res, { surface: "console", webUrl: null });
+    expect(out).toContain("Nie udało się zakończyć sprawdzania");
+    expect(out).toContain("Nie sprawdzono");
+    expect(out).toContain("źródło niedostępne");
+    for (const l of VERDICT_LABELS) expect(out).not.toContain(l);
+  });
+
   test("delete and help texts", () => {
     expect(renderDeleted({ ok: true, checks: 2 }, { surface: "console", webUrl: null })).toContain("(liczba przybliżona)");
     expect(renderDeleted({ ok: true, checks: 0 }, { surface: "console", webUrl: null })).toContain("nie znaleźliśmy".replace("n", "N"));
@@ -127,6 +151,11 @@ describe("sanitize", () => {
   });
   test("defangs urls and bare domains", () => {
     expect(sanitizeText("zobacz https://www.gov.pl/web/x i stooq.pl")).toBe("zobacz www[.]gov[.]pl i stooq[.]pl");
+  });
+  test("formatting can't re-form a domain; single-letter domains are defanged; m.in. is kept", () => {
+    expect(sanitizeText("example.*org* i _x_.com")).toBe("example[.]org i x[.]com");
+    expect(sanitizeText("a.pl, t.co")).toBe("a[.]pl, t[.]co");
+    expect(sanitizeText("m.in. urzędy")).toBe("m.in. urzędy");
   });
   test("non-strings and length", () => {
     expect(sanitizeText(null)).toBe("");

@@ -63,6 +63,24 @@ describe("conversation", () => {
     expect(JSON.stringify(api.calls)).not.toContain("48500100200");
   });
 
+  test("a rate-limited live answer doesn't flip the mode of a bot held in mock (MOCK_CLIENTS)", async () => {
+    const api = fakeApi({ mode: "mock" });
+    const client = createClient(config, api.fetchImpl);
+    expect(await client.mode(signal())).toBe("mock");
+    const res = await client.check({ input: { type: "text", value: "x" } }, "u", signal());
+    expect(res.kind).toBe("response");
+    // fakeApi answers checks with meta.mode "mock" here; force a live 429-style answer next:
+    const live = createClient(config, (async (u: string | URL | Request, init?: RequestInit) => {
+      if (String(u).endsWith("/api/v1/health")) return Response.json({ mode: "live", client_mode: "mock" });
+      const r = mockResponse({ input: { type: "text", value: "x" } }, "rate_limited");
+      r.meta.mode = "live";
+      return Response.json(r, { status: 429 });
+    }) as typeof fetch);
+    expect(await live.mode(signal())).toBe("mock");
+    await live.check({ input: { type: "text", value: "x" } }, "u", signal());
+    expect(await live.mode(signal())).toBe("mock");
+  });
+
   test("A7: demo:<scenario> while the API answers live → a local reply, no check sent", async () => {
     const api = fakeApi({ mode: "live" });
     for (const t of ["demo:false", "  DEMO:false"]) {
@@ -216,18 +234,28 @@ describe("logging (A11)", () => {
   test("event lines carry no text and no user ids; the SDK logger drops payloads", async () => {
     const lines: string[] = [];
     setLogSink((l) => lines.push(l));
-    await logEvent({ platform: "discord", eventId: "interaction-123", checkId: "c-1", startedAt: Date.now() - 5, outcome: "ok" });
+    const uuid = "8e4eea20-b804-4802-8b48-9fd74956f87b";
+    await logEvent({ platform: "discord", eventId: "interaction-123", checkId: uuid, startedAt: Date.now() - 5, outcome: "ok" });
     const log = quietLogger();
     log.error("handler failed", { text: "TAJNA TREŚĆ WIADOMOŚCI", userId: "48500100200" }, new TypeError("x"));
+    // A platform error body: only numeric code and field codes survive, never its message text.
+    log.error("Discord interaction API error", {
+      status: 400,
+      error: JSON.stringify({ code: 50035, message: "TAJNA echo", errors: { content: { _errors: [{ code: "BASE_TYPE_MAX_LENGTH", message: "TAJNA" }] } } }),
+    });
+    // A check_id that isn't a UUID is upstream text: not logged.
+    await logEvent({ platform: "discord", eventId: "e2", checkId: "TAJNA <script>", startedAt: Date.now(), outcome: "ok" });
     log.info("message", { text: "TAJNA TREŚĆ WIADOMOŚCI" });
     setLogSink((l) => console.log(l));
     const all = lines.join("\n");
     expect(all).not.toContain("TAJNA");
     expect(all).not.toContain("48500100200");
     expect(all).not.toContain("interaction-123");
-    expect(JSON.parse(lines[0])).toMatchObject({ msg: "bot_event", platform: "discord", check_id: "c-1", outcome: "ok" });
+    expect(JSON.parse(lines[0])).toMatchObject({ msg: "bot_event", platform: "discord", check_id: uuid, outcome: "ok" });
+    expect(JSON.parse(lines[2])).toMatchObject({ status: 400, platform_error: { code: 50035, fields: ["content:BASE_TYPE_MAX_LENGTH"] } });
+    expect(JSON.parse(lines[3]).check_id).toBeNull();
     expect(JSON.parse(lines[1])).toMatchObject({ text: "handler failed", error_name: "TypeError" });
-    expect(lines).toHaveLength(2);
+    expect(lines).toHaveLength(4);
   });
 });
 

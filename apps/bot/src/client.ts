@@ -18,7 +18,7 @@ export type CheckOutcome =
 export interface PrawdowidClient {
   check(req: CheckRequest, endUser: string, signal: AbortSignal): Promise<CheckOutcome>;
   deleteSession(sessionId: string, signal: AbortSignal): Promise<{ ok: boolean; checks: number }>;
-  /** The mode this bot effectively gets: the last `meta.mode` seen, else `/health` (cached). */
+  /** The mode this bot effectively gets, from `/health` (cached); `unknown` when it can't be read. */
   mode(signal: AbortSignal): Promise<"live" | "mock" | "unknown">;
 }
 
@@ -28,10 +28,10 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
     ...(config.clientKey ? { "X-Client-Key": config.clientKey } : {}),
     ...(endUser ? { "X-End-User": endUser } : {}),
   });
-  // The freshest signal is a response's own meta.mode; /health (with our key, so it reports
-  // `client_mode` under MOCK_CLIENTS) is the fallback before the first check.
+  // `/health` with our key is the authority: it reports `client_mode`, which includes MOCK_CLIENTS.
+  // A response's meta.mode is not used: a 429 is answered before the API's mock switch, so it says
+  // "live" even for a bot held in mock, and one rate-limited user would turn /demo off for everyone.
   let mode: { value: "live" | "mock"; at: number } | null = null;
-  const remember = (value: "live" | "mock") => (mode = { value, at: Date.now() });
 
   return {
     async check(req, endUser, signal) {
@@ -55,7 +55,6 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
       if (!v.ok) {
         return { kind: "failure", reason: "invalid_response", detail: `HTTP ${res.status}; ${v.errors.slice(0, 5).join(",")}` };
       }
-      if (v.response.meta.mode === "live" || v.response.meta.mode === "mock") remember(v.response.meta.mode);
       return { kind: "response", response: v.response };
     },
 
@@ -86,11 +85,14 @@ export function createClient(config: BotConfig, fetchImpl: typeof fetch = fetch)
         // `client_mode` (sent to keyed clients) includes MOCK_CLIENTS; `mode` is the API-wide mode.
         const json = await res.json() as { mode?: unknown; client_mode?: unknown };
         const m = json.client_mode ?? json.mode;
-        if (m === "live" || m === "mock") return remember(m).value;
+        if (m === "live" || m === "mock") {
+          mode = { value: m, at: Date.now() };
+          return m;
+        }
       } catch {
         // fall through
       }
-      return mode?.value ?? "unknown";
+      return "unknown"; // a stale value is not trusted past its TTL
     },
   };
 }

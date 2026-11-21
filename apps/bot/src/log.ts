@@ -9,6 +9,8 @@ import type { Logger } from "chat";
 import type { Outcome } from "./conversation.ts";
 import { shortHash } from "./pseudonym.ts";
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export interface EventLine {
   platform: string;
   event: string;
@@ -28,7 +30,8 @@ export async function logEvent(e: { platform: string; eventId: string; checkId: 
   const line: EventLine = {
     platform: e.platform,
     event: await shortHash(e.eventId),
-    check_id: e.checkId,
+    // The id comes from the API response, so only a UUID is logged; anything else is upstream text.
+    check_id: e.checkId && UUID.test(e.checkId) ? e.checkId : null,
     latency_ms: Date.now() - e.startedAt,
     outcome: e.outcome,
   };
@@ -37,7 +40,7 @@ export async function logEvent(e: { platform: string; eventId: string; checkId: 
 
 /**
  * From a platform API error body, only the machine fields: Discord `{ code, message, errors }` and
- * Meta `{ error: { code, message } }` carry error codes and field paths, never the message we sent.
+ * Meta `{ error: { code } }` carry numeric codes and field paths. Messages are dropped: upstream text.
  */
 function platformError(raw: unknown): Record<string, unknown> | undefined {
   if (typeof raw !== "string") return undefined;
@@ -54,11 +57,9 @@ function platformError(raw: unknown): Record<string, unknown> | undefined {
     };
     walk(j.errors, "");
     const code = j.code ?? j.error?.code;
-    const message = j.message ?? j.error?.message;
     return {
-      ...(typeof code === "number" || typeof code === "string" ? { code } : {}),
-      ...(typeof message === "string" ? { message: message.slice(0, 120) } : {}),
-      ...(codes.length ? { fields: codes.slice(0, 5) } : {}),
+      ...(typeof code === "number" ? { code } : {}),
+      ...(codes.length ? { fields: codes.filter((c) => /^[\w.\[\]:-]{1,80}$/.test(c)).slice(0, 5) } : {}),
     };
   } catch {
     return undefined;
@@ -67,7 +68,7 @@ function platformError(raw: unknown): Record<string, unknown> | undefined {
 
 /**
  * Logs the SDK's own message string (a constant), an error's name, and from a details object only
- * `status`, `method` and the platform's error code/message. Never payloads, text, ids or tokens.
+ * `status`, `method` and the platform's numeric error code. Never payloads, text, ids or tokens.
  */
 export function quietLogger(prefix = "chat"): Logger {
   const details = (args: unknown[]) => {

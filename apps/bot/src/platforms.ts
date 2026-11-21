@@ -141,7 +141,8 @@ export function registerHandlers(chat: Chat, platform: Platform, deps: PlatformD
     if (message.author.isMe || message.author.isBot === true) return;
     if (platform === "discord") return; // Discord DMs need the Gateway: out of scope (decision 007)
     const incoming = sdkMessageToIncoming(platform, message);
-    if (!incoming.ignore) await thread.startTyping().catch(() => {});
+    // Fire and forget: a stalled typing request must never delay the check or the guaranteed reply.
+    if (!incoming.ignore) void thread.startTyping().catch(() => {});
     await respond(deps, platform, message.id, { surface: platform, userId: message.author.userId, message: incoming }, (t) =>
       thread.post({ raw: t }));
   });

@@ -86,7 +86,7 @@ function demoBanner(f: Fmt): string {
   return `🧪 ${f.bold("DANE DEMO")}: to nie jest prawdziwe sprawdzenie, odpowiedź jest przykładowa.`;
 }
 
-function renderClaim(c: ClaimResult, n: number, f: Fmt): string {
+function renderClaim(c: ClaimResult, n: number, f: Fmt, maxCitations: number = LIMITS.maxCitationsPerClaim): string {
   const lines: string[] = [];
   const verdict = c.verdict && VERDICT_LABEL[c.verdict] ? c.verdict : null;
   if (verdict) {
@@ -110,7 +110,7 @@ function renderClaim(c: ClaimResult, n: number, f: Fmt): string {
   const links = c.citations
     .map((s) => ({ url: safeUrl(s.url), publisher: sanitizeText(s.publisher, 80), date: sanitizeText(s.published_at, 20) }))
     .filter((s): s is { url: string; publisher: string; date: string } => s.url !== null)
-    .slice(0, LIMITS.maxCitationsPerClaim);
+    .slice(0, maxCitations);
   if (links.length) {
     lines.push("Sprawdź sam:");
     for (const s of links) lines.push(`• ${s.publisher || "źródło"}${s.date ? ` (${s.date})` : ""}: ${f.link(s.url)}`);
@@ -124,6 +124,30 @@ function limitationsLine(res: CheckResponse): string {
   return `Ograniczenia: ${parts.join(", ")}.`;
 }
 
+/**
+ * Adds whole claims while they fit in `budget`. A claim that is too long first loses its "Sprawdź sam"
+ * links (the most optional part, and URLs can be long); one that still doesn't fit is counted, so
+ * the escalation line, limitations and footer are never cut off.
+ */
+function addClaims(blocks: string[], claims: ClaimResult[], f: Fmt, budget: number): number {
+  let shown = 0;
+  for (const c of claims) {
+    let block: string | null = null;
+    for (let k = LIMITS.maxCitationsPerClaim; k >= 0 && block === null; k--) {
+      const candidate = renderClaim(c, shown + 1, f, k);
+      if ([...blocks, candidate].join("\n\n").length <= budget) block = candidate;
+    }
+    if (block === null) break;
+    blocks.push(block);
+    shown++;
+  }
+  return shown;
+}
+
+function hiddenLine(hidden: number, o: RenderOptions): string {
+  return `…i jeszcze ${hidden} ${hidden === 1 ? "twierdzenie" : "twierdzenia"}${o.webUrl ? ", pełny wynik w aplikacji" : ""}.`;
+}
+
 function fit(blocks: string[], max: number): string {
   const out = blocks.join("\n\n");
   return out.length <= max ? out : `${out.slice(0, max - 1)}…`;
@@ -135,12 +159,19 @@ export function renderResponse(res: CheckResponse, o: RenderOptions): string {
   const head: string[] = [];
   if (isDemo(res)) head.push(demoBanner(f));
 
-  // Request-level system state (or a status this bot doesn't know yet): one notice, no claims.
+  // Request-level system state (or a status this bot doesn't know yet): a notice, never a verdict.
   if (res.status !== "ok" && res.status !== "partial") {
-    const title = KNOWN_REQUEST_STATES.has(res.status) ? sanitizeText(res.system_message?.title, 120) : "";
-    const text = KNOWN_REQUEST_STATES.has(res.status) ? sanitizeText(res.system_message?.text, 500) : "";
+    const known = KNOWN_REQUEST_STATES.has(res.status);
+    const title = known ? sanitizeText(res.system_message?.title, 120) : "";
+    const text = known ? sanitizeText(res.system_message?.text, 500) : "";
     head.push(title || text ? `ℹ️ ${f.bold(title || "Informacja")}\n${text}`.trim() : `ℹ️ ${FAILURE_TEXT}`);
-    return fit([...head, footer(o)], max);
+    // An all-failed technical_error keeps its claims, each with a claim-level system state that says
+    // what failed (e.g. a source without a key). Show those notices; never a claim with a verdict.
+    const notices = known ? res.claims.filter((c) => c.verdict === null) : [];
+    const tail = footer(o);
+    const shown = addClaims(head, notices, f, max - tail.length - 80);
+    if (notices.length > shown) head.push(hiddenLine(notices.length - shown, o));
+    return fit([...head, tail], max);
   }
 
   if (res.status === "partial") head.push("ℹ️ Część twierdzeń sprawdziliśmy, części nie (szczegóły niżej).");
@@ -161,17 +192,8 @@ export function renderResponse(res: CheckResponse, o: RenderOptions): string {
 
   const blocks = [...head];
   const reserve = tail.join("\n\n").length + 80; // room for the tail and the "…i N kolejnych" line
-  let shown = 0;
-  for (const [i, c] of res.claims.entries()) {
-    const block = renderClaim(c, i + 1, f);
-    if ([...blocks, block].join("\n\n").length + reserve > max && shown > 0) break;
-    blocks.push(block);
-    shown++;
-  }
-  const hidden = res.claims.length - shown;
-  if (hidden > 0) {
-    blocks.push(`…i jeszcze ${hidden} ${hidden === 1 ? "twierdzenie" : "twierdzenia"}${o.webUrl ? ", pełny wynik w aplikacji" : ""}.`);
-  }
+  const shown = addClaims(blocks, res.claims, f, max - reserve);
+  if (res.claims.length > shown) blocks.push(hiddenLine(res.claims.length - shown, o));
   return fit([...blocks, ...tail], max);
 }
 
@@ -202,7 +224,6 @@ export function renderDeleted(r: { ok: boolean; checks: number }, o: RenderOptio
   return [
     what,
     "Twoje wiadomości zostają w historii czatu w aplikacji: tego nie możemy usunąć.",
-    "Licznik dziennego limitu wygasa sam w ciągu 24 godzin.",
   ].join("\n");
 }
 
