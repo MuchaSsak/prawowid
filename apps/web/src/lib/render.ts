@@ -211,6 +211,10 @@ function warningBox(w: Warning): HTMLElement {
     ? "Uwaga: tekst zawierał polecenia dla komputera"
     : w.type === "illegible_media" || w.type === "partial_analysis"
     ? "Sprawdziliśmy tylko część materiału"
+    : w.type === "assumed_period" || w.type === "assumed_scope"
+    ? "Przyjęliśmy założenie"
+    : w.type === "archival_material"
+    ? "Uwaga: to stary materiał"
     : "Ważne";
   return h("div", { class: `note note-${w.type}` }, h("strong", {}, title), h("p", {}, w.text));
 }
