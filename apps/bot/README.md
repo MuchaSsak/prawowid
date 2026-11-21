@@ -37,7 +37,7 @@ On the API (Deno Deploy): `CLIENT_KEYS=bot:<key>` and `MOCK_CLIENTS=bot`. On the
 | `src/client.ts`, `src/validate.ts` | the API client (never sends `mock`) and the bundled structural contract check |
 | `src/render.ts`, `src/sanitize.ts` | the short chat form per platform; every response string made inert |
 | `src/platforms.ts` | one Chat SDK instance per platform, loaded on first webhook; Discord options read by name |
-| `src/app.ts`, `src/index.ts`, `src/local.ts` | Hono routes; Vercel entry; Bun server |
+| `src/routes.ts`, `src/index.ts`, `src/local.ts` | Hono routes; Vercel entry; Bun server. Never add a `src/app.ts`: Vercel's Hono zero-config takes it as the entrypoint ahead of `src/index.ts` |
 | `src/console.ts` | the console channel |
 | `src/log.ts`, `src/pseudonym.ts` | content-free log lines and SDK logger; HMAC pseudonyms |
 
