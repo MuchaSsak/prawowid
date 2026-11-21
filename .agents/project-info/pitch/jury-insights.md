@@ -51,6 +51,8 @@ Actionable implications for the Prawdomat submission, pitch and demo. Facts and 
 
 ## Pitch (5 min) and Q&A (5 min): recommended shape
 
+The built deck and its timed speaker notes: [deck.md](deck.md).
+
 1. **0:00-0:30, the hook.** A real viral claim relevant to MSZ (for example a fake consular or travel warning, or a FIMI narrative about Ukraine/EU) arriving on Discord from "a senior citizen". The Advisory Council explicitly names seniors as a priority group.
 2. **0:30-2:30, live demo** of the same claim in two channels:
    - the verdict, cited primary sources (gov.pl, ISAP, EUR-Lex, fact-checkers), and the evidence-strength meter

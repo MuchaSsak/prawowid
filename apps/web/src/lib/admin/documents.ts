@@ -20,6 +20,11 @@ export const documents: AdminDocument[] = [
     description: "Koszt 1000 sprawdzeń, utrzymanie kanałów i zachowanie pod obciążeniem.",
     url: "https://docs.google.com/spreadsheets/d/1D6go2MeyFnhprEzkjBkmr-XGPP7ujAMxQzEeebbAml0/edit?gid=2131606200",
   },
+  {
+    title: "Prezentacja dla jury",
+    description: "10 slajdów: problem, demo, architektura, wyniki, ryzyka i pilotaż. Notatki z pięciominutowym scenariuszem.",
+    url: "https://docs.google.com/presentation/d/1uC4f8bR6BtkHHww_MXOA5SvWwWdSlTkVEySPFjCXwfc/edit?usp=sharing",
+  },
 ];
 
 /** The URL to load in the preview iframe, or null when there is nothing to preview. */

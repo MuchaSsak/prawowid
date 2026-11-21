@@ -2,7 +2,7 @@
 A checklist of everything we must submit. (source: sources/2026-11-21-msz-pelna-tresc-zadania.pdf, sec. 4-5)
 
 - [ ] Team name, solution title, and a **description of at most 4,000 characters**
-- [ ] **PDF presentation, at most 12 slides**: problem, users, architecture, demo, test results, risks, next steps
+- [ ] **PDF presentation, at most 12 slides**: problem, users, architecture, demo, test results, risks, next steps. **Drafted (2026-11-21)** as a 10-slide Google Slides deck with speaker notes ([pitch/deck.md](../pitch/deck.md)); still to do: fill the video frames and team name, then export to PDF
 - [ ] **Demo video, at most 3 minutes**, available via a link
 - [ ] A **link to the code repo** with run instructions (the jury must be able to run it themselves)
 - [ ] A short description of the architecture, data flow, models used, vendors and main limitations
