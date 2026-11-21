@@ -129,3 +129,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | clean: web backdrop/OG/mobile entry fits the codebase web row, routing table, index and skill parity intact (the two "dead links" are format examples)
 ## [2026-11-21] update | web: "Usuń dane sesji" footer button calls DELETE /api/v1/session/:id with a toast; compliance-matrix privacy row now ⚠️ (placeholder /prywatnosc, per-instance memory store)
 ## [2026-11-21] lint | 2 findings: codebase web row and open-questions still said the web UI had no delete-session button -> fixed
+## [2026-11-21] update | added minimal vector DB integration plan: Python retrieval service behind HttpCorpusStore, existing core and API contract unchanged
