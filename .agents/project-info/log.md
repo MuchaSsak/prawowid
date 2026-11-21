@@ -32,3 +32,11 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | 1 finding: retention 30 days (decision 001) vs 7 days (pipeline) -> open-questions; links, index, routing and skill parity clean
 ## [2026-11-21] decision | 003 (user): .env holds only secrets (OpenRouter key, EUvsDisinfo token); models, routing, limits move to code defaults with optional MODEL_* overrides; .env.example trimmed; Google Safety Retention opt-out noted in architecture/model-selection
 ## [2026-11-21] lint | clean (scoped to decision 003): index, links, skill parity OK; no wiki page references the removed env vars
+## [2026-11-21] update | proposed vision transcription for approved public images and code-first checks for typed evidence, with an independent verifier for material prose
+## [2026-11-21] lint | checked 39 Markdown pages and aligned intake, model selection and prompt guidance
+## [2026-11-21] update | merged Fabian's PR #2: kept decision 002 where it conflicted (all images via the vision model, no second verifier); adopted code-only comparison of typed authoritative records, independence = distinct evidence origins, per-stage cost reporting; open question for Fabian
+## [2026-11-21] update | EUvsDisinfo token retested with the current .env value: still 401 Invalid API key; open question updated
+## [2026-11-21] update | architecture/euvsdisinfo-mcp: added how to request MCP access directly from EUvsDisinfo (user tip, about page)
+## [2026-11-21] update | EUvsDisinfo token retested again after a .env save (14:34): still 401 Invalid API key
+## [2026-11-21] update | EUvsDisinfo: the server lists ?key=, Authorization and X-API-Key as accepted; our token gets "Invalid API key" on all three, so the token is the problem, not the request; noted in architecture/euvsdisinfo-mcp
+## [2026-11-21] lint | clean after the PR #2 merge: no conflict markers, no verifier or public-only image wording outside decision 002/log, links and skill parity OK

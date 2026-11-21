@@ -35,7 +35,7 @@ Which models to use per pipeline step: quality, reliability, cost and GDPR compl
 | Audio (uploaded) | **voxtral-small** via `mistral/eu` | EU transcription |
 | Benchmark / fallback | claude-haiku-5.5 | evaluate on approved fixtures. Enable live fallback only if it meets the [verification workflow](verification-pipeline.md) deployment policy |
 
-**Cost per check** (≈ 2k in / 0.4k out for step 1 + 5k in / 0.5k out for step 2): all Small ≈ **$0.0014 → about $1.4 per 1,000 checks**. With Large on step 2 ≈ **$4 per 1,000**. Video adds about $0.01-0.02 per 5-minute video. These estimates are to be replaced by the measured `usage.cost`.
+**Cost model.** Count extraction on each uncached check, stance assessment on claims requiring prose, and vision transcription on images. Measure actual billed usage per stage and report cost per 100 checks with the input mix and call counts. Structured evidence can skip the evidence-model call. Earlier estimate for text only (all Small, 2k/0.4k + 5k/0.5k tokens): about $1.4 per 1,000 checks, about $4 with Large on the assessment step; images and video are extra.
 
 ## GDPR / compliance checklist
 - **Mask private data before outbound search, model calls and logging** according to the [workflow intake rules](verification-pipeline.md#1-validate-and-prepare-input).

@@ -2,7 +2,7 @@
 How to pull EUvsDisinfo articles and disinformation cases, our known-incidents corpus (scenario I, bonus "match to known incidents"). (source: sources/2026-11-21-euvsdisinfo-mcp-how-to.pdf)
 
 - **Endpoint:** `https://euvsdisinfo-mcp-server.vercel.app/mcp`. MCP over **streamable HTTP (not SSE)**, JSON-RPC 2.0.
-- **Auth:** `Authorization: Bearer <token>`. We need a token from the organizer (DM on Discord). **Never commit it.** Keep it in `.env`.
+- **Auth:** `Authorization: Bearer <token>`. When a request has no key, the server lists three accepted ways to send it: `?key=<token>`, the `Authorization` header, or the `X-API-Key` header (checked 2026-11-21). Two ways to get one: from the organizer (DM on Discord), or by asking EUvsDisinfo directly. Their About page (https://euvsdisinfo.eu/about/, section "MCP") gives access "by request only" to researchers, developers, media and civil society. You email them with a short intro of yourself or your team and how you plan to use the server. No email address appears in the page text (check it in a browser) and no wait time is given. The page also does not name the vercel host, so confirm the endpoint when they reply. (source: user, 2026-11-21; euvsdisinfo.eu/about) **Never commit it.** Keep it in `.env`.
 - **Headers on every call:** `Content-Type: application/json`, `Accept: application/json, text/event-stream`.
 
 ## Flow

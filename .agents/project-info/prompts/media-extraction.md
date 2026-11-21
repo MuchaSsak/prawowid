@@ -1,7 +1,9 @@
 # Prompt: media extraction (images, video, audio → text)
 Turns an image, video or audio file into text with provenance, before claim extraction. It reads; it never judges truth or authenticity. **Draft v1, not evaluated.** Design and limits: [architecture/multimodal-media.md](../architecture/multimodal-media.md). Conventions: [README.md](README.md).
 
-## Image (OCR + description)
+## Image (vision transcription)
+
+Every image goes through this prompt ([decisions/002](../decisions/002-single-llm-pass.md)). Code strips image metadata before sending and redacts the returned text before the next step.
 - **Model:** `mistralai/mistral-small-2603` (vision) via `mistral/eu`, `temperature 0`, JSON schema.
 
 ```text
@@ -19,7 +21,7 @@ Return:
 Do not identify people from their faces. Name a person only if their name is written in the image. Do not guess missing text.
 ```
 
-Code: EXIF is read separately with `exifr` (date, device; GPS is dropped). `legibility: poor` → warning "nie udało się odczytać obrazu w całości". There is no reverse image search unless one is actually built ([rules/hard-constraints.md](../rules/hard-constraints.md) rule 15).
+Code reads EXIF locally with `exifr` (date, device; GPS is dropped), strips metadata before sending the image, and redacts returned text before any downstream step. `legibility: poor` → warning "nie udało się odczytać obrazu w całości". There is no reverse image search unless one is actually built ([rules/hard-constraints.md](../rules/hard-constraints.md) rule 15).
 
 ## Video / audio (transcript)
 - **Model:** video `google/gemini-3.1-flash-lite` (YouTube via Google AI Studio, MP4 as base64; disclosed as non-EEA). Audio: `mistralai/voxtral-small-24b-2507` via `mistral/eu`.
