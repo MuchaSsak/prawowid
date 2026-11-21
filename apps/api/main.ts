@@ -42,8 +42,10 @@ import {
   MemoryCorpusStore,
   MOCK_SCENARIO_DESCRIPTIONS,
   mockResponse,
+  CONNECTORS,
   INDICATORS,
   HttpCorpusStore,
+  NARRATIVE_MATCHERS,
   publicCatalog,
   runCheck,
 } from "@prawdowid/core";
@@ -163,6 +165,9 @@ app.get("/api/v1/sources", (c) =>
     contract_version: CONTRACT_VERSION,
     policy: "Dowodem może być tylko materiał z tej listy. Nie przeszukujemy otwartej sieci.",
     sources: publicCatalog(config.trustedSources),
+    // The routes this deployment runs (architecture/extensibility.md); context routes never decide a verdict.
+    routes: CONNECTORS.map((r) => ({ id: r.id, label: r.label, required: r.required })),
+    context_routes: NARRATIVE_MATCHERS.map((m) => ({ id: m.id, label: m.label, catalog: m.catalog })),
     statistics: INDICATORS.map((i) => ({
       key: i.key,
       label: i.label_pl,

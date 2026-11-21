@@ -238,3 +238,11 @@ Deno.test("GET /api/v1/admin/analytics: token required, range validated, aggrega
   );
   assert((pre.headers.get("access-control-allow-headers") ?? "").toLowerCase().includes("authorization"));
 });
+
+Deno.test("GET /api/v1/sources lists the evidence routes and the context routes this deployment runs", async () => {
+  const s = await (await get("/api/v1/sources")).json();
+  const ids = s.routes.map((r: { id: string }) => r.id);
+  for (const id of ["google_factcheck", "sejm_eli", "eurostat", "nbp"]) assert(ids.includes(id), id);
+  assert(s.routes.every((r: { label: string; required: boolean }) => r.label && typeof r.required === "boolean"));
+  assert(s.context_routes.every((r: { catalog: string }) => r.catalog));
+});

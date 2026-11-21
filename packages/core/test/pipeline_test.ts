@@ -4,7 +4,7 @@
  * .agents/project-info/architecture/verification-pipeline.md. Synthetic data only (rule 16).
  */
 import { assert, assertEquals, assertExists } from "jsr:@std/assert@^1";
-import { CheckResponseSchema, runCheck } from "../src/mod.ts";
+import { CheckResponseSchema, type Connector, runCheck, type SourceRecord } from "../src/mod.ts";
 import { assess, deps, eliAct, extraction, factCheck, json, stubFetch, T } from "./harness.ts";
 
 const CLAIM = "Most w Przykładowie zamknięto na stałe w 2025 roku.";
@@ -703,6 +703,64 @@ Deno.test({ ...T, name: "lead: partly true (misleading + neither) and abstention
 Deno.test({ ...T, name: "lead: no leading word when code and model disagree on the verdict", async fn() {
   const c = await leadFor(`Czy ${DEBT}`, "refutes", "confirmed", "yes");
   assert(!LEAD.test(c.explanation), c.explanation);
+} });
+
+// ── Extensibility: sources and models plug in without touching the pipeline (architecture/extensibility.md) ──
+Deno.test({ ...T, name: "extensibility: a new evidence route plugs in through deps.connectors; the pipeline is unchanged", async fn() {
+  const record: SourceRecord = {
+    source_id: "registry:most-1",
+    route: "test_registry",
+    title: "Komunikat o stanie mostu (test)",
+    publisher: "Urząd Testowy",
+    url: "https://registry.example/most-1",
+    published_at: "2025-06-01",
+    retrieved_at: "2026-11-21T00:00:00Z",
+    tier: "official",
+    origin_key: "registry:urzad-testowy",
+    text: "Komunikat urzędu.\nMost w Przykładowie nie został zamknięty na stałe; trwa remont do lipca 2025 roku.",
+  };
+  const registry: Connector = {
+    id: "test_registry",
+    label: "Rejestr testowy",
+    required: false,
+    appliesTo: () => true,
+    unavailableReason: () => null,
+    search: () => Promise.resolve([record]),
+  };
+  const s = stubFetch({
+    extraction: () => extraction([{ text: CLAIM }]),
+    assessment: assess({ "Urząd Testowy": { stance: "refutes", needle: "nie został zamknięty" } }, "false"),
+  });
+  try {
+    const r = await runCheck(text(CLAIM), { ...deps(), connectors: [registry], narrativeMatchers: [] });
+    valid(r);
+    const c = r.claims[0];
+    assertEquals(c.verdict, "false");
+    assertEquals(c.citations[0].route, "test_registry");
+    assertEquals(c.citations[0].publisher, "Urząd Testowy");
+    assertEquals(c.routes.map((x) => x.route), ["test_registry"], "only the injected route ran");
+    assertEquals(s.calls.filter((x) => x.url.hostname !== "openrouter.ai").length, 0, "built-in sources were not called");
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "extensibility: the model comes from config, so MODEL_<STEP> swaps it without a rebuild", async fn() {
+  const s = stubFetch(
+    { extraction: () => extraction([{ text: CLAIM }]), assessment: assess({ Demagog: { stance: "refutes", needle: "Ocena" } }, "false") },
+    { googleFactCheck: () => factCheck("Demagog", "Fałsz", CLAIM) },
+  );
+  const d = deps();
+  d.config.models.claim_extraction = "example/extractor-b";
+  d.config.models.evidence_assessment = "example/assessor-b";
+  try {
+    const r = await runCheck(text(CLAIM), d);
+    assertEquals(r.claims[0].verdict, "false");
+    const models = openrouterCalls(s.calls).map((c) => (c.body as { model: string }).model);
+    assert(models.includes("example/extractor-b") && models.includes("example/assessor-b"), models.join(","));
+  } finally {
+    s.restore();
+  }
 } });
 
 
