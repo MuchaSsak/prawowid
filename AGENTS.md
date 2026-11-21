@@ -1,5 +1,9 @@
 # AGENTS.md
 
+## SECRETS
+
+NEVER read, commit or try to get from a command any passwords, tokens, API keys, .env files, etc. You may acknoledge them, explain or write .env.example, but you do not leak our secrets okie baby?
+
 ## MANDATORY: work in context, keep the wiki current
 
 `.agents/project-info/` is this project's permanent memory (an LLM-maintained wiki). It is the source of truth for everything about the project that is not code.
@@ -16,25 +20,26 @@ Full conventions (page format, ingest steps, log format): [.agents/project-info/
 
 All paths are relative to `.agents/project-info/`.
 
-| When the task touches…                                                   | Read first                         |
-| ------------------------------------------------------------------------ | ---------------------------------- |
-| Anything, or a topic not listed here                                     | `index.md`                         |
-| Rules and conventions for agents and the team (**always applies**)       | `rules/`                           |
-| Hackathon: organizer, dates, deadlines, judging criteria, deliverables   | `hackathon/`                       |
-| The problem we solve, its context, the domain                            | `problem/`                         |
-| Target audience, users, personas, stakeholders                           | `audience/`                        |
-| Product: vision, features, scope, MVP, user flows, ideas                 | `product/`                         |
-| Architecture, tech stack, data, integrations, infrastructure             | `architecture/`                    |
-| Team: members, roles, availability, contacts                             | `team/`                            |
-| Decisions already made, and why (don't re-argue these)                   | `decisions/`                       |
-| Pitch, demo, presentation, submission materials                          | `pitch/`                           |
-| Unresolved questions, unknowns, things waiting on the user               | `open-questions.md`                |
-| Raw files (PDFs, images, docs) the user provided                         | `sources/` (read via topic pages)  |
-| What changed in the wiki and when                                        | `log.md`                           |
+| When the task touches…                                                 | Read first                        |
+| ---------------------------------------------------------------------- | --------------------------------- |
+| Anything, or a topic not listed here                                   | `index.md`                        |
+| Rules and conventions for agents and the team (**always applies**)     | `rules/`                          |
+| Hackathon: organizer, dates, deadlines, judging criteria, deliverables | `hackathon/`                      |
+| The problem we solve, its context, the domain                          | `problem/`                        |
+| Target audience, users, personas, stakeholders                         | `audience/`                       |
+| Product: vision, features, scope, MVP, user flows, ideas               | `product/`                        |
+| Architecture, tech stack, data, integrations, infrastructure           | `architecture/`                   |
+| Team: members, roles, availability, contacts                           | `team/`                           |
+| Decisions already made, and why (don't re-argue these)                 | `decisions/`                      |
+| Pitch, demo, presentation, submission materials                        | `pitch/`                          |
+| Unresolved questions, unknowns, things waiting on the user             | `open-questions.md`               |
+| Raw files (PDFs, images, docs) the user provided                       | `sources/` (read via topic pages) |
+| What changed in the wiki and when                                      | `log.md`                          |
 
 ## Tool compatibility
 
 This repo works the same in any coding agent (Codex, Claude Code, Cursor, Copilot, Gemini and others).
+
 - `AGENTS.md` (this file) holds the instructions. `CLAUDE.md` only imports it. Never put content there.
 - `.agents/project-info/` holds the wiki, and `.agents/skills/<name>/SKILL.md` holds the canonical skills (standard frontmatter: `name`, `description`).
 - `.claude/skills/<name>/SKILL.md` contains thin shims for Claude Code that point to the canonical skill. When you add a skill, write it in `.agents/skills/` and add a shim there too.
