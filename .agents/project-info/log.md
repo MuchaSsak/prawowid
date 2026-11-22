@@ -271,3 +271,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | clean for input hint update; one-line change, links and index unaffected
 ## [2026-11-22] update | Regression found (user): first v6 run 0.71 vs 0.78 of commit 636ac78; wide assessment rule lost A09/G02; narrowed to fact-checks of another claim about the same person; full run 0.79 (84%), 58/58 e2e, $0.210/100, 8.3 s; cost sheet B12/B18 + deliverables synced; user rule recorded in evaluation/benchmark.md: stay comfortably above targets, compare with the last full run
 ## [2026-11-22] lint | clean (scope: prompts/evidence-assessment.md, prompts/README.md, evaluation/benchmark.md, deliverables, index; numbers match latest.md and the sheet)
+## [2026-11-22] update | bot down (500 on every route): a Vercel redeploy reused an old upload with src/app.ts; redeployed fresh from main to prawdomat-bot-proof with vendored core types, /health ok; recipe and live URL in architecture/messaging-bot-runbook.md
+## [2026-11-22] lint | clean for bot runbook update; links, index and routing unaffected
