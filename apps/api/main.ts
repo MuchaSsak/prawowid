@@ -45,7 +45,6 @@ import {
   buildAnalytics,
   LoggingCheckStore,
   mediaInputError,
-  MemoryCheckStore,
   MemoryCorpusStore,
   MOCK_SCENARIO_DESCRIPTIONS,
   mockResponse,
@@ -57,12 +56,15 @@ import {
   runCheck,
 } from "@prawdowid/core";
 import { type Decision, ipKey, RateLimiter, waitText } from "./rate-limit.ts";
+import { openCheckStore } from "./check-store.ts";
 import { openSourceControlStore } from "./source-controls.ts";
 
 const config = loadConfig({ get: (k) => Deno.env.get(k) });
 // Every saved check also becomes one JSON audit line in the host's log (no question text), so the
-// MVP check log survives restarts and instances until Supabase lands (decision 001).
-const store = new LoggingCheckStore(new MemoryCheckStore());
+// MVP check log survives restarts and instances until Supabase lands (decision 001). The rows the
+// admin analytics read live in Deno KV when the runtime has it (shared by every instance), else memory.
+const checkLog = await openCheckStore();
+const store = new LoggingCheckStore(checkLog);
 const ADMIN_TOKEN = Deno.env.get("ADMIN_TOKEN") ?? "";
 const corpus = new IndexedCorpusStore();
 await corpus.loadIndex(new URL("../../data/corpus/alert-corpus-index.json", import.meta.url));
@@ -370,7 +372,7 @@ app.get("/api/v1/admin/analytics", async (c) => {
   const now = new Date();
   const span = { "24h": 1, "7d": 7, "30d": 30, "90d": 90, "1y": 365 }[range as AnalyticsRange] * 86_400_000;
   const { checks, events } = await store.listSince(new Date(now.getTime() - 2 * span));
-  return c.json(buildAnalytics(checks, events, { range: range as AnalyticsRange, now }));
+  return c.json({ ...buildAnalytics(checks, events, { range: range as AnalyticsRange, now }), persistence: checkLog.persistence });
 });
 
 // Source controls (admin page /admin/zrodla): switch evidence sources off and on without a deploy.

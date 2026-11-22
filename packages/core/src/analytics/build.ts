@@ -6,7 +6,7 @@
  * Privacy (decision 011): only aggregates leave the store, plus the masked text of the most repeated
  * claims. No session ids, no raw input, no per-person view. Times are bucketed in Europe/Warsaw.
  */
-import { normalizeForMatch } from "../guard/normalize.ts";
+import { normalizeForMatch, tokens } from "../guard/normalize.ts";
 import { CLAIM_TYPES, type ClaimType, type Verdict, VERDICTS } from "../types.ts";
 
 export const ANALYTICS_RANGES = ["24h", "7d", "30d", "90d", "1y"] as const;
@@ -18,6 +18,8 @@ export type TopicKey = ClaimType | "other";
 export interface AnalyticsCheck {
   created_at: string;
   channel: string;
+  /** Channel "messaging": the chat app (discord, messenger, whatsapp). */
+  platform?: string;
   status: string;
   latency_ms: number;
   cost_usd: number;
@@ -188,6 +190,39 @@ const emptyVerdicts = (): Record<Verdict, number> =>
 const isVerdict = (v: string | null): v is Verdict => v !== null && (VERDICTS as readonly string[]).includes(v);
 const topicOf = (t: ClaimType | null | undefined): TopicKey => (t && (CLAIM_TYPES as readonly string[]).includes(t) ? t : "other");
 
+/** Question and hearsay words that do not change what is claimed. */
+const FILLER = new Set(["czy", "prawda", "prawde", "podobno", "ponoc", "slyszalem", "slyszalam"]);
+
+export interface ClaimSignature {
+  /** Word stems (first 6 letters, diacritics folded): rough Polish inflection without a stemmer. */
+  stems: Set<string>;
+  negated: boolean;
+  numbers: string;
+}
+
+export function claimSignature(text: string): ClaimSignature {
+  const words = tokens(text);
+  return {
+    stems: new Set(words.filter((w) => !FILLER.has(w) && w !== "nie").map((w) => w.slice(0, 6))),
+    negated: words.includes("nie"),
+    numbers: (text.match(/\d+(?:[.,]\d+)?/g) ?? []).map((n) => n.replace(",", ".")).sort().join(" "),
+  };
+}
+
+/**
+ * Two wordings of one claim ("lewandowski sprzedaje prezerwatywy", "Czy Robert Lewandowski sprzedaje
+ * prezerwatywy?"): the shorter one's words are (almost) all in the longer one, and they overlap well.
+ * A negation or a different number always keeps claims apart ("podniósł" vs "obniżył" too: 2 of 3).
+ */
+export function sameClaim(a: ClaimSignature, b: ClaimSignature): boolean {
+  if (a.negated !== b.negated || a.numbers !== b.numbers) return false;
+  const [small, big] = a.stems.size <= b.stems.size ? [a.stems, b.stems] : [b.stems, a.stems];
+  if (small.size < 2) return false;
+  let shared = 0;
+  for (const s of small) if (big.has(s)) shared++;
+  return shared / small.size >= 0.8 && shared / (small.size + big.size - shared) >= 0.5;
+}
+
 export function buildAnalytics(
   checks: AnalyticsCheck[],
   events: AnalyticsEvent[],
@@ -233,10 +268,18 @@ export function buildAnalytics(
     { text: string; count: number; prev: number; spark: number[]; topics: Map<TopicKey, number>; verdicts: Map<Verdict, number>; last: number }
   >();
   // Memoized: the same claim text repeats across many rows (that repetition is what this ranks).
+  // Different wordings of one claim share a group (sameClaim), keyed by the first wording seen.
   const keys = new Map<string, string>();
+  const groups: { key: string; sig: ClaimSignature }[] = [];
   const claimKey = (text: string) => {
     let k = keys.get(text);
-    if (k === undefined) keys.set(text, k = normalizeForMatch(text).toLowerCase().replace(/[.!?]+$/, ""));
+    if (k === undefined) {
+      const exact = normalizeForMatch(text).toLowerCase().replace(/[.!?]+$/, "");
+      const sig = claimSignature(text);
+      k = groups.find((g) => g.key === exact || sameClaim(g.sig, sig))?.key;
+      if (k === undefined) groups.push({ key: k = exact, sig });
+      keys.set(text, k);
+    }
     return k;
   };
   const integrity = { injection_detected: 0, pii_redacted: 0, context_matches: 0, system_states: 0, opinions: 0, abstained: 0 };
@@ -253,7 +296,8 @@ export function buildAnalytics(
       volume[i].checks += weight;
       volume[i].claims += c.claims.length * weight;
     }
-    channels.set(c.channel, (channels.get(c.channel) ?? 0) + weight);
+    const via = c.platform ?? c.channel;
+    channels.set(via, (channels.get(via) ?? 0) + weight);
     const slice = Math.min(11, Math.floor(((ms - from) / span) * 12));
     for (const cl of c.claims) {
       claimCount += weight;

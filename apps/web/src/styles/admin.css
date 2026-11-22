@@ -108,6 +108,9 @@ body.is-locked .admin-shell { display: none; }
 .kpi-delta { margin: 0; font-size: .8125rem; color: var(--ink-3); }
 .kpi-delta.is-up, .kpi-delta.is-down { color: var(--ink-2); }
 .kpi-delta.is-up span { color: var(--navy); }
+/* Channel tile: three shares side by side, the channel name small under each. */
+.kpi-split { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.kpi-split .kpi-value { margin-bottom: 2px; }
 
 /* ── line chart ── */
 .chart-host { width: 100%; }

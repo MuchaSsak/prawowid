@@ -273,3 +273,8 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | clean (scope: prompts/evidence-assessment.md, prompts/README.md, evaluation/benchmark.md, deliverables, index; numbers match latest.md and the sheet)
 ## [2026-11-22] update | bot down (500 on every route): a Vercel redeploy reused an old upload with src/app.ts; redeployed fresh from main to prawdomat-bot-proof with vendored core types, /health ok; recipe and live URL in architecture/messaging-bot-runbook.md
 ## [2026-11-22] lint | clean for bot runbook update; links, index and routing unaffected
+## [2026-11-22] update | web dev mode: picker in the dev bar forces system states and faked connection failures (offline, timeout, bad JSON, slow for Stop); architecture/codebase.md
+## [2026-11-22] lint | clean for dev-mode picker; one-sentence addition, links and index unaffected
+## [2026-11-22] update | admin analytics: "Kanały" tile (Discord/Web/Messenger, sums to 100%) replaces "Fałszywe lub mylące"; repeated claims group across wordings; check log moved to Deno KV (page showed 1 check after many); bot sends `platform`; decisions/011, architecture/api-reference.md, architecture/codebase.md
+## [2026-11-22] lint | 4 findings fixed: compliance-matrix, index and open-questions still said the check log is in memory or listed the false-share tile; links and routing unaffected
+## [2026-11-22] update | analytics: memory-only warning is now the ⓘ popover by the title (like Źródła), shown only without Deno KV; decisions/011

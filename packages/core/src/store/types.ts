@@ -11,6 +11,8 @@ export interface CheckLogRow {
   /** sha256 of the client session id; the raw id is never stored. */
   session_hash: string | null;
   channel: string;
+  /** Channel "messaging": discord, messenger or whatsapp, when the bot said which. */
+  platform?: string;
   input_type: InputType;
   /** PII-masked input, truncated. Never the raw input or provider payloads. */
   masked_input: string;

@@ -67,7 +67,12 @@ async function run(turn: Turn, deps: ConversationDeps, signal: AbortSignal): Pro
         return { text: renderLocal("demo_unavailable", o), outcome: "ok", checkId: null };
       }
       const id = await pseudonym(deps.idSecret, turn.surface, turn.userId);
-      const result = await client.check({ ...intent.request, session_id: id }, id, signal);
+      const result = await client.check(
+        // The chat app, for the admin channel split; the console is not one.
+        { ...intent.request, session_id: id, ...(turn.surface === "console" ? {} : { platform: turn.surface }) },
+        id,
+        signal,
+      );
       if (result.kind === "failure") {
         if (signal.aborted) throw new DeadlineError();
         return { text: renderFailure(o), outcome: result.reason === "timeout" ? "timeout" : "technical_error", checkId: null };

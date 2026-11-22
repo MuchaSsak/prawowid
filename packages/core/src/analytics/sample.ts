@@ -147,7 +147,7 @@ export function sampleLogs(range: AnalyticsRange, now = new Date()): { checks: A
       const created_at = new Date(at).toISOString();
       checks.push({
         created_at,
-        channel: pick(r, [["web", .7], ["discord", .18], ["whatsapp", .12]] as [string, number][]),
+        ...pick(r, [[{ channel: "web" }, .62], [{ channel: "messaging", platform: "discord" }, .23], [{ channel: "messaging", platform: "messenger" }, .15]] as [{ channel: string; platform?: string }, number][]),
         status: claims.some((c) => c.system_state) ? "partial" : "ok",
         latency_ms: Math.round(3800 + r() * 3200 + (r() < .1 ? r() * 6000 : 0)),
         cost_usd: Number((.0006 + r() * .0005 * claimCount).toFixed(6)),

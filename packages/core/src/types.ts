@@ -148,6 +148,9 @@ export const INPUT_TYPES = ["text", "url", "image", "video", "audio"] as const;
 /** `video` and `audio` (data URLs) are accepted by the contract; for now only mock mode answers them. */
 export type InputType = (typeof INPUT_TYPES)[number];
 export type Channel = "web" | "api" | "messaging";
+/** Which chat app a "messaging" check came from (admin analytics split). Optional, additive in v1. */
+export const MESSAGING_PLATFORMS = ["discord", "messenger", "whatsapp"] as const;
+export type MessagingPlatform = (typeof MESSAGING_PLATFORMS)[number];
 
 /** Bumped only for breaking changes; v1 changes are additive (new optional fields, new enum values). */
 export const CONTRACT_VERSION = "1.0";
@@ -158,6 +161,8 @@ export interface CheckRequest {
   user_message?: string;
   session_id?: string;
   channel?: Channel;
+  /** Channel "messaging" only: the chat app. Unknown values are ignored. */
+  platform?: MessagingPlatform;
   /** Mock mode: true = scenario picked from the input, or a scenario name (see mock/fixtures.ts). */
   mock?: boolean | string;
 }

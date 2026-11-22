@@ -159,6 +159,8 @@ export function initAnalytics() {
     if (!r.sample && (r.range === "90d" || r.range === "1y")) {
       showNotice("Dane rzeczywiste sięgają 30 dni wstecz (retencja logów).");
     }
+    // Same note as on Źródła: only when the API has no Deno KV (never for sample data).
+    $("persist-note").hidden = r.sample || (r as { persistence?: string }).persistence !== "memory";
     renderKpis(r);
     renderVolume(r);
     heatmap($("heatmap"), r.heatmap);
@@ -180,23 +182,38 @@ export function initAnalytics() {
     );
   }
 
-  /** Change of a share in percentage points ("pp"), neutral ink: a share is not better up or down. */
-  function pointsDelta(value: number, prev: number): HTMLElement {
-    if (!prev) return h("p", { class: "kpi-delta" }, `brak danych z ${RANGE_PREV[range]}`);
-    const pp = Math.round((value - prev) * 100);
-    const arrow = pp === 0 ? "–" : pp > 0 ? "▲" : "▼";
-    return h("p", { class: "kpi-delta" }, h("span", { "aria-hidden": "true" }, arrow), ` ${Math.abs(pp)} pp wobec ${RANGE_PREV[range]}`);
+  /** Share of checks per channel: Discord, Web, Messenger. Whole percents that always add up to 100. */
+  function channelTile(r: AnalyticsReport): HTMLElement {
+    const names = [["discord", "Discord"], ["web", "Web"], ["messenger", "Messenger"]] as const;
+    const counts = names.map(([key]) => r.channels.find((c) => c.channel === key)?.checks ?? 0);
+    const total = counts.reduce((s, n) => s + n, 0);
+    // Largest remainder: floor every share, then hand the missing points to the biggest remainders.
+    const exact = counts.map((n) => (total ? (n / total) * 100 : 0));
+    const shares = exact.map(Math.floor);
+    const order = exact.map((x, i) => [x - Math.floor(x), i] as const).sort((a, b) => b[0] - a[0]);
+    for (let left = total ? 100 - shares.reduce((s, n) => s + n, 0) : 0, j = 0; left > 0; left--, j++) shares[order[j][1]]++;
+    return h(
+      "article",
+      { class: "kpi" },
+      h("h3", { class: "kpi-label" }, "Kanały"),
+      h(
+        "div",
+        { class: "kpi-split" },
+        ...names.map(([, label], i) =>
+          h("div", { title: `${fmt(counts[i])} sprawdzeń` }, h("p", { class: "kpi-value" }, total ? `${shares[i]}%` : "–"), h("p", { class: "kpi-delta" }, label))
+        ),
+      ),
+    );
   }
 
   function renderKpis(r: AnalyticsReport) {
     const k = r.kpis;
-    const pct = (v: number) => `${Math.round(v * 100)}%`;
     const sec = (ms: number) => `${(ms / 1000).toLocaleString("pl-PL", { maximumFractionDigits: 1 })} s`;
     const tile = (label: string, value: string, d: HTMLElement) =>
       h("article", { class: "kpi" }, h("h3", { class: "kpi-label" }, label), h("p", { class: "kpi-value" }, value), d);
     $("kpis").replaceChildren(
       tile("Sprawdzenia", fmt(k.checks.value), delta(k.checks.value, k.checks.prev)),
-      tile("Fałszywe lub mylące", pct(k.false_share.value), pointsDelta(k.false_share.value, k.false_share.prev)),
+      channelTile(r),
       tile("Mediana czasu odpowiedzi", k.median_latency_ms.value ? sec(k.median_latency_ms.value) : "–", delta(k.median_latency_ms.value, k.median_latency_ms.prev, true)),
     );
   }

@@ -91,3 +91,32 @@ Deno.test("analytics: store listSince, sample is deterministic and flagged", asy
   assert(a.sample);
   assert(a.kpis.checks.value > 0 && a.top_claims.length > 0);
 });
+
+Deno.test("analytics: wordings of one claim group together, negations and numbers stay apart", () => {
+  const rows = [
+    check(1, [fact("Lewandowski sprzedaje prezerwatywy", "false", "event")]),
+    check(2, [fact("Robert Lewandowski sprzedaje prezerwatywy.", "false", "event")]),
+    check(3, [fact("Czy Robert Lewandowski sprzedaje prezerwatywy?", "false", "event")]),
+    check(4, [fact("Lewandowski nie sprzedaje prezerwatyw", "confirmed", "event")]),
+    check(5, [fact("Inflacja wyniosła 5%", "false")]),
+    check(6, [fact("Inflacja wyniosła 15%", "false")]),
+    check(7, [fact("Tusk podniósł podatki", "false")]),
+    check(8, [fact("Tusk obniżył podatki", "false")]),
+  ];
+  const r = buildAnalytics(rows, [], { range: "24h", now: NOW });
+  assertEquals(r.top_claims.length, 1);
+  assertEquals(r.top_claims[0].count, 3);
+  // The latest wording is the one shown.
+  assertEquals(r.top_claims[0].text, "Lewandowski sprzedaje prezerwatywy");
+});
+
+Deno.test("analytics: messaging checks count under their chat app", () => {
+  const rows = [
+    check(1, [], { channel: "messaging", platform: "discord" }),
+    check(2, [], { channel: "messaging", platform: "messenger" }),
+    check(3, [], { channel: "messaging", platform: "messenger" }),
+    check(4, []),
+  ];
+  const r = buildAnalytics(rows, [], { range: "24h", now: NOW });
+  assertEquals(r.channels, [{ channel: "messenger", checks: 2 }, { channel: "discord", checks: 1 }, { channel: "web", checks: 1 }]);
+});

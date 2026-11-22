@@ -19,7 +19,7 @@
     "bot:check": "bun run --cwd apps/bot check",
     "bot:discord:commands": "bun run --cwd apps/bot discord:commands",
     "check": "turbo run check",
-    "test": "deno test --allow-env --allow-net --allow-read --allow-write packages/core apps/api",
+    "test": "deno test --allow-env --allow-net --allow-read --allow-write packages/core apps/api && deno test --unstable-kv apps/api/check-store_test.ts",
     "supabase:schemas:check": "node supabase/scripts/check-schemas.mjs",
     "supabase:migration": "node supabase/scripts/migrate.mjs --generate",
     "supabase:push": "node supabase/scripts/migrate.mjs --push",

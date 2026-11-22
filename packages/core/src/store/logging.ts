@@ -19,6 +19,7 @@ export interface AuditLine {
   check_id: string;
   at: string;
   channel: string;
+  platform?: string;
   input_type: string;
   status: string;
   /** sha256 of the masked question: groups repeated questions without storing them. */
@@ -37,6 +38,7 @@ export async function auditLine(row: CheckLogRow): Promise<AuditLine> {
     check_id: row.check_id,
     at: row.created_at,
     channel: row.channel,
+    ...(row.platform ? { platform: row.platform } : {}),
     input_type: row.input_type,
     status: row.status,
     input_sha256: (await sha256Hex(row.masked_input)).slice(0, 16),
