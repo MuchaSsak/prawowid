@@ -286,3 +286,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | clean: cost-sheet, deliverables and deck pages agree on 2,70 USD / 10,97 zł with an image; routing, index, links and skill parity OK (slide 7 staleness and sheet sharing already in open-questions / deck.md)
 ## [2026-11-22] update | response time shown: web answer line "Odpowiedź w 8,4 s" (browser-measured, send → response), bot "⏱️ Czas sprawdzenia" from meta.latency_ms on live answers; architecture/codebase.md, architecture/messaging-bot.md, product/response-contract.md
 ## [2026-11-22] lint | clean after the response-time change: links, index, skill parity OK; bot test count in open-questions bumped to 111
+## [2026-11-22] update | deployed 43795a4 (response time): web to Vercel prawdomat, bot to prawdomat-bot-proof (health ok, 401/403 checks pass), API rebuilds from main; architecture/codebase.md, architecture/messaging-bot-runbook.md
