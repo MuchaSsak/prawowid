@@ -12,6 +12,7 @@ The code layout, what each part does today, what was measured, and what is still
 | `packages/core/src/narratives/` | known-incident context (EUvsDisinfo), separate from evidence: MCP client, live `search` matcher, corpus matcher + `KnownIncidentStore` for the future DB ([euvsdisinfo-mcp](euvsdisinfo-mcp.md)) |
 | `packages/core/scripts/euvsdisinfo-pull.ts` | bulk pull of all EUvsDisinfo cases into gitignored `data/euvsdisinfo/*.jsonl` |
 | `packages/core/src/sources/catalog.ts` | trusted-source allowlist with tiers ([decision 008](../decisions/008-trusted-source-allowlist.md)), served at `GET /api/v1/sources` |
+| `packages/core/src/pipeline/retrieve.ts` | runs every applicable route in parallel, ranks by token overlap and keeps 5 passages: first the best record of each route that found something, then the rest by rank (`pickPassages`; since 2026-11-22, because 5 corpus fragments were pushing the Eurostat figure out) |
 | `packages/core/src/pipeline/numeric.ts` | code-side number check for official data records |
 | `packages/core/src/pipeline/verdict.ts` | code-owned verdict rules ([pipeline §5](verification-pipeline.md#5-apply-verdict-rules)) |
 | `packages/core/src/pipeline/dates.ts` | reference date (publication → original in the corpus → submission), the year for dates written without one, dates with a year and relative words normalized to the ISO-like form parsePeriod reads ([pipeline §2](verification-pipeline.md#2-extract-and-classify-claims)) |
@@ -36,7 +37,7 @@ The code layout, what each part does today, what was measured, and what is still
 | Sejm ELI | `legal` | yes | title search with up to 3 queries; amending acts are labelled as such in the record |
 | Eurostat | claims with a catalog `indicator` that has a Eurostat series | yes | series for the claim's country (claim year − 4 → latest), plus one call for all countries in that year: EU-27 value, lowest/highest member, the country's rank. Status flags shown in Polish |
 | NBP | `exchange_rate`, `gold_price`, `nbp_reference_rate` | yes | rate in force on a date (7-day window, last quote ≤ date), month/year summaries (mean, min, max, first, last); reference-rate history from the archive XML |
-| GUS BDL | `population` (verified variable only), Poland | no | optional: was unreachable on 2026-11-21, so an outage only adds the "not all sources" caveat |
+| GUS BDL | `population` (verified variable only), Poland | no | optional: was unreachable on 2026-11-21 and again 2026-11-22 (HTTP 500, then TLS resets), so an outage only adds the "not all sources" caveat; when the live call fails a saved copy answers (`gus-snapshot.ts`, refreshed by `scripts/snapshot_gus.ts` from real API responses only) and the record says it is a copy and its date |
 | Corpus | all | no | local BM25 index (`IndexedCorpusStore`, 31 collections); collections can be switched off at runtime ([decision 013](../decisions/013-source-controls.md)); an index error makes the claim a system state |
 | EUvsDisinfo (context, not evidence) | all fact claims | no | MCP `search` (English query) → `context_matches` + `known_narrative` warning; never a citation or verdict input; `skipped` without `EUVSDISINFO_TOKEN` |
 

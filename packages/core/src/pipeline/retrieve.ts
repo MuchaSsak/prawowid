@@ -64,5 +64,22 @@ export async function retrieve(
     routes.find((r) => r.route === "corpus" && (r.status === "unavailable" || r.status === "error" || r.status === "timeout")) ??
       null;
   const unique = [...new Map(all.map((r) => [r.source_id, r])).values()];
-  return { records: rank(claim, unique).slice(0, LIMITS.passagesPerClaim), routes, requiredFailure };
+  return { records: pickPassages(rank(claim, unique), LIMITS.passagesPerClaim), routes, requiredFailure };
+}
+
+/**
+ * The passages the model reads: first the best record of every route that found something, then the
+ * rest by rank. Without the reserved slot, a route that returns many loosely matching fragments (the
+ * corpus) pushes out the one record a targeted route found (the Eurostat or NBP figure itself).
+ */
+export function pickPassages(ranked: SourceRecord[], limit: number): SourceRecord[] {
+  const seenRoutes = new Set<string>();
+  const firsts = ranked.filter((r) => !seenRoutes.has(r.route) && seenRoutes.add(r.route));
+  const picked = new Set(firsts.slice(0, limit));
+  for (const r of ranked) {
+    if (picked.size >= limit) break;
+    picked.add(r);
+  }
+  // Keep rank order in the output.
+  return ranked.filter((r) => picked.has(r));
 }
