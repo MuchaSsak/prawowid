@@ -274,3 +274,35 @@ Deno.test("GET /api/v1/sources lists the evidence routes and the context routes 
   assert(s.routes.every((r: { label: string; required: boolean }) => r.label && typeof r.required === "boolean"));
   assert(s.context_routes.every((r: { catalog: string }) => r.catalog));
 });
+
+Deno.test("admin sources: token required, list, switch off and on, unknown key rejected, public list follows", async () => {
+  const ip = { "x-forwarded-for": "10.204.0.1" };
+  const auth = { ...ip, Authorization: "Bearer test-admin-token" };
+  assertEquals((await get("/api/v1/admin/sources", ip)).status, 401);
+  const list = await (await get("/api/v1/admin/sources", auth)).json();
+  assertEquals(list.persistence, "memory");
+  const kinds = new Set(list.sources.map((s: { kind: string }) => s.kind));
+  assert(kinds.has("route") && kinds.has("publisher"), "routes and publishers are listed");
+  const publisher = list.sources.find((s: { kind: string }) => s.kind === "publisher");
+  const send = (body: unknown) =>
+    app.fetch(new Request("http://x/api/v1/admin/sources", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...auth },
+      body: JSON.stringify(body),
+    }));
+  assertEquals((await send({ key: "corpus:does-not-exist", enabled: false })).status, 400);
+  assertEquals((await send({ key: publisher.key })).status, 400);
+  const off = await (await send({ key: publisher.key, enabled: false })).json();
+  assertEquals(off.sources.find((s: { key: string }) => s.key === publisher.key).enabled, false);
+  assertEquals(off.audit[0].key, publisher.key);
+  assert(off.revision > list.revision);
+  const pub = await (await get("/api/v1/sources")).json();
+  assert(!pub.sources.some((s: { id: string }) => s.id === publisher.id), "a switched-off publisher leaves the open list");
+  const on = await (await send({ key: publisher.key, enabled: true })).json();
+  assertEquals(on.sources.find((s: { key: string }) => s.key === publisher.key).enabled, true);
+  const search = await get("/api/v1/admin/sources/search?q=ostrzeżenie", auth);
+  assertEquals(search.status, 200);
+  const body = await search.json();
+  assert(typeof body.ms === "number" && Array.isArray(body.hits));
+  assertEquals((await get("/api/v1/admin/sources/search", auth)).status, 400);
+});
