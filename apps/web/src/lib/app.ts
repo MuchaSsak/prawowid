@@ -266,10 +266,14 @@ export function initApp() {
   // The fixtures are only needed with ?test=true, so they are fetched on demand, not with the page.
   let mockModule: Promise<typeof import("@prawdowid/core/mock")> | null = null;
   const loadMock = () => (mockModule ??= import("@prawdowid/core/mock"));
+  // The picker in the dev bar forces the next answer: a system state from the mock, or a
+  // connection failure faked in the browser (`net:*`). "Po kolei" keeps the cycle below.
+  const testPick = $<HTMLSelectElement>("test-pick");
   const nextScenario = (mock: typeof import("@prawdowid/core/mock"), req: CheckRequest): MockScenario => {
     const { MOCK_SCENARIOS, pickScenario } = mock;
+    const forced = (MOCK_SCENARIOS as readonly string[]).includes(testPick.value) ? testPick.value as MockScenario : null;
     const explicit = /^demo:/i.test(req.input.value.trim()) || req.input.type !== "text";
-    const s = explicit ? pickScenario(req) : MOCK_SCENARIOS[testIndex++ % MOCK_SCENARIOS.length];
+    const s = forced ?? (explicit ? pickScenario(req) : MOCK_SCENARIOS[testIndex++ % MOCK_SCENARIOS.length]);
     testScenario.textContent = `${s} (${MOCK_SCENARIOS.indexOf(s) + 1}/${MOCK_SCENARIOS.length})`;
     return s;
   };
@@ -762,6 +766,15 @@ export function initApp() {
     let data: CheckResponse;
     try {
       if (testMode) {
+        const net = testPick.value.startsWith("net:") ? testPick.value.slice(4) : null;
+        if (net) {
+          testScenario.textContent = ""; // the picker already names it
+          // Each one takes the same catch path a real failure would.
+          if (net === "offline") throw new TypeError("Failed to fetch");
+          if (net === "timeout") throw new DOMException("Timeout", "TimeoutError");
+          if (net === "bad_json") throw new SyntaxError("Unexpected token '<' in JSON");
+          if (net === "slow") await guard(new Promise((r) => setTimeout(r, 20_000)));
+        }
         const mock = await guard(loadMock());
         data = mock.mockResponse(req, nextScenario(mock, req));
       } else {

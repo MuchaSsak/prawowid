@@ -634,7 +634,8 @@ body.is-chat .form-error { margin-top: 8px; }
   body.is-chat .send { width: 48px; padding: 0; }
   body.is-chat .send-label { display: none; }
   .test-bar { gap: 6px; font-size: .8125rem; }
-  .test-sep, #test-scenario { display: none; }
+  .test-sep, #test-scenario, .test-sample { display: none; }
+  .test-bar .test-pick { max-width: 150px; }
   /* Icon-only panel link so it fits next to "Nowe pytanie". */
   .ghost-btn { width: 44px; padding: 0; justify-content: center; }
   .ghost-label { display: none; }
@@ -659,6 +660,10 @@ body.is-chat .form-error { margin-top: 8px; }
 .test-bar { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; justify-content: center; align-items: center; gap: 8px; height: 32px; padding: 0 16px; background: var(--navy); color: var(--on-navy); font-size: .875rem; white-space: nowrap; overflow: hidden; }
 #test-scenario { opacity: .8; }
 .test-sep:has(+ #test-scenario:empty) { display: none; }
+.test-pick-wrap { display: flex; min-width: 0; }
+.test-pick { min-width: 0; max-width: 220px; height: 24px; padding: 0 6px; border: 1px solid color-mix(in srgb, currentColor 40%, transparent); border-radius: 6px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.test-pick:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
+.test-pick option, .test-pick optgroup { background: var(--navy); color: var(--on-navy); }
 .test-off { padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 body.is-test { padding-top: 32px; box-sizing: border-box; }
 body.is-test.is-chat .top { top: 32px; }

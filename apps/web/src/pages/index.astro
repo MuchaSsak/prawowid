@@ -19,8 +19,29 @@ const apiUrl = (import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787").repla
     <link rel="preload" as="image" href="/video/prawdomat-bg-loop.webp" type="image/webp" fetchpriority="high" />
   </head>
   <body data-api={apiUrl}>
-    <div id="test-bar" class="test-bar" role="status" hidden>
-      Dev mode: dane przykładowe<span class="test-sep">·</span><span id="test-scenario"></span>
+    <div id="test-bar" class="test-bar" hidden>
+      <span>Dev mode<span class="test-sample">: dane przykładowe</span></span><span class="test-sep">·</span><span id="test-scenario" aria-live="polite"></span>
+      <label class="test-pick-wrap">
+        <span class="sr-only">Następna odpowiedź</span>
+        <select id="test-pick" class="test-pick">
+          <option value="">Po kolei</option>
+          <optgroup label="Stany systemu">
+            <option value="needs_clarification">Doprecyzuj</option>
+            <option value="out_of_scope">Poza zakresem</option>
+            <option value="not_a_claim">Nie ma czego sprawdzać</option>
+            <option value="input_rejected">Odrzucone wejście</option>
+            <option value="rate_limited">Limit zapytań</option>
+            <option value="technical_error">Błąd techniczny</option>
+            <option value="partial">Częściowo (źródło niedostępne)</option>
+          </optgroup>
+          <optgroup label="Połączenie">
+            <option value="net:offline">Brak sieci</option>
+            <option value="net:timeout">Przekroczony czas</option>
+            <option value="net:bad_json">Zła odpowiedź serwera</option>
+            <option value="net:slow">Wolna odpowiedź (stop)</option>
+          </optgroup>
+        </select>
+      </label>
       <button type="button" id="test-off" class="test-off">Wyłącz</button>
     </div>
     <div class="frame">
