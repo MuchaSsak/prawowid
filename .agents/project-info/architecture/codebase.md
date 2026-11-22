@@ -79,6 +79,8 @@ Prawdomat runs at [prawdomat.vercel.app](https://prawdomat.vercel.app) in the Ve
 
 Set `PUBLIC_API_URL=https://prawowid.mateusz.deno.net` for Production in Vercel, then redeploy to bake the API URL into the static frontend. A trailing slash is tolerated: every page strips it at build (the first Production value `https://prawowid.mateusz.deno.net/` made the admin pages call `//api/v1/admin/...`, a 404 shown as "Panel jest wyłączony", fixed and redeployed 2026-11-22; the chat page already stripped it in `app.ts`). The Deno API already accepts requests from the production web origin. `PUBLIC_SITE_URL` is optional because Astro can use Vercel's production URL. API secrets belong to Deno Deploy.
 
+Preview of a branch (2026-11-22, first used for the Italy-strike fix): push the branch, take the Deno Deploy build URL of its commit ([api-reference](api-reference.md#deno-deploy-setup)), then from a `git archive` snapshot without `data/ eval/ tools/ docs/ supabase/ infra/` run `vercel link --yes --project prawdomat --scope rocketplns-projects` and `vercel deploy --yes --scope rocketplns-projects --build-env PUBLIC_API_URL=<build URL>`. The API allows the team's preview origins. Previews sit behind Vercel's team login (anonymous visitors get a 302).
+
 ## Next steps
 1. Finish the frontend connection to the API using the [web production deployment](#web-production-deployment) settings. See the [API reference](api-reference.md) for backend configuration.
 2. More corpus sources (gov.pl, CERT, RCB communiqués); Odyseusz country pages are already in it.
