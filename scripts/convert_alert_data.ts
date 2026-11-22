@@ -20,6 +20,31 @@ function cleanText(value: unknown): string | null {
   return text;
 }
 
+/**
+ * Short metadata (a Demagog rating such as "Fałsz", a claimant, a short claim): the same tag and
+ * whitespace cleanup as cleanText, but without its 20-character body-text minimum, which would
+ * drop every verdict. Needs at least one letter (any script, so Ukrainian "Фальш" passes).
+ */
+function cleanShortText(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const text = value
+    .replace(base64Pattern, "")
+    .replace(htmlTagPattern, " ")
+    .replace(/\\u[a-fA-F0-9]{4}/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!/\p{L}/u.test(text)) return null;
+  // Stringified empties only: "False" / "True" are real (English) Demagog ratings.
+  if (/^(?:null|undefined|none)$/i.test(text)) return null;
+  return text;
+}
+
+/** "fałsz." / "Fałsz" -> "Fałsz": the index card adds its own full stop after the rating. */
+function cleanRating(value: unknown): string | null {
+  const text = cleanShortText(value)?.replace(/[\s.]+$/, "");
+  return text ? text.charAt(0).toLocaleUpperCase("pl") + text.slice(1) : null;
+}
+
 function isoDate(value: unknown): string | null {
   if (typeof value !== "string" || !value.trim()) return null;
   const direct = value.trim();
@@ -275,13 +300,15 @@ for (const file of files) {
         for (const review of raw.claim_reviews) {
           if (!review || typeof review !== "object") continue;
           const r = review as Record<string, unknown>;
-          const claim = cleanText(r.claim);
-          const rating = cleanText(r.rating);
+          // Short fields: cleanText's 20-character body minimum dropped every rating ("Fałsz")
+          // and short claims ("Ziemia jest płaska.").
+          const claim = cleanShortText(r.claim);
+          const rating = cleanRating(r.rating);
           if (claim || rating) {
             claims.push({
               claim,
               rating,
-              claimant: str(r.claimant),
+              claimant: cleanShortText(r.claimant),
               claim_date: isoDate(r.claim_date),
               review_date: isoDate(r.review_date),
             });

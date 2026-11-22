@@ -33,6 +33,13 @@ function luhnValid(digits: string): boolean {
   return sum % 10 === 0;
 }
 
+/** ISO 4217 codes likely before an amount in Polish text; never masked as an ID-card series. */
+const CURRENCY_CODES = new Set([
+  "PLN", "EUR", "USD", "GBP", "CHF", "JPY", "CNY", "CZK", "HUF", "SEK", "NOK", "DKK", "RON", "BGN",
+  "UAH", "RUB", "BYN", "CAD", "AUD", "NZD", "TRY", "ILS", "INR", "KRW", "MXN", "BRL", "ZAR", "SGD",
+  "HKD", "XDR", "XAU",
+]);
+
 const UNIT_AFTER = /^\s*(zł|zl|pln|eur|usd|mln|mld|tys|osób|osob|ludzi|%|proc|km|kg|ton|głos|glos)/i;
 
 export function maskPii(input: string): { text: string; redactions: Redaction[] } {
@@ -58,8 +65,12 @@ export function maskPii(input: string): { text: string; redactions: Redaction[] 
   // PESEL: 11 digits with a valid checksum.
   text = text.replace(/\b\d{11}\b/g, (m) => (peselValid(m) ? (hit("pesel"), "[PESEL]") : m));
 
-  // Polish ID card number: 3 letters + 6 digits.
-  text = text.replace(/\b[A-Z]{3}\s?\d{6}\b/g, () => (hit("id_card"), "[nr dowodu]"));
+  // Polish ID card number: 3 letters + 6 digits. A currency code before an amount ("PLN 250000")
+  // is not an ID: masking it would destroy the numeric claim.
+  text = text.replace(/\b([A-Z]{3})\s?\d{6}\b/g, (m, prefix: string) => {
+    if (CURRENCY_CODES.has(prefix)) return m;
+    return (hit("id_card"), "[nr dowodu]");
+  });
 
   // Phones with a country prefix.
   text = text.replace(/(?:\+|00)\d{2}[ -]?\d{3}[ -]?\d{3}[ -]?\d{3}\b/g, () => (hit("phone"), "[telefon]"));

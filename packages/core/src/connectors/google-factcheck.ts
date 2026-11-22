@@ -51,9 +51,12 @@ export const googleFactCheck: Connector = {
       }),
     );
     const ok = settled.filter((s): s is PromiseFulfilledResult<ClaimReviewResponse> => s.status === "fulfilled");
-    if (ok.length === 0) {
-      const first = settled[0] as PromiseRejectedResult | undefined;
-      throw first?.reason instanceof ConnectorError ? first.reason : new ConnectorError("error", "all queries failed");
+    // Some queries failed and the rest found nothing: that is not "no fact-check exists" (a required
+    // route), so report the failure instead of letting the claim become "brak dowodów".
+    const failed = settled.find((s): s is PromiseRejectedResult => s.status === "rejected");
+    const found = ok.reduce((n, { value }) => n + (value.claims?.length ?? 0), 0);
+    if (ok.length === 0 || (failed && found === 0)) {
+      throw failed?.reason instanceof ConnectorError ? failed.reason : new ConnectorError("error", "all queries failed");
     }
 
     const retrieved = new Date().toISOString();

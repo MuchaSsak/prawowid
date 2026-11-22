@@ -97,6 +97,8 @@ Code can compare typed authoritative records without this prompt when the full p
 | Claim "bezrobocie 5%" (likely registered unemployment), Eurostat record 2,9% whose definition line says registered unemployment is higher | context, not refutes (different statistic) |
 | Claim "inflacja w 2024 r. 13,2%", Eurostat record has 13,2% for 2022 and 3,7% for 2024 | misleading, difference: "13,2% to dane za 2022" |
 | Demagog rating "Częściowa prawda" for the same claim | misleading, with the reason in difference |
+
+Code rule since 2026-11-22: the "rating decides, the checked statement is never evidence" override applies to every fact-check card (Google Fact Check or the Demagog cards in the BM25 corpus), recognised by shape (`isFactcheckCard` in `pipeline/factcheck.ts`), not by route. Rating labels mapped by `ratingStance`: Fałsz/Nieprawda/Przerobione zdjęcie·film/Scam/Неправда/Фальш → refutes; Manipulacja/Brak·Brakujący kontekst/Częściowa prawda·fałsz → misleading; Prawda/Правда → supports; Nieweryfikowalne/Satyra → no stance.
 | A photo of a 2015 flood shared as "dziś w Krakowie" | misleading, difference: "the event took place in 2015 in a different place" |
 | Fact-check passage: "Fałsz. Nie ma takiej ustawy" | refutes |
 | Two official sources with different numbers for the same period | each labelled on its own → code flags `sources_conflict` |

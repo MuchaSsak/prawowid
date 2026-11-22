@@ -248,3 +248,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] update | decision 013 edge cases (Fable review): publisher by most specific domain, publisher-only required route -> unavailable, corpus route off hides dates lookup too, disabled optional route keeps strength, 2 s read timeout, /api/v1/sources fails closed, stale keys re-enable
 ## [2026-11-22] update | kgsok on the allowlist + build-time allowlist check (008), converter strips only real tags (012), per-tier rank fusion and sort-then-filter in BM25 (codebase); corpus 31 970 passages
 ## [2026-11-22] lint | clean: edits to 008, 012, 013, codebase; links and index unaffected
+## [2026-11-22] update | full code review (Fable + Astra) fixes: robots.txt RFC 9309 matching + AI-crawler groups for pasted links (012, user decision), SSRF-safe robots redirects, whole-name private params, fact-check cards by shape (evidence-assessment), Demagog ratings kept in the corpus (3142/3142 cards), key-safe transport errors, partial route failures, cache fixes (codebase)
+## [2026-11-22] lint | clean: 012, codebase, evidence-assessment edited; links and index unaffected
