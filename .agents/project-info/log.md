@@ -255,3 +255,9 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] update | final review of PR #17 (GPT Sol 6/10, Claude Opus 8/10 approve): rating override guarded by polarity + recognised rating (evidence-assessment), DNS resolver for fact-check article fetches, partial failures counted after the allowlist filter, robots group/escape fixes
 ## [2026-11-22] decision | Proprietary LICENSE (all rights reserved, jury may run it to evaluate, relicensing possible later); decisions/014, index, README
 ## [2026-11-22] lint | clean: decisions/014 links resolve, index entry added, routing and skill parity untouched
+## [2026-11-22] update | deployed the static web app to Vercel project rocketplns-projects/prawdomat, verified HTTP 200 and Deno API CORS, left production env setup to the user
+## [2026-11-22] lint | 2 findings fixed: compliance matrix and bot runbook now refer to the current web deployment; routing, index, source citations and skill parity checked
+## [2026-11-22] update | Vercel CLI rejected GitHub connection for the frontend; recorded owner access and main-branch build fix requirements in architecture/codebase.md
+## [2026-11-22] lint | clean for Git integration update; routing, index, source citations and skill parity checked
+## [2026-11-22] update | admin panel: analytics missing on Vercel = trailing slash in PUBLIC_API_URL (now stripped at build, redeployed); lag = Intl.formatToParts per row in buildAnalytics (cached offset, ~3x faster) + sample report cache; architecture/codebase.md
+## [2026-11-22] lint | clean for admin speed and API URL update; routing, index, source citations, links and skill parity checked

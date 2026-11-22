@@ -124,7 +124,7 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 export function warsawParts(ms: number): LocalParts {
   return local(ms);
 }
-function local(ms: number): LocalParts {
+function intlParts(ms: number): LocalParts {
   partsFmt ??= new Intl.DateTimeFormat("en-GB", {
     timeZone: TZ,
     year: "numeric",
@@ -137,6 +137,30 @@ function local(ms: number): LocalParts {
   const p: Record<string, string> = {};
   for (const x of partsFmt.formatToParts(ms)) p[x.type] = x.value;
   return { y: +p.year, m: +p.month, d: +p.day, h: +p.hour % 24, wd: WEEKDAYS.indexOf(p.weekday) };
+}
+/** Warsaw UTC offset at the start of this UTC hour (whole hours: CET/CEST). */
+function intlOffset(hourMs: number): number {
+  const p = intlParts(hourMs);
+  return Date.UTC(p.y, p.m - 1, p.d, p.h) - hourMs;
+}
+// formatToParts costs ~3.5 µs, and the report needs it per row and per hour (tens of thousands of
+// calls, ~75% of the build time). The offset changes only on the two DST days a year, so it is cached
+// per UTC day; a day whose start and end offsets differ falls back to a per-hour lookup.
+const offsets = new Map<number, number | null>();
+function offsetAt(ms: number): number {
+  const day = Math.floor(ms / DAY);
+  let o = offsets.get(day);
+  if (o === undefined) {
+    if (offsets.size > 5000) offsets.clear();
+    const a = intlOffset(day * DAY);
+    o = a === intlOffset(day * DAY + DAY - HOUR) ? a : null;
+    offsets.set(day, o);
+  }
+  return o ?? intlOffset(Math.floor(ms / HOUR) * HOUR);
+}
+function local(ms: number): LocalParts {
+  const d = new Date(ms + offsetAt(ms));
+  return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate(), h: d.getUTCHours(), wd: (d.getUTCDay() + 6) % 7 };
 }
 const pad = (n: number) => String(n).padStart(2, "0");
 const MONTHS = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
@@ -174,7 +198,10 @@ export function buildAnalytics(
   const bucket = BUCKET[opts.range];
   const from = now - span;
   const prevFrom = from - span;
-  const t = (r: { created_at: string }) => Date.parse(r.created_at);
+  // Parse each timestamp once: the loops below read it several times per row.
+  const times = new Map<AnalyticsCheck, number>();
+  for (const c of checks) times.set(c, Date.parse(c.created_at));
+  const t = (c: AnalyticsCheck) => times.get(c)!;
   const w = (c: AnalyticsCheck) => c.weight ?? 1;
 
   const cur = checks.filter((c) => t(c) > from && t(c) <= now);
@@ -205,7 +232,13 @@ export function buildAnalytics(
     string,
     { text: string; count: number; prev: number; spark: number[]; topics: Map<TopicKey, number>; verdicts: Map<Verdict, number>; last: number }
   >();
-  const claimKey = (text: string) => normalizeForMatch(text).toLowerCase().replace(/[.!?]+$/, "");
+  // Memoized: the same claim text repeats across many rows (that repetition is what this ranks).
+  const keys = new Map<string, string>();
+  const claimKey = (text: string) => {
+    let k = keys.get(text);
+    if (k === undefined) keys.set(text, k = normalizeForMatch(text).toLowerCase().replace(/[.!?]+$/, ""));
+    return k;
+  };
   const integrity = { injection_detected: 0, pii_redacted: 0, context_matches: 0, system_states: 0, opinions: 0, abstained: 0 };
   const channels = new Map<string, number>();
 
@@ -255,7 +288,7 @@ export function buildAnalytics(
   for (const tp of topics.values()) tp.growth = tp.prev > 0 ? (tp.claims - tp.prev) / tp.prev : null;
 
   for (const e of events) {
-    const ms = t(e);
+    const ms = Date.parse(e.created_at);
     if (ms <= from || ms > now) continue;
     if (e.type === "injection_detected") integrity.injection_detected++;
     if (e.type === "pii_redacted") integrity.pii_redacted++;
