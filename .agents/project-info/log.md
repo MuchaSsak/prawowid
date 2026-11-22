@@ -300,3 +300,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] update | too_vague now gets the strong-model second extraction; claim spans ignore Polish letters (typed "odbyl" vs copied "odbył"); prompts/claim-extraction.md
 ## [2026-11-22] update | claim-extraction@7 (events of a named kind in a named place checkable; casual typing read as meant); prompts/claim-extraction.md, prompts/README.md
 ## [2026-11-22] update | opinion paraphrase guard in extract.ts (same span as an opinion, no number → dropped); prompts/claim-extraction.md
+## [2026-11-22] update | branch full remote runs recorded (main 0.75-0.78, organizer 0.88 final, $0.27/100); cost sheet to update on merge; evaluation/benchmark.md

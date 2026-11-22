@@ -74,6 +74,16 @@ Per class, run 3: false F1 0.91 (15/16), not_verifiable 0.86, confirmed 0.67 (pr
 
 Fixes between runs 1 and 2: Sejm ELI title search on literal title fragments, base acts ranked above amendments; causal and "secretly contains" claims are facts; a lone "misleading" passage no longer outranks a refutation with more origins; missing-key cases get their own cache. Between runs 2 and 3: connector retry; opinions always listed; official record fields count as statements; older passages are context for later periods; **trusted-source allowlist** ([decision 008](../decisions/008-trusted-source-allowlist.md)); **Eurostat/NBP/GUS routes with the code-side number check**; fact-check ratings like "Częściowa prawda"/"Missing context" → misleading; links inside chat messages are read.
 
+## Branch run 2026-11-22 (`t3/fix-italy-strike-verdict`, not merged; remote, `--no-save`)
+Prompts `claim-extraction@7` + `evidence-assessment@7`, decision 016, whole short official pages, `too_vague` second extraction, Polish-letter-insensitive spans, opinion paraphrase guard. Two full remote runs on branch builds (J cases skipped remotely):
+
+| Run | Main set macro-F1 / accuracy | Abstention | Robustness | End-to-end | Cost per 100 | Organizer set macro-F1 / accuracy / style |
+|---|---|---|---|---|---|---|
+| build frj2fhwsw7en (before the paraphrase guard) | 0.78 / 84% (42/50) | 100% | 100% | 55/56 | $0.280 | 0.66 / 85% / 88% |
+| build b8afbhezhxpp (final) | 0.75 / 80% (40/50) | 88% | 100% | 55/56 | $0.269 | 0.88 / 88% / 92% |
+
+Between the two main runs K03 and K05 flipped with no related change (K05 asked for clarification once), so the main set is 0.75-0.78 with run-to-run noise: at the target, not comfortably above it, against the last recorded 0.79 (single run). Persistent misses: misleading inference (B01-B03, K02, S07 → false: gap 2), A02/G01 (gap 8), S05 (gap 1), S09 fiction. The organizer set gained R17 (opinion guard). Cost rose from $0.210 to about $0.27 per 100 (strong-model second extraction on vague inputs, whole official pages as passages); the cost sheet waits for the merge.
+
 ## Known gaps (ranked by impact on the score)
 1. **True claims abstain too often** (confirmed recall 0.50): A08, A10, A11, E03, F02 and S05. In S05 the model labelled the exact NBP line (4,2578 vs claim 4,26) as context. Code never upgrades a stance on purpose (a same-named statistic with another definition must not become a verdict), so the fix belongs in the prompt or the model.
 2. **Misleading inference** (B01, B03: true premise + wrong conclusion) still abstains: needs the explicit "misleading inference" handling from pipeline §2.
