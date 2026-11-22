@@ -54,6 +54,7 @@ Format: `- [path](path): one-line summary`
 - [architecture/codebase.md](architecture/codebase.md): **what is built**: code layout, evidence routes (Google Fact Check, ELI, Eurostat, NBP, GUS), the number check, interim verdict choices, measured latency/cost, next steps
 - [architecture/web-performance.md](architecture/web-performance.md): Lighthouse scores before/after for every web page, why PageSpeed (no GPU) scored the old deploy 69 and the GPU verdict that fixes it, what changed and why (inlined CSS, poster preload, video/grain after load, WebGL backdrop in a worker, pinned and Polish-subset fonts, CLS/LCP fixes, SEO files), deliberate ceilings, how to re-check
 - [architecture/technical-approach-research.md](architecture/technical-approach-research.md): pipeline best practice, models, retrieval, injection defense, eval harness, IFCN/EFCSN
+- [architecture/pavel-proposal-review.md](architecture/pavel-proposal-review.md): review of Pavel's architecture draft: what agrees, what to adopt (hybrid FTS + vector retrieval, common document schema), and conflicts with the frozen contract, the tier rule and the no-snapshot decision
 - [architecture/vector-db-integration-plan.md](architecture/vector-db-integration-plan.md): minimalny plan wpięcia istniejącego PostgreSQL + pgvector przez `CorpusStore`, plus lista braków (hosting, korpus 21 dok., adapter, polityka, eval)
 
 ## prompts/
@@ -76,6 +77,7 @@ Format: `- [path](path): one-line summary`
 - [decisions/008-trusted-source-allowlist.md](decisions/008-trusted-source-allowlist.md): evidence only from an allowlist of publishers (`GET /api/v1/sources`), tier by credentials (PAP, Sprawdzam To = media), one publisher = one origin, no bypassing robots/terms
 - [decisions/009-video-audio-input-and-web-composer.md](decisions/009-video-audio-input-and-web-composer.md): `video`/`audio` inputs added to contract v1 (data URLs, 5 MB; live transcription since 2026-11-21), one shared media validator, single-composer web app on mock data (demo switch later removed: web is live-only)
 - [decisions/011-admin-analytics.md](decisions/011-admin-analytics.md): admin panel: analytics page (3 stat tiles (checks, false-or-misleading share, median time), most checked claims with verdict and trend, heatmap + traffic; full-screen key lock; aggregates only, sample switch, light only, browser token auth); plus `/admin/dokumenty`, cards with iframe previews of our files (cost sheet first)
+- [decisions/012-source-ingestion.md](decisions/012-source-ingestion.md): bulk ingestion of the organizer's sources into the team's Data repo (PavelSfk/Data, its conventions): 6 months back (Demagog 3 years), full texts + short archiving policy, robots/terms respected (PAP only /mediaroom), no periodic state recording, no meteorological data, IMGW hydro from the danepubliczne.imgw.pl archive
 - [decisions/003-config-in-code.md](decisions/003-config-in-code.md): `.env` holds only secrets; models, routing and limits are code defaults, models overridable by optional env vars
 - [decisions/010-product-name-prawdomat.md](decisions/010-product-name-prawdomat.md): display name is **Prawdomat**; technical identifiers (env vars, packages, cookies, UA) keep `prawdowid`; PRAWDOWID = the MSZ task
 
@@ -98,3 +100,4 @@ Format: `- [path](path): one-line summary`
 - [sources/2026-11-21-euvsdisinfo-mcp-api-docs.txt](sources/2026-11-21-euvsdisinfo-mcp-api-docs.txt): EUvsDisinfo MCP API docs (May 2026, new host mcp.euvsd.info, 4 tools, stateless mode)
 - [sources/2026-11-21-euvsdisinfo-mcp-connect-guide.txt](sources/2026-11-21-euvsdisinfo-mcp-connect-guide.txt): EUvsDisinfo claude.ai connector guide (May 2026; key generated on euvsdisinfo.eu)
 - [sources/2026-11-21-czy-we-wloszech-strajk-generalny.docx](sources/2026-11-21-czy-we-wloszech-strajk-generalny.docx): organizer sample chatbot questions and answers per scenario A-J (Piotr Sosnowski)
+- [sources/2026-11-21-pavel-architecture-proposal.txt](sources/2026-11-21-pavel-architecture-proposal.txt): Pavel's architecture draft (corpus, retrieval, outcomes); reviewed in [architecture/pavel-proposal-review.md](architecture/pavel-proposal-review.md)
