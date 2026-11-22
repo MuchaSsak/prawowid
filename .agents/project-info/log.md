@@ -309,3 +309,7 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | Base-audit pages checked. Updated the stale web deployment and check-store notes, corrected the corpus archiving description, and removed the answered source-controls KV question. Routing, index, source references, links and skill parity checked.
 ## [2026-11-22] update | Added locally tested, opt-in Discord moderator DMs to the API. Setup and delivery limits are in architecture/api-reference.md.
 ## [2026-11-22] lint | Moderator DM setup and compliance status agree. Routing, index, source references, links and skill parity passed.
+## [2026-11-22] update | injection probes rerun by hand (all honest, two phrasings not flagged); Deno Deploy 15 builds/hour limit hit, main needs manual Redeploy; evaluation/benchmark.md
+## [2026-11-22] update | negated statements turned round, opposite-polarity ratings are context, AFP related-card answer, two injection phrasings; tested on a local API; product/response-contract.md, evaluation/benchmark.md
+## [2026-11-22] update | negation handling (positive passages refute negated claims, reversed ratings kept, NLI label repair); evaluation/benchmark.md
+## [2026-11-22] lint | Preserved both sets of entries when merging main into the moderator-alert branch. Wiki routing, index, source references, links and skill parity passed.

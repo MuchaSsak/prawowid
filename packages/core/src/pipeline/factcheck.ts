@@ -74,3 +74,24 @@ export function isAskedChecker(asked: string, publisher: string): boolean {
   // Prefix match absorbs Polish inflection ("Demagoga" ~ "Demagog").
   return words(asked).some((a) => pub.some((p) => a === p || (Math.min(a.length, p.length) >= 4 && (a.startsWith(p) || p.startsWith(a)))));
 }
+
+/**
+ * Does the quote negate the part that matches the claim? Only the stretch between the first and last
+ * claim word found in the quote counts (5-letter stems, negation words excluded), so an unrelated "nie"
+ * later in the sentence ("…od uchwalenia Konstytucji RP w 1997 roku … wotum zaufania nie uzyskał")
+ * does not count. No claim word found → treated as negated (no repair).
+ */
+export function negatedNear(claimText: string, quote: string): boolean {
+  const fold = (s: string) => s.toLocaleLowerCase("pl").normalize("NFD").replace(/\p{M}/gu, "").replace(/ł/g, "l");
+  const NEG = /^(nie|nigdy|zaden|zadna|zadne|zadnego|zadnej|zadnych|brak)$/;
+  const stems = fold(claimText).split(/[^\p{L}\p{N}]+/u).filter((w) => w.length >= 4 && !NEG.test(w)).map((w) => w.slice(0, 5));
+  const words = fold(quote).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const hits = words.map((w, i) => (stems.some((s) => w.startsWith(s)) ? i : -1)).filter((i) => i >= 0);
+  if (hits.length < 2) return true;
+  return words.slice(hits[0], hits[hits.length - 1] + 1).some((w) => NEG.test(w));
+}
+
+/** The claim itself says "nie", "nigdy", "żaden" or "brak". */
+export function isNegatedClaim(text: string): boolean {
+  return /(?<![\p{L}])(nie|nigdy|żaden|żadna|żadne|żadnego|żadnej|żadnych|brak)(?![\p{L}])/iu.test(text);
+}
