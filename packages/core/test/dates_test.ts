@@ -145,3 +145,16 @@ Deno.test("'ostatnio' / 'niedawno' → the last 30 days before the reference dat
   );
 });
 
+
+Deno.test("'w tym tygodniu' / 'w zeszłym tygodniu' → Monday-to-Sunday weeks, this week ending at the reference date", () => {
+  // 2026-11-22 is a Sunday, 2026-11-18 a Wednesday, 2026-11-16 a Monday.
+  assertEquals(resolveTime("w tym tygodniu", "past", ref("2026-11-22")), { time: "2026-11-16/2026-11-22", filledYear: true, relative: "w tym tygodniu" });
+  assertEquals(resolveTime("ten tydzień", "past", ref("2026-11-18")).time, "2026-11-16/2026-11-18");
+  assertEquals(resolveTime("tego tygodnia", "past", ref("2026-11-16")).time, "2026-11-16/2026-11-16");
+  assertEquals(resolveTime("w zeszłym tygodniu", "past", ref("2026-11-18")).time, "2026-11-09/2026-11-15");
+  assertEquals(resolveTime("ubiegły tydzień", "past", ref("2026-11-22")).time, "2026-11-09/2026-11-15");
+  assertEquals(
+    periodNote(resolveTime("w tym tygodniu", "past", ref("2026-11-22")), ref("2026-11-22", "submission")),
+    "Tekst podaje czas względnie („w tym tygodniu”); przyjęliśmy okres 16.11.2026–22.11.2026 na podstawie daty zgłoszenia (22.11.2026); jeśli tekst jest starszy, wynik może być inny.",
+  );
+});

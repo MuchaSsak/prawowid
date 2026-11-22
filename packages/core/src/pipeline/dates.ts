@@ -91,6 +91,12 @@ function relativeTime(t: string, ref: string): string | null {
   if (has(/(?<![\p{L}])(dziś|dzis|dzisiaj)(?![\p{L}])/u)) return ref;
   if (has(/(?<![\p{L}])pojutrze(?![\p{L}])/u)) return addDaysIso(ref, 2);
   if (has(/(?<![\p{L}])jutro(?![\p{L}])/u)) return addDaysIso(ref, 1);
+  // Weeks run Monday to Sunday. "This week" ends at the reference date (a past claim cannot reach later).
+  const monday = addDaysIso(ref, -((new Date(`${ref}T00:00:00Z`).getUTCDay() + 6) % 7));
+  if (has(/(zeszł|ubiegł|poprzedni)\p{L}*\s+(tydzień|tydzien|tygodni\p{L}*)|tydzień\s+temu|tydzien\s+temu/u)) {
+    return `${addDaysIso(monday, -7)}/${addDaysIso(monday, -1)}`;
+  }
+  if (has(/(tym|ten|tego|bieżąc\p{L}*|biezac\p{L}*|obecn\p{L}*)\s+(tydzień|tydzien|tygodni\p{L}*)/u)) return `${monday}/${ref}`;
   if (has(/(zeszł|ubiegł|poprzedni)\p{L}*\s+(rok|roku)|rok\s+temu/u)) return String(y - 1);
   if (has(/(przyszł|następn)\p{L}*\s+(rok|roku)/u)) return String(y + 1);
   if (has(/(tym|bieżącym|biezacym|obecnym|tego)\s+(rok|roku)/u)) return String(y);

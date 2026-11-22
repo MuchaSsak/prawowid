@@ -33,6 +33,7 @@ import { assessClaim } from "./assess.ts";
 import { periodNote, referenceDate, resolveTime } from "./dates.ts";
 import { type ExtractedClaim, extractClaims, type Material } from "./extract.ts";
 import {
+  announcementExplanation,
   askedCheckerAnswer,
   factcheckExplanation,
   plainFromVerdict,
@@ -567,7 +568,9 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     for (const g of guard.upgrades) event("number_check", { claim: c.id, ...g, match: "exact_record" });
     const d = decideVerdict(guard.passages, { optionalRouteMissing });
     d.warnings.push(...guard.warnings);
+    // Only passages the user sees as citations count; an old irrelevant hit is not "the material".
     const archival = guard.passages
+      .filter((p) => p.stance !== "irrelevant")
       .map((p) => p.record.published_at)
       .filter((date): date is string => Boolean(date))
       .filter((date) => {
@@ -598,6 +601,14 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
         d.strength = { level: "low", reasons: ["ocena źródeł była niespójna"] };
         explanation = templateExplanation("insufficient_evidence", []);
         missingOverride = "Ocena źródeł była niejednoznaczna. Sprawdź cytowane źródła samodzielnie.";
+      } else if (d.verdict === "insufficient_evidence") {
+        // The model read an announcement as proof and code made it context: keep the fact we have
+        // (announced, by whom, when) instead of the generic "nothing found" template.
+        const announced = announcementExplanation(guard.passages);
+        if (announced) {
+          explanation = announced.explanation;
+          missingOverride = announced.missing;
+        }
       }
     }
     // The leading word only when code and model agree on the verdict (or the verdict came from a rating).

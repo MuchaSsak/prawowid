@@ -193,3 +193,33 @@ Deno.test({ ...T, name: "subject guard: a refutation that names none of the clai
   assertEquals(await run(rec), "context");
   assertEquals(await run({ ...rec, text: "Kodeks testowy zmieniano; uchylono część przepisów w 1993 roku." }), "refutes");
 } });
+
+Deno.test({ ...T, name: "announced: the abstention states the announcement with its source; an old uncited hit adds no archival warning", async fn() {
+  const claim = "W Przykładowie odbył się strajk generalny.";
+  const recent = new Date(Date.now() - 3 * 86_400_000).toISOString().slice(0, 10);
+  const s = stubFetch({
+    extraction: () => extraction([{ text: claim, time: "w tym tygodniu" }]),
+    // The model reads the announcement as proof; code must make it context.
+    assessment: assess({ "Urząd Testowy": { stance: "supports", needle: "zapowiedziano" } }, "confirmed", { plain_answer: "yes" }),
+  });
+  const d = deps();
+  const base = { route: "corpus" as const, retrieved_at: "2026-11-21T00:00:00Z", tier: "official" as const };
+  await d.corpus.upsert([
+    { ...base, source_id: "corpus:u:1", title: "Przykładowo", publisher: "Urząd Testowy", url: "https://u.example/p", published_at: recent, origin_key: "u:t",
+      text: "Informacje dla podróżnych.\nW dniu 20.11. na terenie Przykładowa zapowiedziano strajk generalny w sektorze publicznym." },
+    { ...base, source_id: "corpus:a:1", title: "Archiwum", publisher: "Archiwum Testowe", url: "https://a.example/s", published_at: "2020-01-01", origin_key: "a:t",
+      text: "Strajk generalny w Przykładowie w 2019 roku dotyczył kolei." },
+  ]);
+  try {
+    const r = await runCheck({ input: { type: "text", value: claim }, channel: "web", session_id: "t-announced" }, d);
+    const c = r.claims[0];
+    assertEquals(c.verdict, "insufficient_evidence");
+    assertStringIncludes(c.explanation ?? "", "Urząd Testowy");
+    assertStringIncludes(c.explanation ?? "", "„W dniu 20.11. na terenie Przykładowa zapowiedziano strajk generalny w sektorze publicznym”");
+    assert(!/^(Tak|To prawda)\./.test(c.explanation ?? ""), c.explanation ?? "");
+    assertStringIncludes(c.missing ?? "", "czy zapowiedziane wydarzenie się odbyło");
+    assert(!c.warnings.some((w) => w.type === "archival_material"), JSON.stringify(c.warnings));
+  } finally {
+    s.restore();
+  }
+} });

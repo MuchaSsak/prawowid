@@ -43,7 +43,7 @@ The code layout, what each part does today, what was measured, and what is still
 | Corpus | all | no | local BM25 index (`IndexedCorpusStore`, 31 collections); collections can be switched off at runtime ([decision 013](../decisions/013-source-controls.md)); an index error makes the claim a system state |
 | EUvsDisinfo (context, not evidence) | all fact claims | no | MCP `search` (English query) → `context_matches` + `known_narrative` warning; never a citation or verdict input; `skipped` without `EUVSDISINFO_TOKEN` |
 
-A required route that is unavailable (e.g. no Google key, Eurostat down for a statistics claim) gives the claim a system state, never a verdict. Not covered yet, and listed in `limitations`: Sejm votings, institutions' press releases, regional statistics, MSZ Odyseusz.
+A required route that is unavailable (e.g. no Google key, Eurostat down for a statistics claim) gives the claim a system state, never a verdict. Not covered yet, and listed in `limitations`: Sejm votings, institutions' press releases, regional statistics. MSZ Odyseusz country pages are in the corpus (collected by `tools/collector/scripts/collect_odyseusz.py`; seen live 2026-11-22).
 
 A text message that contains a link: the first link is also fetched through the URL intake (same SSRF/robots guards) and read as `article` material; a failure only adds a warning (organizer samples E/I, [organizer-sample-answers](../hackathon/organizer-sample-answers.md)).
 
@@ -81,7 +81,7 @@ Set `PUBLIC_API_URL=https://prawowid.mateusz.deno.net` for Production in Vercel,
 
 ## Next steps
 1. Finish the frontend connection to the API using the [web production deployment](#web-production-deployment) settings. See the [API reference](api-reference.md) for backend configuration.
-2. A route for MSZ's Odyseusz travel advisories (expected by the organizer samples) and the corpus (gov.pl, CERT, RCB communiqués).
+2. More corpus sources (gov.pl, CERT, RCB communiqués); Odyseusz country pages are already in it.
 3. Ask the Sprawdzam To editors for consent to ingest; re-verify the IFCN status of OKO.press and Konkret24.
 4. Supabase: `private.check_logs` / `check_events` tables, then the corpus with hybrid search, including `corpus.known_incidents` for EUvsDisinfo (upgrade path in [euvsdisinfo-mcp](euvsdisinfo-mcp.md)). Set `EUVSDISINFO_TOKEN` on Deno Deploy.
 5. Messaging bot: M1 code in `apps/bot`; next is deploying it on Vercel with a Discord app, then M1b (Redis, deep health, consistency script). See [messaging-bot](messaging-bot.md#implementation-status-2026-11-21).

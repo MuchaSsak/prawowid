@@ -36,6 +36,11 @@ export interface VerifiedPassage {
   data_period: string | null;
   /** The model quoted a fact-check's checked statement; code used the rating instead. */
   ratingOverride?: boolean;
+  /**
+   * Set when the announced-is-not-happened guard turned a "supports" into "context": the sentence of
+   * the same document that announces the event, verbatim. The answer states it (announced, outcome unknown).
+   */
+  announcement?: string;
 }
 
 export interface AssessmentResult {
@@ -126,7 +131,14 @@ export async function assessClaim(args: {
     // "X was announced for Monday. X is nationwide.", and the second sentence alone reads like support.
     if (verified.stance === "supports" && !ANNOUNCED.test(args.claim.text)) {
       const siblings = args.records.filter((r) => r !== record && r.url === record.url).map((r) => r.text).join("\n");
-      if (ANNOUNCED.test(around(record.text, verified.quote)) || ANNOUNCED.test(siblings)) verified.stance = "context";
+      const near = around(record.text, verified.quote);
+      if (ANNOUNCED.test(near) || ANNOUNCED.test(siblings)) {
+        verified.stance = "context";
+        const sentence = ANNOUNCED.test(near)
+          ? announcingSentence(record.text, Math.max(0, record.text.indexOf(verified.quote)))
+          : announcingSentence(siblings, 0);
+        if (sentence) verified.announcement = sentence;
+      }
     }
     // A local claim is decided only by a passage about that place: a refutation about another city
     // never settles a claim about this one. Official data records (routed by country) and acts of
@@ -168,6 +180,20 @@ function aboutSubject(entities: string[], text: string): boolean {
 function around(text: string, quote: string): string {
   const i = text.indexOf(quote);
   return i < 0 ? quote : text.slice(Math.max(0, i - 200), i + quote.length + 200);
+}
+/**
+ * The whole sentence that announces or schedules something, nearest to `at`, verbatim (null when none).
+ * A sentence ends at . ! ? before a capital letter or the end, so "20.11. zapowiedziano" stays one sentence.
+ */
+function announcingSentence(text: string, at: number): string | null {
+  let best: { s: string; d: number } | null = null;
+  for (const m of text.matchAll(/(?:[^\n.!?]|[.!?](?!\s+\p{Lu}|\s*$))+[.!?]?/gu)) {
+    const sentence = m[0].trim();
+    if (sentence.length <= 10 || !ANNOUNCED.test(sentence)) continue;
+    const d = Math.abs(m.index! - at);
+    if (!best || d < best.d) best = { s: sentence, d };
+  }
+  return best?.s ?? null;
 }
 const ANNOUNCED =
   /\b(?:zapowiedzia\p{L}*|zapowiada\p{L}*|zaplanowan\p{L}*|ma się odbyć|mają się odbyć|odbędzie się|odbędą się|announced|scheduled|will take place)/iu;
