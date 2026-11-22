@@ -269,3 +269,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | clean for admin speed and API URL update; routing, index, source citations, links and skill parity checked
 ## [2026-11-22] update | web input hints are statements, not questions; example is the true claim on the 2025 minimum wage (4666 zł); architecture/codebase.md
 ## [2026-11-22] lint | clean for input hint update; one-line change, links and index unaffected
+## [2026-11-22] update | bot down (500 on every route): a Vercel redeploy reused an old upload with src/app.ts; redeployed fresh from main to prawdomat-bot-proof with vendored core types, /health ok; recipe and live URL in architecture/messaging-bot-runbook.md
+## [2026-11-22] lint | clean for bot runbook update; links, index and routing unaffected
