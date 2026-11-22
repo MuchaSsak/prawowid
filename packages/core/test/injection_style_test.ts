@@ -372,3 +372,25 @@ Deno.test({ ...T, name: "hard constraint 21: a fact with the same span as an opi
   const figure = await run("Budżet Przykładowa wynosi 5 mln zł.");
   assertEquals(figure.claims.map((c) => c.class), ["fact", "opinion"]);
 } });
+
+Deno.test({ ...T, name: "a negated question or denial checked as the positive claim gets no leading Tak/To prawda", async fn() {
+  const run = async (typed: string, claimText: string) => {
+    const s = stubFetch(
+      {
+        extraction: () => extraction([{ text: claimText, span: typed }]),
+        assessment: assess({ Demagog: { stance: "supports", needle: "Ocena" } }, "confirmed", { plain_answer: "yes" }),
+      },
+      { googleFactCheck: () => factCheck("Demagog", "Prawda", claimText) },
+    );
+    try {
+      return (await runCheck({ input: { type: "text", value: typed }, channel: "web", session_id: `t-neg-${typed.length}` }, deps())).claims[0];
+    } finally { s.restore(); }
+  };
+  const negQ = await run("Czy most w Przykładowie nie został otwarty w 2025 roku?", "Most w Przykładowie został otwarty w 2025 roku.");
+  assertEquals(negQ.verdict, "confirmed");
+  assert(!/^(Tak|Nie|To prawda|To nieprawda)\./.test(negQ.explanation ?? ""), negQ.explanation ?? "");
+  const denial = await run("Nieprawda, że most w Przykładowie otwarto w 2025 roku.", "Most w Przykładowie otwarto w 2025 roku.");
+  assert(!/^(Tak|Nie|To prawda|To nieprawda)\./.test(denial.explanation ?? ""), denial.explanation ?? "");
+  const same = await run("Czy most w Przykładowie został otwarty w 2025 roku?", "Most w Przykładowie został otwarty w 2025 roku.");
+  assert(/^Tak\./.test(same.explanation ?? ""), same.explanation ?? "");
+} });
