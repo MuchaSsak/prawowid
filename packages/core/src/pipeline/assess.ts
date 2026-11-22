@@ -5,7 +5,7 @@ import type { SourceRecord } from "../connectors/types.ts";
 import { containsVerbatim } from "../guard/normalize.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
 import { eventDateIn } from "./dates.ts";
-import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v7.ts";
+import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v8.ts";
 import type { Stance } from "../types.ts";
 import { factcheckFields, isFactcheckCard, isNegatedClaim, negatedNear, oppositePolarity, ratingStance } from "./factcheck.ts";
 
@@ -188,10 +188,12 @@ export async function assessClaim(args: {
     }
     // Decision 016 (user, 2026-11-22): an official announcement of exactly this event, for a day that
     // has already passed, with no cancellation in the same document, supports a claim that it took place.
-    if (ok && verified.stance === "context" && p.announces_claimed_event && args.referenceDate) {
+    if (ok && (verified.stance === "context" || (verified.stance !== "irrelevant" && isNegatedClaim(args.claim.text))) &&
+      p.announces_claimed_event && args.referenceDate) {
       const day = announcedDayPassed(record, args.records, verified.quote, args.claim, args.referenceDate);
       if (day) {
-        verified.stance = "supports";
+        // A claim that it did NOT take place ("We Włoszech nie było strajku") is refuted by the same rule.
+        verified.stance = isNegatedClaim(args.claim.text) ? "refutes" : "supports";
         verified.announcedPassed = day.date;
         verified.announcement = day.sentence;
         // The citation shows the announcing sentence (verbatim from the same page), not the neighbour quoted.

@@ -15,7 +15,7 @@ import { transcribeRecording, transcriptToMaterial } from "../intake/recording.t
 import { fetchArticle, IntakeError, type ResolveHost } from "../intake/url.ts";
 import { LlmError, type LlmUsage } from "../llm/openrouter.ts";
 import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v7.ts";
-import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v7.ts";
+import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v8.ts";
 import type { CheckEventRow, CheckStore, CorpusStore } from "../store/types.ts";
 import {
   type CheckRequest,
@@ -668,14 +668,15 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     // Decision 016: confirmed only by official announcements whose day has passed. Code owns this
     // verdict (the prompt still labels announcements "context"), so it owns the wording and the lead
     // word too, and the strength is low: nobody reported how the event went.
-    const byAnnouncement = d.verdict === "confirmed" && d.decisive.length > 0 && d.decisive.every((p) => p.announcedPassed);
+    const byAnnouncement = (d.verdict === "confirmed" || d.verdict === "false") && d.decisive.length > 0 &&
+      d.decisive.every((p) => p.announcedPassed);
     if (byAnnouncement) {
       event("announced_passed", { claim: c.id, model: proposed, days: [...new Set(d.decisive.map((p) => p.announcedPassed))] });
       explanation = announcedPassedExplanation(d.decisive);
       d.strength = { level: "low", reasons: ["tylko oficjalna zapowiedź, termin już minął", "brak relacji z przebiegu"] };
     }
     // The leading word only when code and model agree on the verdict (or the verdict came from a rating).
-    const plain = byAnnouncement ? "yes" : stale && proposed !== d.verdict ? plainFromVerdict(d.verdict) : assessed.assessment.plain_answer;
+    const plain = byAnnouncement ? (d.verdict === "confirmed" ? "yes" : "no") : stale && proposed !== d.verdict ? plainFromVerdict(d.verdict) : assessed.assessment.plain_answer;
     const partly = d.verdict === "misleading" && ratedPartlyTrue(d.decisive);
     // A negated question or denial ("Czy NBP nie obniżył stóp?", "Nieprawda, że X") checked as the
     // positive claim: "Tak."/"To prawda." would answer the user's words backwards, so no leading word;
@@ -709,7 +710,10 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
         retrieved_at: p.record.retrieved_at,
         url: p.record.url,
         excerpt: p.quote,
-        stance: p.stance as Citation["stance"],
+        // A negated statement shown with its verdict turned round: the source markers turn with it.
+        stance: (flippedStatement && (p.stance === "supports" || p.stance === "refutes")
+          ? (p.stance === "supports" ? "refutes" : "supports")
+          : p.stance) as Citation["stance"],
         tier: p.record.tier,
         route: p.record.route,
       }));

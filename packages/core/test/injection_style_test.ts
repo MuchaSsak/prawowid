@@ -399,6 +399,7 @@ Deno.test({ ...T, name: "a negated question or denial checked as the positive cl
   const negStatement = await run("Most w Przykładowie nie został otwarty w 2025 roku.", "Most w Przykładowie został otwarty w 2025 roku.");
   assertEquals(negStatement.verdict, "false");
   assertEquals(negStatement.text, "Most w Przykładowie nie został otwarty w 2025 roku.");
+  assertEquals(negStatement.citations[0]?.stance, "refutes");
   const same = await run("Czy most w Przykładowie został otwarty w 2025 roku?", "Most w Przykładowie został otwarty w 2025 roku.");
   assert(/^Tak\./.test(same.explanation ?? ""), same.explanation ?? "");
 } });
@@ -481,4 +482,10 @@ Deno.test({ ...T, name: "negation (NLI): a passage stating the claim's words wit
   assertEquals(await run("Mostu w Przykładowie nie otwarto w 2025 roku.", "Do otwarcia mostu w Przykładowie nie doszło w 2025 roku."), "supports");
   // Only one claim word in the quote: no judgement, label stands.
   assertEquals(await run("Nikt nie zginął w pożarze w Testowie.", "Od otwarcia mostu w Przykładowie w 2025 roku nikt nie zgłosił usterek."), "supports");
+} });
+
+Deno.test({ ...T, name: "decision 016 + negation: 'X did not take place' is refuted by a passed official announcement", async fn() {
+  const p = await announced16(OFFICIAL_NOTICE, { claim: "W Przykładowie nie odbył się strajk generalny." });
+  assertEquals(p.stance, "refutes");
+  assertEquals(p.announcedPassed, "2026-11-20");
 } });
