@@ -14,7 +14,11 @@ export function normalizeForMatch(text: string): string {
 export function containsVerbatim(haystack: string, needle: string): boolean {
   const n = normalizeForMatch(needle);
   if (n.length < 3) return false;
-  return normalizeForMatch(haystack).includes(n);
+  const h = normalizeForMatch(haystack);
+  if (h.includes(n)) return true;
+  // Lines of one record quoted together ("Akt: …\nData aktu: …"): every line must be verbatim.
+  const lines = needle.split(/\n+/).map((l) => normalizeForMatch(l)).filter(Boolean);
+  return lines.length > 1 && lines.every((l) => l.length >= 3 && h.includes(l));
 }
 
 /** Lowercase, strip diacritics, keep letters/digits: for lexical ranking only. */

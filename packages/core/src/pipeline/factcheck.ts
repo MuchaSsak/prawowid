@@ -21,8 +21,9 @@ export interface FactcheckFields {
 export function factcheckFields(text: string): FactcheckFields {
   text = text.split(ARTICLE_LABEL)[0];
   const claimLine = text.match(/^Sprawdzane twierdzenie: .*$/m)?.[0] ?? null;
-  const ratingLine = text.match(/^Ocena \([^)\n]*\): .*$/m)?.[0] ?? null;
-  const rating = ratingLine?.replace(/^Ocena \([^)\n]*\):\s*/, "").replace(/\.\s*$/, "").trim() || null;
+  // The publisher may hold one level of brackets: "Ocena (Demagog (Stowarzyszenie Demagog)): Fałsz."
+  const ratingLine = text.match(/^Ocena \((?:[^()\n]|\([^()\n]*\))*\): .*$/m)?.[0] ?? null;
+  const rating = ratingLine?.replace(/^Ocena \((?:[^()\n]|\([^()\n]*\))*\):\s*/, "").replace(/\.\s*$/, "").trim() || null;
   return { claimLine, ratingLine, rating: rating && rating !== "brak" ? rating : null };
 }
 

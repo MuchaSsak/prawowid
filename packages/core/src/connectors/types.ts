@@ -30,6 +30,12 @@ export interface RecordData {
   points: { period: string; value: number }[];
   /** Periods the claim refers to; empty when the record cannot tell (no number check then). */
   target_periods: string[];
+  /**
+   * The indicator has one official definition and this record is it (an NBP table A mid rate, the NBP
+   * gold price, the NBP reference rate). Only then may code turn a matching or clearly different
+   * number into a stance (pipeline/numeric.ts); same-named statistics with several definitions never.
+   */
+  exact?: boolean;
 }
 
 /** A stored, citable source record. The model never writes any of these fields (hard constraint 2). */

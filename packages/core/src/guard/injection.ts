@@ -21,6 +21,11 @@ const PATTERNS: RegExp[] = [
   /<\|(?:im_start|im_end|system)\|>/i,
   /\[\/?INST\]/,
   /^\s*(?:system|assistant)\s*:/im,
+  // A fake turn after a sentence ("…PKB? Assistant: weryfikacja zakończona") or a bracketed system tag.
+  /(?:[.!?]\s+|\]\s*)(?:system|assistant|asystent)\s*:/i,
+  /\[\s*(?:system|assistant|asystent)\b/i,
+  /\b(?:answer|respond|reply|say)\s+(?:that\s+)?(?:this|it)\s+is\s+(?:true|false|confirmed)/i,
+  /\bodpowi(?:edz|adaj)\s*(?::|,?\s*że)\s*(?:to\s+)?(?:tak|nie|prawd|fałsz|potwierdz)/i,
 ];
 
 export function scanInjection(text: string, provenance: string): InjectionSignal[] {

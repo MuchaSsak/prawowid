@@ -102,6 +102,24 @@ export function leadWord(verdict: Verdict, plain: PlainAnswer, question: boolean
   return null;
 }
 
+/**
+ * A fact-checker rated this claim "partly true" (or "half true", "partly false"): the answer is neither
+ * yes nor no, so no leading word, whatever the model's plain answer (organizer sample C).
+ */
+export function ratedPartlyTrue(decisive: VerifiedPassage[]): boolean {
+  return decisive.some((p) => {
+    if (!isFactcheckCard(p.record)) return false;
+    const r = (factcheckFields(p.record.text).rating ?? "").toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
+    return /czesciow|partly|partially|half|mixture/.test(r);
+  });
+}
+
+/** Every abstention says that no result is not a refutation (organizer sample D). */
+export const ABSENCE_NOTE = "Brak rozstrzygającego źródła nie oznacza, że to nieprawda.";
+export function withAbsenceNote(text: string): string {
+  return /nie oznacza|nie znaczy/i.test(text) ? text : `${text.trim()} ${ABSENCE_NOTE}`.trim();
+}
+
 /** Leading word when the model's own verdict is stale (code took a stance from a fact-check rating). */
 export function plainFromVerdict(verdict: Verdict): PlainAnswer {
   return verdict === "confirmed" ? "yes" : verdict === "false" ? "no" : "neither";
@@ -122,12 +140,14 @@ export function factcheckExplanation(decisive: VerifiedPassage[]): string | null
 // publisher and its rating when a fact-check by that publisher of this claim was found; otherwise
 // that we did not find one, without "Tak."/"Nie." and never "there is no such article".
 export function askedCheckerAnswer(asked: string, passages: VerifiedPassage[]): { lead: string; found: boolean } {
-  const hit = passages.find((p) =>
-    isFactcheckCard(p.record) && ["supports", "refutes", "misleading"].includes(p.stance) &&
-    isAskedChecker(asked, p.record.publisher)
+  // A rated card first; otherwise a decisive passage from that checker's own article (its corpus text).
+  const byChecker = passages.filter((p) =>
+    ["supports", "refutes", "misleading"].includes(p.stance) && isAskedChecker(asked, p.record.publisher)
   );
+  const hit = byChecker.find((p) => isFactcheckCard(p.record)) ??
+    byChecker.find((p) => p.record.tier === "factcheck");
   if (hit) {
-    const rating = factcheckFields(hit.record.text).rating;
+    const rating = isFactcheckCard(hit.record) ? factcheckFields(hit.record.text).rating : null;
     return {
       found: true,
       lead: rating

@@ -76,11 +76,17 @@ export const sejmEli: Connector = {
   async search(claim, ctx) {
     const queries = titleCandidates(claim.text, claim.search_queries_pl).slice(0, 3);
     const aboutAmendment = /noweliz|zmian|zmieni/i.test(claim.text);
+    // ELI lists newest first: an old base act with many amendments ("Kodeks pracy", 1974) falls past
+    // the first 50. A year stated in the claim adds a search for the act from that year.
+    const year = claim.text.match(/\b(1[89]\d\d|20\d\d)\b/)?.[1];
+    const searches: { q: string; year?: string }[] = queries.map((q) => ({ q }));
+    if (year && queries[0]) searches.push({ q: queries[0], year });
     const settled = await Promise.allSettled(
-      queries.map((q) => {
+      searches.map(({ q, year }) => {
         const u = new URL("https://api.sejm.gov.pl/eli/acts/search");
         u.searchParams.set("title", q);
         u.searchParams.set("limit", "50");
+        if (year) u.searchParams.set("year", year);
         return fetchJson(u.toString(), ctx.signal, LIMITS.connectorTimeoutMs) as Promise<{ items?: EliAct[] }>;
       }),
     );
@@ -98,10 +104,16 @@ export const sejmEli: Connector = {
     // Base acts first (the act the claim is about); amending acts only if the claim is about a change;
     // announcements (tekst jednolity), corrections and regulations are not the act itself.
     const items = ok.flatMap(({ value }) => value.items ?? []);
+    // An act whose title ends with a searched phrase ("… r. Kodeks pracy.", "… r. o ochronie danych
+    // osobowych") is that act itself, ahead of acts that merely contain the phrase.
+    const fold = (x: string) => x.toLowerCase().replace(/[.\s]+$/, "").replace(/^o\s+/, "");
+    const exact = (t: string) => queries.some((q) => fold(t).endsWith(fold(q)) && fold(q).length >= 6);
     const rank = (a: EliAct) => {
       const t = a.title ?? "";
       if (/Obwieszczenie|sprostowani|Rozporządzenie|Uchwała|Postanowienie|Wyrok/i.test(t)) return 9;
       if (/o zmianie|wprowadzające/i.test(t)) return aboutAmendment ? 1 : 5;
+      if (exact(t)) return -1;
+      if (/ratyfikacji|Oświadczenie rządowe|^Protokół|^Konwencja|^Umowa/i.test(t)) return 3;
       return 0;
     };
     const picked = items

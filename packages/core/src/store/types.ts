@@ -41,6 +41,7 @@ export type CheckEventType =
   | "verdict_disagreement"
   | "rating_override"
   | "number_check"
+  | "extraction_escalated"
   /** Known-incident context shown next to a claim (EUvsDisinfo); never evidence. */
   | "context_match"
   | "route_error"

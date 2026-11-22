@@ -14,8 +14,8 @@ import { isMediaType, mediaInputError } from "../intake/media.ts";
 import { transcribeRecording, transcriptToMaterial } from "../intake/recording.ts";
 import { fetchArticle, IntakeError, type ResolveHost } from "../intake/url.ts";
 import { LlmError, type LlmUsage } from "../llm/openrouter.ts";
-import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v4.ts";
-import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v4.ts";
+import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v5.ts";
+import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v5.ts";
 import type { CheckEventRow, CheckStore, CorpusStore } from "../store/types.ts";
 import {
   type CheckRequest,
@@ -42,6 +42,8 @@ import {
   requestMessage,
   summaryText,
   templateExplanation,
+  ratedPartlyTrue,
+  withAbsenceNote,
   withLead,
 } from "./render.ts";
 import { numericGuard } from "./numeric.ts";
@@ -379,6 +381,25 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     });
     usages.push(extracted.usage);
     prompts.add(CLAIM_EXTRACTION_ID);
+    // No fact at all ("opinion only", "joke or nonsense") is where the small model errs: it files
+    // conspiracy-style factual claims as opinions. The stronger model checks that call once; its
+    // answer wins only when it finds a fact claim. Costs one extra call on opinion-only inputs.
+    const strong = deps.config.models.evidence_assessment;
+    const kind = extracted.extraction.input_kind;
+    const hasFact = extracted.extraction.claims.some((x) => x.class === "fact");
+    if (!hasFact && (kind === "opinion_only" || kind === "joke_or_nonsense") && strong !== deps.config.models.claim_extraction) {
+      try {
+        const second = await extractClaims({
+          material, userMessage, today, publishedAt: response.input.published_at,
+          apiKey: deps.config.secrets.openrouterApiKey, model: strong, signal: deadline.signal,
+        });
+        usages.push(second.usage);
+        if (second.extraction.claims.some((x) => x.class === "fact")) {
+          event("extraction_escalated", { from: kind, to: second.extraction.input_kind });
+          extracted = second;
+        }
+      } catch { /* keep the first extraction */ }
+    }
   } catch (err) {
     mark("extract", tExtract);
     event("llm_error", { stage: "extract", message: (err as Error).message.slice(0, 300) });
@@ -517,7 +538,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     let assessed;
     try {
       assessed = await assessClaim({
-        claim: { text: c.text, time: resolved.time, place: c.place },
+        claim: { text: c.text, time: resolved.time, place: c.place, entities: c.entities },
         records: r.records,
         apiKey: deps.config.secrets.openrouterApiKey,
         model: deps.config.models.evidence_assessment,
@@ -534,13 +555,14 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       return withContext({ ...base, system_state: "technical_error", system_message: claimStateMessage("technical_error", llmMessage(err)) });
     }
     for (const p of assessed.passages) {
-      if (p.quoteRejected) event("quote_rejected", { claim: c.id, source_id: p.record.source_id, stance: p.modelStance });
+      if (p.quoteRejected) event("quote_rejected", { claim: c.id, source_id: p.record.source_id, stance: p.modelStance, quote: p.quote.slice(0, 200) });
     }
     for (const s of assessed.assessment.injection_signals) event("injection_detected", { claim: c.id, ...s, by: "model" });
 
     // Official data records: code compares the claimed number with the value for the claim period.
     const guard = numericGuard(c.claimed_value, assessed.passages);
     for (const g of guard.downgrades) event("number_check", { claim: c.id, ...g });
+    for (const g of guard.upgrades) event("number_check", { claim: c.id, ...g, match: "exact_record" });
     const d = decideVerdict(guard.passages, { optionalRouteMissing });
     d.warnings.push(...guard.warnings);
     const archival = guard.passages
@@ -560,8 +582,10 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     let missingOverride: string | null = null;
     // Code took a stance from a fact-checker's rating (factcheck.ts): the model's verdict, explanation
     // and plain answer were built on the checked statement, so they are stale, not inconsistent.
-    const stale = assessed.ratingOverrides > 0;
-    if (stale) event("rating_override", { claim: c.id, count: assessed.ratingOverrides, model: proposed });
+    // Same for a number settled by an exact official record (numeric.ts): the record decides.
+    const exactSettled = guard.upgrades.length > 0 && d.decisive.some((p) => p.record.data?.exact);
+    const stale = assessed.ratingOverrides > 0 || exactSettled;
+    if (assessed.ratingOverrides > 0) event("rating_override", { claim: c.id, count: assessed.ratingOverrides, model: proposed });
     if (proposed !== d.verdict) {
       event("verdict_disagreement", { claim: c.id, code: d.verdict, model: proposed, rule: d.rule });
       explanation = (stale ? factcheckExplanation(d.decisive) : null) ?? templateExplanation(d.verdict, d.decisive);
@@ -576,7 +600,8 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     }
     // The leading word only when code and model agree on the verdict (or the verdict came from a rating).
     const plain = stale && proposed !== d.verdict ? plainFromVerdict(d.verdict) : assessed.assessment.plain_answer;
-    const lead = proposed === d.verdict || stale ? leadWord(d.verdict, plain, asksQuestion) : null;
+    const partly = d.verdict === "misleading" && ratedPartlyTrue(d.decisive);
+    const lead = (proposed === d.verdict || stale) && !partly ? leadWord(d.verdict, plain, asksQuestion) : null;
     explanation = c.asked_checker
       // "Did <checker> check X?": answer that question first; the verdict on X follows.
       ? `${askedCheckerAnswer(c.asked_checker, guard.passages).lead} ${withLead(explanation, null)}`
@@ -604,7 +629,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       strength: d.strength,
       explanation,
       missing: d.verdict === "insufficient_evidence"
-        ? missingOverride ?? assessed.assessment.missing ?? "Nie znaleźliśmy źródła, które jednoznacznie to rozstrzyga."
+        ? withAbsenceNote(missingOverride ?? assessed.assessment.missing ?? "Nie znaleźliśmy źródła, które jednoznacznie to rozstrzyga.")
         : null,
       citations,
       warnings: [...base.warnings, ...d.warnings],
