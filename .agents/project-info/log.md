@@ -240,3 +240,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | 0 structural findings: routing, index paths and skill parity are clean after the Data import
 ## [2026-11-22] update | removed Python/pgvector corpus integration; added IndexedCorpusStore BM25, alert-data converter, local corpus index, archive policy and corpus-specific eval cases
 ## [2026-11-22] lint | corpus migration pass
+## [2026-11-22] update | decision 013 source controls: BM25 search uses the load-time index (same results, ~2.1 s -> ~30 ms per search), switches for routes/collections/publishers in core + API + /admin/zrodla, corpus rebuilt with all usable raw data (9792 records, 48 353 fragments); codebase, api-reference, 012, 008, open-questions, index updated
+## [2026-11-22] lint | 1 finding: codebase.md still called the corpus route an empty mock -> fixed; routing, index, links and skill parity clean

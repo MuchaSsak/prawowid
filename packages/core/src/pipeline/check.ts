@@ -65,6 +65,11 @@ export interface CoreDeps {
   connectors?: Connector[];
   /** Known-incident matchers (context, never evidence). Default: NARRATIVE_MATCHERS. */
   narrativeMatchers?: NarrativeMatcher[];
+  /**
+   * Extra part of the result cache key, e.g. the source-controls revision (sources/controls.ts), so an
+   * answer cached before an operator switched a source off is never served after it.
+   */
+  cacheScope?: string;
 }
 
 function llmMessage(err: unknown): string {
@@ -320,7 +325,13 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
   // ── 4. Cache (same canonical result across channels for 5 minutes, scenario G) ─
   const today = now.toISOString().slice(0, 10);
   const cacheKey = await sha256Hex(
-    JSON.stringify([inputType, today, normalizeForMatch(userMessage), material.map((m) => normalizeForMatch(m.text))]),
+    JSON.stringify([
+      inputType,
+      today,
+      normalizeForMatch(userMessage),
+      material.map((m) => normalizeForMatch(m.text)),
+      ...(deps.cacheScope ? [deps.cacheScope] : []),
+    ]),
   );
   const cached = await deps.store.getCached(cacheKey);
   if (cached) {
