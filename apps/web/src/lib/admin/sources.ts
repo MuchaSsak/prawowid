@@ -456,8 +456,13 @@ export function initSources() {
 
   // ── controls ──
   content.addEventListener("click", (e) => {
-    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(".src-toggle");
-    if (btn?.dataset.key) toggle(btn.dataset.key);
+    // The whole row toggles, not just the switch: a click on the label or meta text finds the row's button.
+    const btn = (e.target as HTMLElement).closest(".src-row")?.querySelector<HTMLButtonElement>(".src-toggle");
+    if (!btn?.dataset.key) return;
+    // Don't treat the end of a text selection as a click.
+    if (e.target !== btn && !btn.contains(e.target as Node) && getSelection()?.toString()) return;
+    btn.focus();
+    toggle(btn.dataset.key);
   });
   filterInput.addEventListener("input", () => {
     filter = fold(filterInput.value.trim());
