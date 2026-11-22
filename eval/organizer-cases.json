@@ -24,12 +24,12 @@
         "type": "text",
         "value": "Czy we Włoszech ostatnio odbywał się strajk generalny?"
       },
-      "gold": "insufficient_evidence",
-      "lead": null,
+      "gold": "confirmed",
+      "lead": "Tak.",
       "text_excludes": [
         "nie ma takiego"
       ],
-      "note": "Organizer sample A: announced for 2026-11-20, unknown whether it took place; no leading Tak/Nie."
+      "note": "Organizer sample A. Decision 016 (user, 2026-11-22): the official Odyseusz notice announced the strike for 2026-11-20, the day has passed and no cancellation is mentioned, so it is confirmed from the announcement with low strength."
     },
     {
       "id": "X03",

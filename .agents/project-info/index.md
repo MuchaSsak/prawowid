@@ -81,6 +81,7 @@ Format: `- [path](path): one-line summary`
 - [decisions/013-source-controls.md](decisions/013-source-controls.md): operator on/off switches for routes, corpus collections and publishers (`/admin/zrodla`, `ADMIN_TOKEN`, Deno KV or memory, pinned per check); BM25 kept and made ~75x faster; PR #13 registry not merged
 - [decisions/014-proprietary-license.md](decisions/014-proprietary-license.md): `LICENSE` is all rights reserved for now (jury may run it to evaluate); open source possible later
 - [decisions/015-no-whatsapp.md](decisions/015-no-whatsapp.md): WhatsApp removed everywhere (code, cost sheet, deck, wiki): we have no operator; channels are web, Discord, Messenger
+- [decisions/016-official-announcement-past-day.md](decisions/016-official-announcement-past-day.md): an official announcement of exactly the claimed event, single day passed, no cancellation → `potwierdzone` with low strength (Italy-strike sample; user, 2026-11-22); the conditions and the accepted risk
 - [decisions/003-config-in-code.md](decisions/003-config-in-code.md): `.env` holds only secrets; models, routing and limits are code defaults, models overridable by optional env vars
 - [decisions/010-product-name-prawdomat.md](decisions/010-product-name-prawdomat.md): display name is **Prawdomat**; technical identifiers (env vars, packages, cookies, UA) keep `prawdowid`; PRAWDOWID = the MSZ task
 

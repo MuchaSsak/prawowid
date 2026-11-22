@@ -43,6 +43,8 @@ export type CheckEventType =
   | "verdict_disagreement"
   | "rating_override"
   | "number_check"
+  /** Decision 016: an official announcement whose day has passed confirmed the claim. */
+  | "announced_passed"
   | "extraction_escalated"
   /** Known-incident context shown next to a claim (EUvsDisinfo); never evidence. */
   | "context_match"

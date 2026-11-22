@@ -4,6 +4,7 @@ import { MemoryCorpusStore } from "../src/mod.ts";
 import { parsePeriod } from "../src/connectors/stats-catalog.ts";
 import {
   distinctiveSentences,
+  eventDateIn,
   findOriginalDate,
   periodNote,
   type ReferenceDate,
@@ -157,4 +158,14 @@ Deno.test("'w tym tygodniu' / 'w zeszłym tygodniu' → Monday-to-Sunday weeks, 
     periodNote(resolveTime("w tym tygodniu", "past", ref("2026-11-22")), ref("2026-11-22", "submission")),
     "Tekst podaje czas względnie („w tym tygodniu”); przyjęliśmy okres 16.11.2026–22.11.2026 na podstawie daty zgłoszenia (22.11.2026); jeśli tekst jest starszy, wynik może być inny.",
   );
+});
+
+Deno.test("eventDateIn: one named day, year from the publication date looking ahead; lists and ranges are not one day", () => {
+  assertEquals(eventDateIn("W dniu 20 listopada zapowiedziano strajk.", "2026-11-19"), "2026-11-20");
+  assertEquals(eventDateIn("Strajk zapowiedziano na 5 stycznia.", "2026-12-20"), "2027-01-05");
+  assertEquals(eventDateIn("Strajk 20.11.2026 r.", "2026-11-01"), "2026-11-20");
+  assertEquals(eventDateIn("Strajk 20.11 od godz. 9.00.", "2026-11-01"), "2026-11-20");
+  for (const t of ["20 lub 21 listopada", "20-22 listopada", "w dniach 20 i 21 listopada", "od 20 do 22 listopada", "20.11 i 21.11", "bez daty"]) {
+    assertEquals(eventDateIn(t, "2026-11-01"), null, t);
+  }
 });

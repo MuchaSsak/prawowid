@@ -15,7 +15,7 @@ import { transcribeRecording, transcriptToMaterial } from "../intake/recording.t
 import { fetchArticle, IntakeError, type ResolveHost } from "../intake/url.ts";
 import { LlmError, type LlmUsage } from "../llm/openrouter.ts";
 import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v6.ts";
-import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v6.ts";
+import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v7.ts";
 import type { CheckEventRow, CheckStore, CorpusStore } from "../store/types.ts";
 import {
   type CheckRequest,
@@ -33,6 +33,7 @@ import { assessClaim } from "./assess.ts";
 import { periodNote, referenceDate, resolveTime } from "./dates.ts";
 import { type ExtractedClaim, extractClaims, type Material } from "./extract.ts";
 import {
+  announcedPassedExplanation,
   announcementExplanation,
   askedCheckerAnswer,
   factcheckExplanation,
@@ -543,6 +544,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       assessed = await assessClaim({
         claim: { text: c.text, time: resolved.time, place: c.place, entities: c.entities },
         records: r.records,
+        referenceDate: ref.date,
         apiKey: deps.config.secrets.openrouterApiKey,
         model: deps.config.models.evidence_assessment,
         fallbackModel: deps.config.models.claim_extraction,
@@ -611,10 +613,19 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
         }
       }
     }
+    // Decision 016: confirmed only by official announcements whose day has passed. Code owns this
+    // verdict (the prompt still labels announcements "context"), so it owns the wording and the lead
+    // word too, and the strength is low: nobody reported how the event went.
+    const byAnnouncement = d.verdict === "confirmed" && d.decisive.length > 0 && d.decisive.every((p) => p.announcedPassed);
+    if (byAnnouncement) {
+      event("announced_passed", { claim: c.id, model: proposed, days: [...new Set(d.decisive.map((p) => p.announcedPassed))] });
+      explanation = announcedPassedExplanation(d.decisive);
+      d.strength = { level: "low", reasons: ["tylko oficjalna zapowiedź, termin już minął", "brak relacji z przebiegu"] };
+    }
     // The leading word only when code and model agree on the verdict (or the verdict came from a rating).
-    const plain = stale && proposed !== d.verdict ? plainFromVerdict(d.verdict) : assessed.assessment.plain_answer;
+    const plain = byAnnouncement ? "yes" : stale && proposed !== d.verdict ? plainFromVerdict(d.verdict) : assessed.assessment.plain_answer;
     const partly = d.verdict === "misleading" && ratedPartlyTrue(d.decisive);
-    const lead = (proposed === d.verdict || stale) && !partly ? leadWord(d.verdict, plain, asksQuestion) : null;
+    const lead = (proposed === d.verdict || stale || byAnnouncement) && !partly ? leadWord(d.verdict, plain, asksQuestion) : null;
     explanation = c.asked_checker
       // "Did <checker> check X?": answer that question first; the verdict on X follows.
       ? `${askedCheckerAnswer(c.asked_checker, guard.passages).lead} ${withLead(explanation, null)}`

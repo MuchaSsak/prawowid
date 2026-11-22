@@ -290,3 +290,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] update | API CORS also allows the web project's Vercel preview URLs (user choice); Deno Deploy builds every pushed branch commit at prawowid-<build id>.mateusz.deno.net; architecture/api-reference.md
 ## [2026-11-22] update | Vercel preview of branch t3/fix-italy-strike-verdict against its Deno Deploy build; preview recipe in architecture/codebase.md
 ## [2026-11-22] lint | clean: new api-reference anchor and codebase links resolve; routing, index and skill parity unchanged
+## [2026-11-22] decision | 016 official announcement + single past day + no cancellation → confirmed, low strength (user: jury wants "Tak" on the Italy strike, no new sources); prompt evidence-assessment@7 (announces_claimed_event); hard-constraints rule 3 exception, organizer-sample-answers item 10, prompts pages, pipeline §5, benchmark gap 3 + O02/X02 gold
+## [2026-11-22] lint | clean: decision 016 indexed and linked from 7 pages, routing and skill parity unchanged

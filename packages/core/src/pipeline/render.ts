@@ -73,6 +73,14 @@ export function announcementExplanation(passages: VerifiedPassage[]): { explanat
   };
 }
 
+/** Confirmed from an official announcement whose day has passed (decision 016): say what it rests on. */
+export function announcedPassedExplanation(passages: VerifiedPassage[]): string {
+  const p = passages.find((x) => x.announcedPassed && x.announcement)!;
+  const when = p.record.published_at ? ` (${formatDatePl(p.record.published_at)})` : "";
+  const sentence = p.announcement!.replace(/[.!?]+$/, "");
+  return `${p.record.publisher}${when} podało: „${sentence}”. Termin (${formatDatePl(p.announcedPassed!)}) już minął, a źródło nie informuje o odwołaniu ani przełożeniu, więc przyjmujemy, że wydarzenie się odbyło. Nie mamy relacji z jego przebiegu.`;
+}
+
 /** Polish plural: 1 → one, 2-4 (not 12-14) → few, else many. */
 export function plural(n: number, one: string, few: string, many: string): string {
   if (n === 1) return one;

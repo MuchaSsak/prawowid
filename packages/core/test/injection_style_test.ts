@@ -223,3 +223,63 @@ Deno.test({ ...T, name: "announced: the abstention states the announcement with 
     s.restore();
   }
 } });
+
+// ── Decision 016: an official announcement whose day has passed confirms "it took place" ──────────
+const OFFICIAL_NOTICE: SourceRecord = {
+  ...card("Prawda"), source_id: "corpus:u16:1", route: "corpus", tier: "official", publisher: "Urząd Testowy", origin_key: "u16:t",
+  url: "https://u.example/kraje/PR", title: "Przykładowo", published_at: "2026-11-19",
+  text: "Kontakty znajdziesz poniżej. W dniu 20 listopada na terenie całego Przykładowa zapowiedziano strajk generalny w sektorze publicznym. Mogą występować utrudnienia.",
+};
+async function announced16(record: SourceRecord, opts: { announces?: boolean; ref?: string; time?: string; place?: string; claim?: string } = {}) {
+  const s = stubFetch({ assessment: assess({ [record.publisher]: { stance: "context", needle: "zapowiedziano", announces: opts.announces ?? true } }, "insufficient_evidence") });
+  try {
+    const r = await assessClaim({
+      claim: { text: opts.claim ?? "W Przykładowie odbył się strajk generalny.", time: opts.time ?? "2026-11-16/2026-11-22", place: opts.place ?? "Przykładowo" },
+      records: [record], referenceDate: opts.ref ?? "2026-11-22", apiKey: "k", model: "m",
+    });
+    return r.passages[0];
+  } finally { s.restore(); }
+}
+
+Deno.test({ ...T, name: "decision 016: official announcement, day passed, no cancellation → supports, with the day and sentence", async fn() {
+  const p = await announced16(OFFICIAL_NOTICE);
+  assertEquals(p.stance, "supports");
+  assertEquals(p.announcedPassed, "2026-11-20");
+  assertEquals(p.announcement, "W dniu 20 listopada na terenie całego Przykładowa zapowiedziano strajk generalny w sektorze publicznym.");
+} });
+
+Deno.test({ ...T, name: "decision 016: every condition is required (model match, tier, day passed, claim time, place, no cancellation, happened-claim)", async fn() {
+  assertEquals((await announced16(OFFICIAL_NOTICE, { announces: false })).stance, "context");
+  assertEquals((await announced16({ ...OFFICIAL_NOTICE, tier: "media" })).stance, "context");
+  assertEquals((await announced16(OFFICIAL_NOTICE, { ref: "2026-11-20" })).stance, "context", "the day itself is not over");
+  assertEquals((await announced16(OFFICIAL_NOTICE, { time: "2026-10" })).stance, "context", "outside the claim's time");
+  assertEquals((await announced16(OFFICIAL_NOTICE, { place: "Testowice" })).stance, "context", "another place");
+  assertEquals((await announced16({ ...OFFICIAL_NOTICE, text: OFFICIAL_NOTICE.text + " Strajk został odwołany." })).stance, "context", "cancelled");
+  assertEquals((await announced16({ ...OFFICIAL_NOTICE, text: "W dniu 20 lub 21 listopada zapowiedziano strajk generalny w Przykładowie." })).stance, "context", "no single day");
+  // A claim that it was announced is supported by the announcement anyway, never through this rule.
+  assertEquals((await announced16(OFFICIAL_NOTICE, { claim: "W Przykładowie zapowiedziano strajk generalny." })).announcedPassed, undefined);
+} });
+
+Deno.test({ ...T, name: "decision 016: the answer says 'Tak', rests on the announcement, low strength", async fn() {
+  const day = new Date(Date.now() - 2 * 86_400_000);
+  const dd = `${String(day.getUTCDate()).padStart(2, "0")}.${String(day.getUTCMonth() + 1).padStart(2, "0")}`;
+  const published = new Date(Date.now() - 3 * 86_400_000).toISOString().slice(0, 10);
+  const question = "Czy w Przykładowie ostatnio odbył się strajk generalny?";
+  const s = stubFetch({
+    extraction: () => extraction([{ text: "W Przykładowie ostatnio odbył się strajk generalny.", span: question, time: "ostatnio" }]),
+    assessment: assess({ "Urząd Testowy": { stance: "context", needle: "zapowiedziano", announces: true } }, "insufficient_evidence"),
+  });
+  const d = deps();
+  await d.corpus.upsert([{ ...OFFICIAL_NOTICE, published_at: published, text: `W dniu ${dd} na terenie Przykładowa zapowiedziano strajk generalny w sektorze publicznym.` }]);
+  try {
+    const r = await runCheck({ input: { type: "text", value: question }, channel: "web", session_id: "t-016" }, d);
+    const c = r.claims[0];
+    assertEquals(c.verdict, "confirmed");
+    assertEquals(c.strength?.level, "low");
+    assert(/^Tak\./.test(c.explanation ?? ""), c.explanation ?? "");
+    assertStringIncludes(c.explanation ?? "", "nie informuje o odwołaniu ani przełożeniu");
+    assertEquals(c.citations[0].stance, "supports");
+  } finally {
+    s.restore();
+  }
+} });

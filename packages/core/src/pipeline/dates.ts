@@ -71,6 +71,30 @@ function fillMonth(m: number, ref: string, future: boolean): string {
   return `${y}-${pad(m)}`;
 }
 
+/**
+ * The single day an announcement names ("W dniu 20 listopada", "20.11", "20 listopada 2026"), as
+ * YYYY-MM-DD. A day without a year takes the nearest one on or after the publication date
+ * (announcements look ahead). Null when the text names no single day, or names more than one.
+ */
+export function eventDateIn(text: string, publishedAt: string): string | null {
+  const t = text.toLowerCase();
+  // Several days or a range ("20 lub 21 listopada", "20-22 listopada", "w dniach", "od 20 do 22") is not one day.
+  if (/(?<![\p{L}])w\s+dniach(?![\p{L}])|(?<!\d)\d{1,2}\.?\s*(?:[-–,]|lub|albo|i|oraz|do)\s*\d{1,2}(?!\d)/u.test(t)) return null;
+  const found = new Set<string>();
+  for (const m of t.matchAll(new RegExp(`(?<!\\d)(\\d{1,2})\\s+(${MONTH_RE})(?![\\p{L}])(?:\\s+((?:19|20)\\d{2})(?!\\d))?`, "gu"))) {
+    const [d, mo] = [Number(m[1]), MONTH_OF.get(m[2])!];
+    const day = m[3] ? (validDay(Number(m[3]), mo, d) ? iso(Number(m[3]), mo, d) : null) : fillDay(mo, d, publishedAt.slice(0, 10), true);
+    if (day) found.add(day);
+  }
+  for (const m of t.matchAll(/(?<![\d.])(\d{1,2})\.(\d{1,2})(?:\.((?:19|20)\d{2}))?(?![\d])/g)) {
+    const [d, mo] = [Number(m[1]), Number(m[2])];
+    if (mo < 1 || mo > 12) continue;
+    const day = m[3] ? (validDay(Number(m[3]), mo, d) ? iso(Number(m[3]), mo, d) : null) : fillDay(mo, d, publishedAt.slice(0, 10), true);
+    if (day) found.add(day);
+  }
+  return found.size === 1 ? [...found][0] : null;
+}
+
 /** How far back "ostatnio" and "niedawno" reach (user, 2026-11-21). */
 export const RECENT_DAYS = 30;
 

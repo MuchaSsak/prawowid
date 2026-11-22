@@ -4,7 +4,8 @@ import { LIMITS } from "../config.ts";
 import type { SourceRecord } from "../connectors/types.ts";
 import { containsVerbatim } from "../guard/normalize.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
-import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v6.ts";
+import { eventDateIn } from "./dates.ts";
+import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v7.ts";
 import type { Stance } from "../types.ts";
 import { factcheckFields, isFactcheckCard, oppositePolarity, ratingStance } from "./factcheck.ts";
 
@@ -15,6 +16,8 @@ export const Assessment = z.strictObject({
     quote: z.string(),
     difference: z.string().nullable(),
     data_period: z.string().nullable(),
+    /** The passage announces or schedules exactly the event the claim says took place (prompt v7). */
+    announces_claimed_event: z.boolean(),
   })),
   proposed_verdict: z.enum(["confirmed", "false", "misleading", "insufficient_evidence"]),
   explanation: z.string(),
@@ -41,6 +44,12 @@ export interface VerifiedPassage {
    * the same document that announces the event, verbatim. The answer states it (announced, outcome unknown).
    */
   announcement?: string;
+  /**
+   * Decision 016: an official source announced exactly this event for this day, the day is before the
+   * reference date and the source mentions no cancellation, so the announcement supports the claim.
+   * The answer says it rests on the announcement and the strength is low.
+   */
+  announcedPassed?: string;
 }
 
 export interface AssessmentResult {
@@ -54,6 +63,8 @@ export interface AssessmentResult {
 export async function assessClaim(args: {
   claim: { text: string; time: string; place: string | null; entities?: string[] };
   records: SourceRecord[];
+  /** YYYY-MM-DD the claim is read from (pipeline/dates.ts referenceDate); enables the decision-016 rule. */
+  referenceDate?: string;
   apiKey?: string;
   model: string;
   fallbackModel?: string;
@@ -152,12 +163,58 @@ export async function assessClaim(args: {
       !aboutSubject(args.claim.entities ?? [], record.text)) {
       verified.stance = "context";
     }
+    // Decision 016 (user, 2026-11-22): an official announcement of exactly this event, for a day that
+    // has already passed, with no cancellation in the same document, supports a claim that it took place.
+    if (ok && verified.stance === "context" && p.announces_claimed_event && args.referenceDate) {
+      const day = announcedDayPassed(record, args.records, verified.quote, args.claim, args.referenceDate);
+      if (day) {
+        verified.stance = "supports";
+        verified.announcedPassed = day.date;
+        verified.announcement = day.sentence;
+      }
+    }
     return verified;
   });
   return { passages, assessment: data, usage, ratingOverrides };
 }
 
 const DECISIVE: Stance[] = ["supports", "refutes", "misleading"];
+const CANCELLED =
+  /(odwoła\p{L}*|odwołan\p{L}*|przełożon\p{L}*|przełoż\p{L}*|przesunięt\p{L}*|zawieszon\p{L}*|anulowan\p{L}*|cancel\p{L}*|postpon\p{L}*|revoked|annullat\p{L}*|revocat\p{L}*|rinviat\p{L}*|sospes\p{L}*)/iu;
+
+/** Is the claim's time ("YYYY", "YYYY-MM", "YYYY-MM-DD", "start/end", "unknown") compatible with this day? */
+function dayInClaimTime(day: string, time: string): boolean {
+  const interval = time.match(/^(\d{4}-\d{2}-\d{2})\/(\d{4}-\d{2}-\d{2})$/);
+  if (interval) return day >= interval[1] && day <= interval[2];
+  if (/^\d{4}(-\d{2}){0,2}$/.test(time)) return day.startsWith(time);
+  return true; // "unknown" or unparsed text: the model's same-event check stands alone
+}
+
+/**
+ * Decision 016 conditions, all required: an official-tier record about the claim's place, a claim that
+ * the event took place (not that it was announced), one announcing sentence naming a single day, that
+ * day inside the claim's time and before the reference date, and no cancellation or postponement
+ * anywhere in the same document.
+ */
+function announcedDayPassed(
+  record: SourceRecord,
+  records: SourceRecord[],
+  quote: string,
+  claim: { text: string; time: string; place: string | null },
+  referenceDate: string,
+): { date: string; sentence: string } | null {
+  if (record.tier !== "official" || ANNOUNCED.test(claim.text) || !record.published_at) return null;
+  // The title counts too: a country page is titled with the country ("Włochy") while its text may only
+  // use an inflected form whose stem differs ("we Włoszech").
+  if (!aboutPlace(claim.place, `${record.title}\n${record.text}`)) return null;
+  const document = [record, ...records.filter((r) => r !== record && r.url === record.url)].map((r) => r.text).join("\n");
+  if (CANCELLED.test(document)) return null;
+  const sentence = announcingSentence(record.text, Math.max(0, record.text.indexOf(quote)));
+  if (!sentence) return null;
+  const date = eventDateIn(sentence, record.published_at);
+  if (!date || date >= referenceDate.slice(0, 10) || !dayInClaimTime(date, claim.time)) return null;
+  return { date, sentence };
+}
 const COUNTRY_WIDE = /^(polsk|pl$|rp$|rzeczpospolit|kraj|ue$|uni|europ|świat|swiat|internet)/i;
 const foldPl = (x: string) => x.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/ł/g, "l");
 /** True when the claim names no specific place, or the passage mentions it (5-letter stems absorb Polish case endings). */

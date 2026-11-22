@@ -193,7 +193,7 @@ export function extraction(claims: ClaimSpec[], extra: Record<string, unknown> =
 
 /** Assessment where each passage gets a stance; the quote is the passage's line containing `quoteNeedle`. */
 export function assess(
-  stances: Record<string, { stance: string; needle?: string; quote?: string }>,
+  stances: Record<string, { stance: string; needle?: string; quote?: string; announces?: boolean }>,
   proposed: string,
   extra: Record<string, unknown> = {},
 ) {
@@ -201,7 +201,7 @@ export function assess(
     passages: input.passages.map((p) => {
       const s = Object.entries(stances).find(([pub]) => p.publisher.includes(pub))?.[1] ?? { stance: "irrelevant" };
       const line = s.quote ?? (s.needle ? p.text.split("\n").find((l) => l.includes(s.needle!)) ?? "" : "");
-      return { passage_id: p.passage_id, stance: s.stance, quote: s.stance === "irrelevant" ? "" : line, difference: s.stance === "misleading" ? "inny rok" : null, data_period: null };
+      return { passage_id: p.passage_id, stance: s.stance, quote: s.stance === "irrelevant" ? "" : line, difference: s.stance === "misleading" ? "inny rok" : null, data_period: null, announces_claimed_event: s.announces ?? false };
     }),
     proposed_verdict: proposed,
     explanation: "Wyjaśnienie modelu.",
