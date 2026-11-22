@@ -296,6 +296,9 @@ export function initApp() {
     devToggle.blur();
   });
   let busy = false;
+  // The text question the last answer asked to clarify. The next typed reply is sent joined to it
+  // (one input, new line between), so a reply like "tak" or "chodzi o kampanię X" keeps its context.
+  let pendingQuestion: string | null = null;
   let recording = false;
 
   // ── input type the request will use ────────────────────────────────────────
@@ -559,6 +562,7 @@ export function initApp() {
   const leaveChat = () => {
     attachSeq++; // drop a file that is still loading
     loadingFile = false;
+    pendingQuestion = null;
     micGen++; // pending permission or a queued stop event must not attach into the new chat
     if (recorder?.state === "recording") recorder.stop();
     for (const url of bubbleUrls.splice(0)) URL.revokeObjectURL(url);
@@ -701,8 +705,10 @@ export function initApp() {
     }
     showError(null);
     const att = attachment;
+    const joined = !att && type === "text" && pendingQuestion ? `${pendingQuestion}\n${typed}` : null;
+    pendingQuestion = null;
     const req: CheckRequest = {
-      input: { type, value: att ? att.dataUrl : typed },
+      input: { type, value: att ? att.dataUrl : joined ?? typed },
       session_id: sessionId(),
       channel: "web",
     };
@@ -770,6 +776,7 @@ export function initApp() {
       await guard(settle());
       const backdrop = (await guard(backdropReady)) ?? (testMode ? sampleBackdrop(data) : null);
       renderResult(bot.body, data, { backdrop });
+      if (data.status === "needs_clarification" && !att && type === "text") pendingQuestion = joined ?? typed;
       srStatus.textContent = announce(data);
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {

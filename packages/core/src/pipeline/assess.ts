@@ -4,7 +4,7 @@ import { LIMITS } from "../config.ts";
 import type { SourceRecord } from "../connectors/types.ts";
 import { containsVerbatim } from "../guard/normalize.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
-import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v5.ts";
+import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v6.ts";
 import type { Stance } from "../types.ts";
 import { factcheckFields, isFactcheckCard, oppositePolarity, ratingStance } from "./factcheck.ts";
 

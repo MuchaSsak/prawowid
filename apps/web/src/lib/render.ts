@@ -511,7 +511,7 @@ export function renderResult(root: HTMLElement, r: CheckResponse, opts: { backdr
     parts.push(
       stateCard(r.system_message.title, [
         /nie jest ocen/i.test(text) ? text : `${text} ${NOT_A_RATING}`,
-        ...(r.status === "needs_clarification" ? ["Napisz całe pytanie jeszcze raz, z brakującymi szczegółami."] : []),
+        ...(r.status === "needs_clarification" ? ["Dopisz brakujące szczegóły. Połączymy je z poprzednim pytaniem."] : []),
       ]),
     );
   }

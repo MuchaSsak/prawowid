@@ -39,6 +39,7 @@ There is **no third call** for the final answer. The answer is assembled in code
 3. Keep the change only if the metrics don't drop.
 
 ## Change log
+- code v6 / v6 (2026-11-22): claim extraction stops asking about details a named-subject claim does not state, asks only open questions, reads a joined clarification reply as one input; claim spans match case-insensitively; evidence assessment treats another claim about the same person as irrelevant. Full run: macro-F1 0.71 (= run 3), abstention 89%, robustness 100%, $0.189 per 100; the misleading class and K05 fail the same way on v5 (checked on 8 cases). See [evaluation/benchmark.md](../evaluation/benchmark.md).
 - code v1, eval round 1 (2026-11-21): extraction lists opinions always and treats causal / "secretly contains" claims as facts; assessment treats official record fields as statements and older passages as context for later-period claims. General rules only, no case wording. Measured in [evaluation/benchmark.md](../evaluation/benchmark.md).
 - code v1 (2026-11-21): first code versions in `packages/core/src/prompts/`. Claim extraction splits queries into `search_queries_pl` + `search_query_en`; evidence assessment gained the "different subject is never misleading", "year-only claims" and "a title alone supports nothing" rules after smoke runs. Not evaluated.
 - v1 (2026-11-21): first drafts. Not evaluated.

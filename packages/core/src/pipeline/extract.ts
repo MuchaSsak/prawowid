@@ -3,7 +3,7 @@ import { z } from "zod";
 import { LIMITS } from "../config.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
 import { containsVerbatim, normalizeForMatch } from "../guard/normalize.ts";
-import { claimExtractionSystem } from "../prompts/claim-extraction.v5.ts";
+import { claimExtractionSystem } from "../prompts/claim-extraction.v6.ts";
 import { CLAIM_TYPES } from "../types.ts";
 import { INDICATOR_KEYS } from "../connectors/stats-catalog.ts";
 
@@ -86,15 +86,18 @@ export async function extractClaims(args: {
   });
 
   const corpus = [args.userMessage, ...args.material.map((m) => m.text)].join("\n");
-  const normCorpus = normalizeForMatch(corpus);
+  const lower = (s: string) => normalizeForMatch(s).toLocaleLowerCase("pl");
+  const normCorpus = lower(corpus);
   const rejectedSpans: string[] = [];
+  // Case-insensitive: the words must all be there, only the capitalisation may differ.
+  const verbatim = (span: string) => containsVerbatim(corpus, span, { ignoreCase: true });
   const kept = data.claims.filter((c) => {
-    if (!containsVerbatim(corpus, c.source_span)) {
+    if (!verbatim(c.source_span)) {
       rejectedSpans.push(c.source_span.slice(0, 200));
       return false;
     }
     // An unsupported scope resolution counts as an invented claim: drop the claim.
-    const bad = c.assumptions.find((a) => !containsVerbatim(corpus, a.source_span));
+    const bad = c.assumptions.find((a) => !verbatim(a.source_span));
     if (bad) {
       rejectedSpans.push(bad.source_span.slice(0, 200));
       return false;
@@ -104,7 +107,7 @@ export async function extractClaims(args: {
 
   // Span order, then cap fact claims: high risk first, then original order.
   const pos = (c: ExtractedClaim) => {
-    const i = normCorpus.indexOf(normalizeForMatch(c.source_span));
+    const i = normCorpus.indexOf(lower(c.source_span));
     return i < 0 ? Number.MAX_SAFE_INTEGER : i;
   };
   kept.sort((a, b) => pos(a) - pos(b));

@@ -20,7 +20,8 @@ The brief makes **"odpowiedź po polsku, prostym i zrozumiałym językiem"** an 
 **B. System states (never verdicts; shown as a different-looking banner, not as a verdict card):**
 | State | Level | Message idea (pl) |
 |---|---|---|
-| `needs_clarification` | request | "Doprecyzuj, o co pytasz: …" + the clarifying question. Only when nothing in the input is checkable; never about a date, scope or speaker the system can settle (user, 2026-11-21) |
+| `needs_clarification` | request | "Doprecyzuj, o co pytasz: …" + the clarifying question. Only when nothing in the input is checkable; never about a date, scope or speaker the system can settle (user, 2026-11-21), never about details a named-subject claim does not state, and always an open question (user, 2026-11-22). The web chat joins the next typed reply to the clarified question (`"<earlier>
+<reply>"`, one text input, no contract change); "Nowe pytanie" clears it |
 | `out_of_scope` | request | "Sprawdzamy twierdzenia o faktach. To pytanie wykracza poza zakres." |
 | `not_a_claim` | request | a joke, greeting or nonsense: a friendly short reply plus what we can do |
 | `input_rejected` | request | too large, unsupported file, or an unsupported platform for video |

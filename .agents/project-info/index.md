@@ -12,6 +12,7 @@ Format: `- [path](path): one-line summary`
 - [rules/README.md](rules/README.md): scope of the folder 
 - [rules/hard-constraints.md](rules/hard-constraints.md): 21 non-negotiable rules from the task and the organizers (no fabricated sources, verdicts vs system states, security, eval integrity, facts not opinions)
 - [rules/ui-conventions.md](rules/ui-conventions.md): user's UI style rules (no uppercase eyebrow labels above titles, less text, supported widths 320 px to ultrawide)
+- [rules/documents-current.md](rules/documents-current.md): **every hosted document (Google Sheets cost sheet, Slides deck) stays up to date**: same turn as the change, edit in place, real numbers, wiki and document agree, table of documents
 - [rules/cost-sheet.md](rules/cost-sheet.md): **keep the cost Google Sheet current with real numbers**: when to update (full eval runs, model/price, hosting/channel, limits, NBP rate), sources per input, keep it small, cell map
 
 ## hackathon/
@@ -58,8 +59,8 @@ Format: `- [path](path): one-line summary`
 
 ## prompts/
 - [prompts/README.md](prompts/README.md): how prompts are used in code, patterns and anti-patterns, the change procedure
-- [prompts/claim-extraction.md](prompts/claim-extraction.md): LLM call #1: atomic claims, common sense, classes, types, risk (draft v1)
-- [prompts/evidence-assessment.md](prompts/evidence-assessment.md): LLM call #2: stance + verbatim quote, fair-not-suspicious, code-decided verdict (draft v1)
+- [prompts/claim-extraction.md](prompts/claim-extraction.md): LLM call #1: atomic claims, common sense, classes, types, risk; code v6 (no needless clarification, open questions, joined replies, case-insensitive spans)
+- [prompts/evidence-assessment.md](prompts/evidence-assessment.md): LLM call #2: stance + verbatim quote, fair-not-suspicious, code-decided verdict; code v6 (same person ≠ same subject)
 - [prompts/media-extraction.md](prompts/media-extraction.md): image OCR + description, video/audio transcripts (draft v1)
 
 ## team/
@@ -84,7 +85,7 @@ Format: `- [path](path): one-line summary`
 
 ## evaluation/
 - [evaluation/README.md](evaluation/README.md): scope of the folder
-- [evaluation/benchmark.md](evaluation/benchmark.md): **tests and benchmark**: 156 free deterministic tests, 50-case live reference set (A-J + statistics + organizer-style), metric definitions, results (run 3: macro-F1 0.71, misleading 0.50, abstention 88%, robustness/consistency 100%, $0.10 per 100), known gaps
+- [evaluation/benchmark.md](evaluation/benchmark.md): **tests and benchmark**: 156 free deterministic tests, 50-case live reference set (A-J + statistics + organizer-style), metric definitions, results (latest 2026-11-22 on prompts v6: macro-F1 0.71, misleading 0.29, abstention 89%, robustness/consistency 100%, $0.189 per 100), known gaps
 
 ## pitch/
 - [pitch/README.md](pitch/README.md): scope of the folder; link to the Prawdomat Design System artifact for the deck and PDFs 

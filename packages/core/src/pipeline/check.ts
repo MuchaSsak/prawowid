@@ -14,8 +14,8 @@ import { isMediaType, mediaInputError } from "../intake/media.ts";
 import { transcribeRecording, transcriptToMaterial } from "../intake/recording.ts";
 import { fetchArticle, IntakeError, type ResolveHost } from "../intake/url.ts";
 import { LlmError, type LlmUsage } from "../llm/openrouter.ts";
-import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v5.ts";
-import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v5.ts";
+import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v6.ts";
+import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v6.ts";
 import type { CheckEventRow, CheckStore, CorpusStore } from "../store/types.ts";
 import {
   type CheckRequest,

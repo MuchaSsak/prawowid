@@ -45,6 +45,9 @@ Run the full benchmark only before a demo, a submission or a prompt/model change
 - **End-to-end:** completed, valid v1 contract, case expectations met. **Channel consistency:** G cases re-sent as `channel: messaging` with another session; verdicts and citation IDs must match.
 
 ## Results
+**Run 2026-11-22 05:06 UTC (58 cases = 55 + Q01-Q03, claim-extraction@6 + evidence-assessment@6):** `eval/results/2026-11-22T05-06-42.json`, `latest.md`. Macro-F1 **0.71** (acc. 76%, 38/50), abstention 89% (8/9), robustness 100% (4/4), citation coverage 100% of decisive verdicts, median 8.2 s / p90 12.0 s, **$0.189 per 100**, end-to-end 57/58 (I01), channel consistency 3/3. Per class: confirmed 0.88, false 0.79, insufficient_evidence 0.73, not_verifiable 0.86, **misleading 0.29** (B01-B03, K02, S07 → false or abstain). New cases: Q01 "czy robert lewandowski sprzedaje prezerwatywy" and Q02 (same + "
+tak", the web's joined clarification reply) now reach a verdict path (`insufficient_evidence`) instead of `needs_clarification`; Q03 (really vague) still asks. Re-running the 8 failing cases on the v5/v5 prompts gave the same misses (misleading → false/abstain, K05 → `needs_clarification`), so they are known gaps, not regressions; only K03 differed (false on v5, abstain on v6: one run each, may be noise).
+
 **Run 2026-11-22 (55 cases, 9692 source records / 47374 indexed fragments):** saved to `eval/results/2026-11-22T00-30-20.json` and `eval/results/latest.md`. The run could not use provider credentials because `../.env` was unavailable; 54 labelled cases produced `status:technical_error`, so macro-F1 0.00 is not comparable with the 0.71 live baseline and is not evidence of BM25 quality.
 
 Full runs, local core, mistral-small-2603 (extraction) + mistral-large-2512 (assessment), 2026-11-21:

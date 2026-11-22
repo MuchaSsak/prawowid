@@ -10,14 +10,20 @@ export function normalizeForMatch(text: string): string {
     .trim();
 }
 
-/** True when `needle` occurs verbatim in `haystack` after normalization. */
-export function containsVerbatim(haystack: string, needle: string): boolean {
-  const n = normalizeForMatch(needle);
+/**
+ * True when `needle` occurs verbatim in `haystack` after normalization. `ignoreCase` is only for
+ * claim spans copied from what a person typed (people write "robert lewandowski", the model copies
+ * "Robert Lewandowski") and may lack the final full stop or question mark the model adds; quotes
+ * from sources stay exact.
+ */
+export function containsVerbatim(haystack: string, needle: string, opts: { ignoreCase?: boolean } = {}): boolean {
+  const norm = (s: string) => (opts.ignoreCase ? normalizeForMatch(s).toLocaleLowerCase("pl") : normalizeForMatch(s));
+  const n = opts.ignoreCase ? norm(needle).replace(/[.!?]+$/, "").trimEnd() : norm(needle);
   if (n.length < 3) return false;
-  const h = normalizeForMatch(haystack);
+  const h = norm(haystack);
   if (h.includes(n)) return true;
   // Lines of one record quoted together ("Akt: …\nData aktu: …"): every line must be verbatim.
-  const lines = needle.split(/\n+/).map((l) => normalizeForMatch(l)).filter(Boolean);
+  const lines = needle.split(/\n+/).map((l) => norm(l)).filter(Boolean);
   return lines.length > 1 && lines.every((l) => l.length >= 3 && h.includes(l));
 }
 
