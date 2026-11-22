@@ -64,6 +64,12 @@ export interface ConnectorContext {
   config: Config;
   signal: AbortSignal;
   corpus: CorpusStore;
+  /**
+   * Set by the source switches (sources/controls.ts): true for a record an operator switched off.
+   * The switch layer drops those records itself; a connector reads this only to skip extra work on
+   * them (e.g. fetching a switched-off publisher's article).
+   */
+  isSwitchedOff?: (record: SourceRecord) => boolean;
 }
 
 export interface Connector {

@@ -407,7 +407,14 @@ app.post("/api/v1/admin/sources", async (c) => {
     (body.enabled && state.disabled.includes(body.key));
   if (!known) return c.json({ error: `unknown source key: ${body.key.slice(0, 80)}` }, 400);
   // Answer from the state the save returned: a second read could time out after the change persisted.
-  return c.json(await sourcesReport(await withDeadline(sourceControls.set(body.key, body.enabled))));
+  let saved: SourceControlState;
+  try {
+    saved = await withDeadline(sourceControls.set(body.key, body.enabled));
+  } catch {
+    // The write may still land: the outcome is unknown, so the page re-reads instead of reverting.
+    return c.json({ error: "save outcome unknown, reload the source list" }, 503);
+  }
+  return c.json(await sourcesReport(saved));
 });
 
 app.get("/api/v1/admin/sources/search", async (c) => {

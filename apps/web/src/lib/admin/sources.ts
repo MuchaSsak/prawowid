@@ -209,6 +209,9 @@ export function initSources() {
       const s = await call<SourcesState>("/api/v1/admin/sources");
       if (id !== request) return;
       lock(false);
+      // With no save in flight a fresh GET is the truth, even if its revision is lower (a server
+      // without KV restarts at revision 0).
+      if (!pending.size) serverState = null;
       render(newest(s), true);
     } catch (e) {
       if (id !== request) return;
@@ -323,14 +326,25 @@ export function initSources() {
     pending.set(key, want);
     rowErrors.delete(key);
     render(state);
+    // A save answers into the mode it started in: switching to sample data mid-save must not show live rows.
+    const startedInSample = sample;
     try {
-      const next = sample ? await sampleToggle(key, want) : await call<SourcesState>("/api/v1/admin/sources", { method: "POST", body: JSON.stringify({ key, enabled: want }) });
+      const next = startedInSample ? await sampleToggle(key, want) : await call<SourcesState>("/api/v1/admin/sources", { method: "POST", body: JSON.stringify({ key, enabled: want }) });
       pending.delete(key);
-      render(sample ? next : newest(next));
+      if (sample !== startedInSample) return;
+      render(startedInSample ? next : newest(next));
       if (lastQuery) runSearch(lastQuery, true);
     } catch (e) {
       pending.delete(key);
+      if (sample !== startedInSample) return;
       if (e instanceof HttpError && (e.status === 401 || e.status === 429)) return;
+      if (e instanceof HttpError && e.status === 503) {
+        // The server could not confirm the save: show the authoritative state instead of guessing.
+        await load();
+        rowErrors.set(key, "Nie wiadomo, czy zapisano. Pokazujemy aktualny stan z serwera.");
+        if (state) render(state);
+        return;
+      }
       rowErrors.set(key, e instanceof HttpError ? (e.status === 400 ? "Serwer nie zna tego źródła." : `Nie zapisano (błąd ${e.status}).`) : "Nie zapisano: brak połączenia z API.");
       // Revert: the server state did not change, so put the old value back.
       render({ ...state, sources: state.sources.map((s) => (s.key === key ? { ...s, enabled: !want } : s)) });

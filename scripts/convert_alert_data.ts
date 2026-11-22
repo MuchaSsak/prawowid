@@ -1,7 +1,9 @@
 // Real HTML tags only: a literal "<" ("<50% normy", "<= 2025.12.5") must survive.
-// Real tags only (name right after "<", quoted attributes may hold ">"), plus comments and doctype;
-// a literal "<50% normy" or "<x+2 >" stays text.
-const htmlTagPattern = /<!--[\s\S]*?-->|<!doctype[^>]*>|<\/?[a-zA-Z][a-zA-Z0-9-]*(?:\s(?:[^<>"']|"[^"]*"|'[^']*')*)?\/?>/gi;
+// Real HTML only: a known element name, then whitespace, "/" or ">"; quoted attributes may hold
+// ">" but never a newline or "<". Plus comments and doctype. Literal text such as "<50% normy",
+// "<x+2 >", "<= 2025" or "<LOD i >LOQ" stays.
+const htmlTagPattern =
+  /<!--[\s\S]*?-->|<!doctype[^>]*>|<\/?(?:a|abbr|article|aside|b|blockquote|body|br|button|caption|center|code|dd|del|div|dl|dt|em|figcaption|figure|font|footer|form|h[1-6]|head|header|hr|html|i|iframe|img|input|ins|label|li|link|main|mark|meta|nav|noscript|ol|p|path|picture|pre|q|s|script|section|small|source|span|strong|style|sub|sup|svg|table|tbody|td|tfoot|th|thead|time|title|tr|u|ul|video)(?=[\s/>])(?:\s(?:[^<>"']|"[^"<\n]*"|'[^'<\n]*')*)?\/?>/gi;
 const base64Pattern = /(?:data:[^;]+;base64,[A-Za-z0-9+/=]+|[A-Za-z0-9+/]{80,}={0,2})/g;
 
 function cleanText(value: unknown): string | null {

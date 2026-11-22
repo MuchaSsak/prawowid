@@ -223,3 +223,13 @@ Deno.test("applySourceControls: a connector that filters by the allowlist itself
   assertEquals(r.routes.find((x) => x.route === "optional_aggregator")?.status, "no_hits");
   assertEquals(r.records, []);
 });
+
+Deno.test("articlePicks: a switched-off fact-checker never takes an article slot", async () => {
+  const { articlePicks } = await import("../src/connectors/google-factcheck.ts");
+  const ap = (n: number) => rec("x", n, `https://apnews.com/article/${n}`, "AP fact check", "factcheck");
+  const demagog = rec("x", 9, "https://demagog.org.pl/wypowiedzi/9", "Demagog", "factcheck");
+  const records = [ap(1), ap(2), ap(3), demagog];
+  const off = (r: SourceRecord) => r.url.includes("apnews.com");
+  assertEquals(articlePicks(records, off).map((r) => r.url), [demagog.url]);
+  assert(articlePicks(records).length > 0 && articlePicks(records)[0].url.includes("apnews.com"));
+});

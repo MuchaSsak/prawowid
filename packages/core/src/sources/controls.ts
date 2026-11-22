@@ -198,7 +198,11 @@ export function applySourceControls(
       search: async (claim, ctx) => {
         // The full catalog, so a connector that filters by the allowlist itself (Google Fact Check)
         // still hands back records from switched-off publishers, and `allows` alone decides.
-        const found = await c.search(claim, { ...ctx, config: { ...ctx.config, trustedSources: base.trustedSources } });
+        const found = await c.search(claim, {
+          ...ctx,
+          config: { ...ctx.config, trustedSources: base.trustedSources },
+          isSwitchedOff: (r) => !allows(r),
+        });
         const kept = found.filter(allows);
         // A required route whose every record is from switched-off publishers has not found
         // "nothing": it is unavailable, so the claim gets a system state, never a verdict.

@@ -91,7 +91,7 @@ export const googleFactCheck: Connector = {
         }
       }
     }
-    return enrichWithArticles(out, ctx.signal);
+    return enrichWithArticles(out, ctx.signal, ctx.isSwitchedOff);
   },
 };
 
@@ -105,8 +105,17 @@ export const googleFactCheck: Connector = {
  */
 export const ARTICLE_LABEL = "Fragment artykułu weryfikacji:";
 
-async function enrichWithArticles(records: SourceRecord[], signal: AbortSignal | undefined): Promise<SourceRecord[]> {
-  const picks = records.filter((r) => r.tier === "factcheck").slice(0, LIMITS.factcheckArticlesPerClaim);
+/** The fact-check hits whose article is fetched; switched-off publishers never take a slot. */
+export function articlePicks(records: SourceRecord[], isSwitchedOff?: (r: SourceRecord) => boolean): SourceRecord[] {
+  return records.filter((r) => r.tier === "factcheck" && !isSwitchedOff?.(r)).slice(0, LIMITS.factcheckArticlesPerClaim);
+}
+
+async function enrichWithArticles(
+  records: SourceRecord[],
+  signal: AbortSignal | undefined,
+  isSwitchedOff?: (r: SourceRecord) => boolean,
+): Promise<SourceRecord[]> {
+  const picks = articlePicks(records, isSwitchedOff);
   await Promise.all(picks.map(async (r) => {
     try {
       const deadline = AbortSignal.timeout(LIMITS.factcheckArticleTimeoutMs);
