@@ -47,6 +47,20 @@ describe("render: every mock scenario on every surface", () => {
     expect(out.toLowerCase()).not.toContain("przekazano");
   });
 
+  test("a live answer says how long the check took; a mock answer does not", () => {
+    const live = (ms: number): CheckResponse => {
+      const r = mock("false");
+      return { ...r, warnings: r.warnings.filter((w) => w.type !== "demo_data"), meta: { ...r.meta, mode: "live", latency_ms: ms } };
+    };
+    expect(renderResponse(live(8420), { surface: "console", webUrl: null })).toContain("Czas sprawdzenia: 8,4 s");
+    expect(renderResponse(live(65_000), { surface: "console", webUrl: null })).toContain("Czas sprawdzenia: 1 min 5 s");
+    expect(renderResponse(live(40), { surface: "console", webUrl: null })).toContain("Czas sprawdzenia: mniej niż 0,1 s");
+    expect(renderResponse(mock("false"), { surface: "console", webUrl: null })).not.toContain("Czas sprawdzenia");
+    const state = mock("out_of_scope");
+    const liveState = { ...state, warnings: [], meta: { ...state.meta, mode: "live" as const, latency_ms: 1200 } };
+    expect(renderResponse(liveState, { surface: "discord", webUrl: null })).toContain("Czas sprawdzenia: 1,2 s");
+  });
+
   test("a screenshot gets the deepfake limitation", () => {
     const res = mockResponse({ input: { type: "image", value: "data:image/png;base64,AA==" } });
     expect(renderResponse(res, { surface: "messenger", webUrl: null })).toContain("nie wykrywamy deepfake'ów");

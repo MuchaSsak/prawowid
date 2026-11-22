@@ -85,6 +85,14 @@ export function plural(n: number, one: string, few: string, many: string): strin
   return t >= 2 && t <= 4 && !(hh >= 12 && hh <= 14) ? few : many;
 }
 
+/** How long an answer took, in Polish: "0,4 s", "8,4 s", "1 min 5 s". */
+export function duration(ms: number): string {
+  if (ms < 100) return "mniej niż 0,1 s";
+  if (ms < 60_000) return `${(Math.round(ms / 100) / 10).toFixed(1).replace(".", ",")} s`;
+  const s = Math.round(ms / 1000);
+  return `${Math.floor(s / 60)} min${s % 60 ? ` ${s % 60} s` : ""}`;
+}
+
 function date(d: string | null): string {
   if (!d) return "";
   const t = Date.parse(d);
@@ -496,7 +504,15 @@ function backdropImage(src: string): HTMLElement {
   );
 }
 
-export function renderResult(root: HTMLElement, r: CheckResponse, opts: { backdrop?: string | null } = {}) {
+/**
+ * `elapsedMs`: the time from send until the answer arrived, measured in the browser (network and
+ * generation, without the skeleton's minimum show time). Shown as one quiet line under the answer.
+ */
+export function renderResult(
+  root: HTMLElement,
+  r: CheckResponse,
+  opts: { backdrop?: string | null; elapsedMs?: number | null } = {},
+) {
   const parts: (HTMLElement | null)[] = [];
   // The demo_data warning is not shown (user's choice, 2026-11-21); mock texts from the API still
   // carry [DEMO] and point to example.org, which the source button shows as the address.
@@ -570,6 +586,10 @@ export function renderResult(root: HTMLElement, r: CheckResponse, opts: { backdr
   }
 
   claims.forEach((c, i) => parts.push(claimCard(c, i, claims.length, uid)));
+
+  if (opts.elapsedMs != null) {
+    parts.push(h("p", { class: "answer-time", title: "Od wysłania do odpowiedzi" }, `Odpowiedź w ${duration(opts.elapsedMs)}`));
+  }
 
   const sheet = h("div", { class: "sheet" }, ...parts.filter((p): p is HTMLElement => p !== null));
   if (opts.backdrop) {

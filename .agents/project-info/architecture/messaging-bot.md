@@ -84,6 +84,7 @@ flowchart TB
    - Each claim gets its verdict label or system state, evidence strength, explanation, what is missing, warnings, and up to 3 "Sprawdź sam" links.
    - Escalation, when `recommended`, uses exactly "Rekomendujemy przekazanie do weryfikacji przez człowieka", never "przekazano".
    - Then one limitations line. For screenshots, the line includes "nie wykrywamy deepfake'ów".
+   - On live answers (also request-level notices), how long the check took, from `meta.latency_ms`: "⏱️ Czas sprawdzenia: 8,4 s" (`timeLine` in `apps/bot/src/render.ts`; skipped for mock answers, whose latency is 0; user, 2026-11-22).
    - A footer with the web app link and privacy pointer, per platform: "Prywatność: /pomoc" on Discord, "Prywatność: napisz pomoc" on Messenger.
    - Claims that don't fit the limit are counted, never cut in half.
 8. **Guaranteed reply.** A `try/finally` guarantees one: if anything throws, the user gets "Nie mogliśmy wykonać sprawdzenia. To nie jest ocena treści." This is a system message. The user never gets silence or "thinking…" forever.

@@ -786,9 +786,11 @@ export function initApp() {
         }));
         data = (await guard(res.json())) as CheckResponse;
       }
+      // What the person waited for the answer itself (not the skeleton's minimum show time below).
+      const elapsedMs = performance.now() - started;
       await guard(settle());
       const backdrop = (await guard(backdropReady)) ?? (testMode ? sampleBackdrop(data) : null);
-      renderResult(bot.body, data, { backdrop });
+      renderResult(bot.body, data, { backdrop, elapsedMs });
       if (data.status === "needs_clarification" && !att && type === "text") pendingQuestion = joined ?? typed;
       srStatus.textContent = announce(data);
     } catch (err) {
