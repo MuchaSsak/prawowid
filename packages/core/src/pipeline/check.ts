@@ -49,6 +49,7 @@ import {
   withAbsenceNote,
   withLead,
 } from "./render.ts";
+import { oppositePolarity } from "./factcheck.ts";
 import { numericGuard } from "./numeric.ts";
 import { retrieve } from "./retrieve.ts";
 import { type ContextResult, findContextMatches, NARRATIVE_MATCHERS } from "../narratives/mod.ts";
@@ -109,6 +110,12 @@ function addContext(x: ClaimResult, known: ContextResult): ClaimResult {
 }
 
 /** Confirmed vs false/misleading: the two readings cannot both be right. */
+/** The user's words and the extracted claim differ in negation ("nie", "nigdy", a leading "nieprawda, że"). */
+function polarityFlipped(userSpan: string, claimText: string): boolean {
+  const denial = (s: string) => /^\s*(to\s+)?nieprawd\p{L}*/iu.test(s.replace(/^\s*czy\s+/iu, ""));
+  return oppositePolarity(userSpan, claimText) || denial(userSpan) !== denial(claimText);
+}
+
 function opposite(a: string, b: string): boolean {
   const neg = (v: string) => v === "false" || v === "misleading";
   return (a === "confirmed" && neg(b)) || (b === "confirmed" && neg(a));
@@ -627,7 +634,13 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     // The leading word only when code and model agree on the verdict (or the verdict came from a rating).
     const plain = byAnnouncement ? "yes" : stale && proposed !== d.verdict ? plainFromVerdict(d.verdict) : assessed.assessment.plain_answer;
     const partly = d.verdict === "misleading" && ratedPartlyTrue(d.decisive);
-    const lead = (proposed === d.verdict || stale || byAnnouncement) && !partly ? leadWord(d.verdict, plain, asksQuestion) : null;
+    // A negated question or denial ("Czy NBP nie obniżył stóp?", "Nieprawda, że X") checked as the
+    // positive claim: "Tak."/"To prawda." would answer the user's words backwards, so no leading word;
+    // the claim headline and the explanation say what is true.
+    const flipped = polarityFlipped(c.source_span, c.text);
+    const lead = (proposed === d.verdict || stale || byAnnouncement) && !partly && !flipped
+      ? leadWord(d.verdict, plain, asksQuestion)
+      : null;
     explanation = c.asked_checker
       // "Did <checker> check X?": answer that question first; the verdict on X follows.
       ? `${askedCheckerAnswer(c.asked_checker, guard.passages).lead} ${withLead(explanation, null)}`

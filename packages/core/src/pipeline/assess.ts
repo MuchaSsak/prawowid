@@ -285,4 +285,4 @@ function sharesSubject(claimText: string, sentence: string, place: string | null
   return words.some((w) => t.includes(foldPl(w).slice(0, 5)));
 }
 const ANNOUNCED =
-  /\b(?:zapowiedzia\p{L}*|zapowiada\p{L}*|zaplanowan\p{L}*|ma się odbyć|mają się odbyć|odbędzie się|odbędą się|announced|scheduled|will take place)/iu;
+  /\b(?:zapowiedzia\p{L}*|zapowiada\p{L}*|zaplanowan\p{L}*|planowan\p{L}*|planuj\p{L}*|ma się odbyć|mają się odbyć|odbędzie się|odbędą się|announced|scheduled|will take place)/iu;
