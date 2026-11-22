@@ -122,6 +122,14 @@ export async function assessClaim(args: {
       // "Ocena: Fałsz" read as misleading): the rating's own stance applies.
       const fromHeader = (f.claimLine && containsVerbatim(f.claimLine, p.quote)) ||
         (f.ratingLine && containsVerbatim(f.ratingLine, p.quote) && f.rating && ratingStance(f.rating) !== verified.stance);
+      // The rating line quoted as the decisive sentence of a card whose checked statement has the
+      // opposite polarity ("5G nie ma związku z COVID-19" vs a "Fałsz" on "…odkryli, że Covid-19 to …"):
+      // the rating cannot be applied as it stands, so the card is context (live probe, 2026-11-22).
+      const ratingQuoted = f.ratingLine && containsVerbatim(f.ratingLine, p.quote);
+      if (ratingQuoted && f.claimLine && !fromHeader &&
+        oppositePolarity(args.claim.text, f.claimLine.replace(/^Sprawdzane twierdzenie:\s*/, ""))) {
+        verified.stance = "context";
+      }
       if (f.claimLine && f.ratingLine && fromHeader) {
         const fromRating = f.rating ? ratingStance(f.rating) : null;
         const statement = f.claimLine.replace(/^Sprawdzane twierdzenie:\s*/, "");

@@ -172,12 +172,23 @@ export function askedCheckerAnswer(asked: string, passages: VerifiedPassage[]): 
   const hit = byChecker.find((p) => isFactcheckCard(p.record)) ??
     byChecker.find((p) => p.record.tier === "factcheck");
   if (hit) {
-    const rating = isFactcheckCard(hit.record) ? factcheckFields(hit.record.text).rating : null;
+    const raw = isFactcheckCard(hit.record) ? factcheckFields(hit.record.text).rating : null;
+    // A numeric-only ClaimReview rating ("1") says nothing to a reader.
+    const rating = raw && /\p{L}/u.test(raw) ? raw : null;
     return {
       found: true,
       lead: rating
         ? `Tak. ${hit.record.publisher} sprawdził to twierdzenie i ocenił je jako „${rating}”.`
         : `Tak. ${hit.record.publisher} sprawdził to twierdzenie.`,
+    };
+  }
+  // A card by that checker that is only context (a related claim): saying "not found" next to it would
+  // contradict the citation shown.
+  const related = passages.find((p) => p.stance === "context" && isAskedChecker(asked, p.record.publisher) && isFactcheckCard(p.record));
+  if (related) {
+    return {
+      found: false,
+      lead: `${related.record.publisher} sprawdzał podobne twierdzenie, ale nie znaleźliśmy jego weryfikacji dokładnie tego.`,
     };
   }
   return {

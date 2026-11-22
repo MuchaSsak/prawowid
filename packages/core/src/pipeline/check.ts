@@ -110,6 +110,21 @@ function addContext(x: ClaimResult, known: ContextResult): ClaimResult {
 }
 
 /** Confirmed vs false/misleading: the two readings cannot both be right. */
+const capitalize = (s: string) => s.charAt(0).toLocaleUpperCase("pl") + s.slice(1);
+
+/** The span with a denial right before it ("Nieprawda, że " + span) when the input has one. */
+function withDenialPrefix(span: string, texts: string[]): string {
+  const s = span.trim().replace(/[.!?]+$/, "");
+  for (const t of texts) {
+    const i = t.toLocaleLowerCase("pl").indexOf(s.toLocaleLowerCase("pl"));
+    if (i < 0) continue;
+    const before = t.slice(Math.max(0, i - 30), i);
+    const m = before.match(/(?:to\s+)?nieprawd\p{L}*\s*,?\s*(?:że|ze)\s*$|nie\s+jest\s+prawdą\s*,?\s*(?:że|ze)\s*$/iu);
+    if (m) return `${m[0]}${span}`;
+  }
+  return span;
+}
+
 /** The user's words and the extracted claim differ in negation ("nie", "nigdy", a leading "nieprawda, że"). */
 function polarityFlipped(userSpan: string, claimText: string): boolean {
   const denial = (s: string) => /^\s*(to\s+)?nieprawd\p{L}*/iu.test(s.replace(/^\s*czy\s+/iu, ""));
@@ -637,10 +652,19 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     // A negated question or denial ("Czy NBP nie obniżył stóp?", "Nieprawda, że X") checked as the
     // positive claim: "Tak."/"To prawda." would answer the user's words backwards, so no leading word;
     // the claim headline and the explanation say what is true.
-    const flipped = polarityFlipped(c.source_span, c.text);
-    const lead = (proposed === d.verdict || stale || byAnnouncement) && !partly && !flipped
-      ? leadWord(d.verdict, plain, asksQuestion)
+    // The model's span may leave out a leading "Nieprawda, że": read the few words before it too.
+    const userWords = withDenialPrefix(c.source_span, [userMessage, ...material.map((m) => m.text)]);
+    const flipped = polarityFlipped(userWords, c.text);
+    // A negated statement ("Konstytucja nie została uchwalona w 1997 roku.", "Nieprawda, że X") checked as
+    // the positive claim: the user's own statement is shown, with the verdict turned round (X confirmed →
+    // the denial is false). A negated question keeps the positive claim and only loses the leading word.
+    const flippedStatement = flipped && !asksQuestion && (d.verdict === "confirmed" || d.verdict === "false");
+    const shownVerdict = flippedStatement ? (d.verdict === "confirmed" ? "false" : "confirmed") : d.verdict;
+    const shownPlain = flippedStatement ? (plain === "yes" ? "no" : plain === "no" ? "yes" : plain) : plain;
+    const lead = (proposed === d.verdict || stale || byAnnouncement) && !partly && (!flipped || flippedStatement)
+      ? leadWord(shownVerdict, shownPlain, asksQuestion)
       : null;
+    if (flippedStatement) event("polarity_flipped", { claim: c.id, checked: d.verdict, shown: shownVerdict });
     explanation = c.asked_checker
       // "Did <checker> check X?": answer that question first; the verdict on X follows.
       ? `${askedCheckerAnswer(c.asked_checker, guard.passages).lead} ${withLead(explanation, null)}`
@@ -663,8 +687,9 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       }));
     return withContext({
       ...base,
-      verdict: d.verdict,
-      verdict_label: VERDICT_LABEL_PL[d.verdict],
+      ...(flippedStatement ? { text: capitalize(userWords.trim()) } : {}),
+      verdict: shownVerdict,
+      verdict_label: VERDICT_LABEL_PL[shownVerdict],
       strength: d.strength,
       explanation,
       missing: d.verdict === "insufficient_evidence"

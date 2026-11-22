@@ -306,3 +306,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] update | branch full remote runs recorded (main 0.75-0.78, organizer 0.88 final, $0.27/100); cost sheet to update on merge; evaluation/benchmark.md
 ## [2026-11-22] update | edge-case swarm results; negated questions get no leading word; "planowany" is an announcement word; product/response-contract.md, evaluation/benchmark.md, decisions/016
 ## [2026-11-22] update | injection probes rerun by hand (all honest, two phrasings not flagged); Deno Deploy 15 builds/hour limit hit, main needs manual Redeploy; evaluation/benchmark.md
+## [2026-11-22] update | negated statements turned round, opposite-polarity ratings are context, AFP related-card answer, two injection phrasings; tested on a local API; product/response-contract.md, evaluation/benchmark.md
