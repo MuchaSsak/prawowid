@@ -78,7 +78,8 @@ export const sejmEli: Connector = {
 
   async search(claim, ctx) {
     const candidates = titleCandidates(claim.text, claim.search_queries_pl);
-    const aboutAmendment = /noweliz|zmian|zmieni/i.test(claim.text);
+    // Amending acts are the evidence for a change, and against a claim that nothing changed.
+    const aboutAmendment = /noweliz|zmian|zmieni|wyłącznie|nadal obowiązuj|bez zmian|niezmien/i.test(claim.text);
     // ELI returns the newest 50 matches, so an old base act (a code from 1974) is crowded out by its
     // amendments. The year the claim names narrows the search; the unfiltered search still runs, so a
     // wrong year in the claim cannot hide the real act.

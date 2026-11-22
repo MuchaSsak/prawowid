@@ -33,6 +33,8 @@ export const ExtractedClaim = z.strictObject({
   risk: z.enum(["high", "normal"]),
   /** "Did <source> check X?": the source the user asked about; X is the claim (prompt rule 7). */
   asked_checker: z.string().nullable(),
+  /** "A, co dowodzi, że B": on B, the id of the claim presented as its proof (pipeline §2 misleading inference). */
+  inference_from: z.string().nullable(),
   /** Scope taken from the surrounding material; each must quote the fragment that fixes it. */
   assumptions: z.array(z.strictObject({ text: z.string(), source_span: z.string() })),
   ambiguities: z.array(z.string()),
@@ -113,10 +115,16 @@ export async function extractClaims(args: {
   const keepFacts = new Set(
     [...facts].sort((a, b) => (a.risk === b.risk ? 0 : a.risk === "high" ? -1 : 1)).slice(0, LIMITS.maxFactClaims),
   );
-  const claims = kept
+  const ordered = kept
     .filter((c) => c.class !== "fact" || keepFacts.has(c))
-    .slice(0, LIMITS.maxFactClaims + 6)
-    .map((c, i) => ({ ...c, id: `c${i + 1}` }));
+    .slice(0, LIMITS.maxFactClaims + 6);
+  // Ids are renumbered in span order; links between claims (inference_from) follow the new ids.
+  const newId = new Map(ordered.map((c, i) => [c.id.trim().toLowerCase(), `c${i + 1}`]));
+  const claims = ordered.map((c, i) => ({
+    ...c,
+    id: `c${i + 1}`,
+    inference_from: c.inference_from ? newId.get(c.inference_from.trim().toLowerCase()) ?? null : null,
+  }));
 
   return { extraction: { ...data, claims }, rejectedSpans, capped, usage };
 }

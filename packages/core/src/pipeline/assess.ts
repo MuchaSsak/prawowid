@@ -4,7 +4,7 @@ import { LIMITS } from "../config.ts";
 import type { SourceRecord } from "../connectors/types.ts";
 import { containsVerbatim } from "../guard/normalize.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
-import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v4.ts";
+import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v5.ts";
 import type { Stance } from "../types.ts";
 import { factcheckFields, ratingStance } from "./factcheck.ts";
 
@@ -44,6 +44,19 @@ export interface AssessmentResult {
   usage: LlmUsage;
   /** Passages whose stance code took from the fact-checker's rating; the model's verdict is then stale. */
   ratingOverrides: number;
+}
+
+/**
+ * The quote must come from the passage. A quote of several lines or sentences (the model often joins
+ * lines of an official record, e.g. the act's title and its "Data aktu" line) is accepted only when every
+ * part is itself verbatim in the passage and long enough to carry meaning: no fabricated text gets through.
+ */
+export function quoteInPassage(text: string, quote: string): boolean {
+  if (containsVerbatim(text, quote)) return true;
+  // Lines or sentences joined from different places in the record (the model joins record lines with a
+  // newline or just a space): each part must itself be verbatim.
+  const parts = quote.split(/\n+|(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
+  return parts.length > 1 && parts.every((x) => x.length >= 8 && containsVerbatim(text, x));
 }
 
 export async function assessClaim(args: {
@@ -86,7 +99,7 @@ export async function assessClaim(args: {
       return { record, stance: "irrelevant", modelStance: "irrelevant", quote: "", quoteRejected: false, difference: null, data_period: null };
     }
     const needsQuote = p.stance !== "irrelevant";
-    const ok = !needsQuote || containsVerbatim(record.text, p.quote);
+    const ok = !needsQuote || quoteInPassage(record.text, p.quote);
     const verified: VerifiedPassage = {
       record,
       stance: ok ? p.stance : "irrelevant",
@@ -107,6 +120,14 @@ export async function assessClaim(args: {
         verified.quote = f.ratingLine;
         verified.ratingOverride = true;
         if (fromRating === "misleading" && !verified.difference) verified.difference = `ocena weryfikatora: ${f.rating}`;
+      } else if (f.ratingLine && fromRating === "misleading" && verified.stance !== "misleading") {
+        // The fact-checker judged this statement partly true / missing context: its rating decides,
+        // even when the model quoted a supporting or refuting sentence from the article.
+        ratingOverrides++;
+        verified.stance = "misleading";
+        verified.quote = f.ratingLine;
+        verified.ratingOverride = true;
+        if (!verified.difference) verified.difference = `ocena weryfikatora: ${f.rating}`;
       }
     }
     return verified;

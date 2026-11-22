@@ -4,6 +4,10 @@
  * only ever DOWNGRADES a stance that the numbers contradict (to "context"). It never upgrades a
  * stance: a different statistic with the same name (registered vs survey unemployment, CPI vs HICP)
  * must not turn into a confident "false" without the model's quoted reading.
+ * One narrow exception: NBP's own rates (exchange rate, gold, reference rate) have a single official
+ * definition, so a "context" or "refutes" reading of a record whose value equals the claim at the claim's
+ * precision, for the claim's own period, is support (the model files an exact table line as context or
+ * reads rounding as a different number).
  */
 import type { RecordData } from "../connectors/types.ts";
 import type { Warning } from "../types.ts";
@@ -44,13 +48,23 @@ export interface NumericGuardResult {
   downgrades: { source_id: string; from: string; match: NumberMatch }[];
 }
 
+/** Indicators with one official definition, published by the institution itself. */
+const SINGLE_DEFINITION = new Set(["exchange_rate", "gold_price", "nbp_reference_rate"]);
+
 export function numericGuard(claimed: number | null, passages: VerifiedPassage[]): NumericGuardResult {
   const warnings: Warning[] = [];
   const downgrades: NumericGuardResult["downgrades"] = [];
   const out = passages.map((p) => {
     const data = p.record.data;
-    if (!data || p.stance === "irrelevant" || p.stance === "context") return p;
+    if (!data || p.stance === "irrelevant") return p;
     const { match, period } = compareNumber(claimed, data);
+    // NBP's own rates: the value equals the claim at the claim's precision for the claim's period, so a
+    // "context" or "refutes" reading (the model does not treat 4,26 as 4,2578 rounded) is support.
+    if ((p.stance === "context" || p.stance === "refutes") && match === "matches" && SINGLE_DEFINITION.has(data.indicator) && p.quote) {
+      downgrades.push({ source_id: p.record.source_id, from: p.stance, match });
+      return { ...p, stance: "supports" as const };
+    }
+    if (p.stance === "context") return p;
     let downgrade = false;
     // The number agrees with the official value, so a "refutes" reading is about something else.
     if (match === "matches" && p.stance === "refutes") downgrade = true;

@@ -886,3 +886,45 @@ Deno.test({ ...T, name: "asked checker: no fact-check by that publisher → says
     s.restore();
   }
 } });
+
+Deno.test({ ...T, name: "misleading inference: a confirmed premise presented as proof of a refuted conclusion → the conclusion is misleading", async fn() {
+  const premise = "Ustawę o testowaniu znowelizowano w 2026 roku.";
+  const conclusion = "Przed 2026 rokiem ustawa o testowaniu nie obowiązywała.";
+  const s = stubFetch(
+    {
+      // The model's own ids ("C1", "C2") are renumbered by code; the link must follow.
+      extraction: () => {
+        const x = extraction([{ text: premise }, { text: conclusion, inference_from: "C1" }]);
+        x.claims.forEach((c, i) => (c.id = `C${i + 1}`));
+        return x;
+      },
+      assessment: (input) => assess({ Demagog: { stance: input.claim.text === premise ? "supports" : "refutes", needle: "Ocena" } }, input.claim.text === premise ? "confirmed" : "false")(input),
+    },
+    { googleFactCheck: (q) => factCheck("Demagog", "Prawda", q) },
+  );
+  try {
+    const r = await runCheck(text(`${premise} To dowodzi, że ${conclusion}`), deps());
+    valid(r);
+    const [p, c] = r.claims;
+    assertEquals(p.verdict, "confirmed");
+    assertEquals(c.verdict, "misleading");
+    assertEquals(c.verdict_label, "wprowadzające w błąd");
+    assert(c.explanation.startsWith("Fakt, na który powołuje się ten wniosek, jest prawdziwy"));
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "a fact-checker's partly-true rating decides even when the model quoted a supporting sentence", async fn() {
+  const s = stubFetch(
+    { extraction: () => extraction([{ text: CLAIM }]), assessment: assess({ Demagog: { stance: "supports", needle: "Tytuł weryfikacji" } }, "confirmed") },
+    { googleFactCheck: () => factCheck("Demagog", "Częściowa prawda", CLAIM) },
+  );
+  try {
+    const r = await runCheck(text(CLAIM), deps());
+    assertEquals(r.claims[0].verdict, "misleading");
+    assertEquals(r.claims[0].citations[0].excerpt, "Ocena (Demagog): Częściowa prawda.");
+  } finally {
+    s.restore();
+  }
+} });

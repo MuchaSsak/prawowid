@@ -155,6 +155,7 @@ export interface ClaimSpec {
   claimed_value?: number | null;
   currency?: string | null;
   asked_checker?: string | null;
+  inference_from?: string | null;
 }
 
 export function extraction(claims: ClaimSpec[], extra: Record<string, unknown> = {}) {
@@ -179,6 +180,7 @@ export function extraction(claims: ClaimSpec[], extra: Record<string, unknown> =
       currency: c.currency ?? null,
       risk: c.risk ?? "normal",
       asked_checker: c.asked_checker ?? null,
+      inference_from: c.inference_from ?? null,
       assumptions: c.assumptions ?? [],
       ambiguities: [],
       why_not_verifiable: (c.class ?? "fact") === "fact" ? null : "To opinia.",

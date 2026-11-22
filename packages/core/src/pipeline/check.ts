@@ -15,7 +15,7 @@ import { transcribeRecording, transcriptToMaterial } from "../intake/recording.t
 import { fetchArticle, IntakeError, type ResolveHost } from "../intake/url.ts";
 import { LlmError, type LlmUsage } from "../llm/openrouter.ts";
 import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v5.ts";
-import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v4.ts";
+import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v5.ts";
 import type { CheckEventRow, CheckStore, CorpusStore } from "../store/types.ts";
 import {
   type CheckRequest,
@@ -564,8 +564,11 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     let missingOverride: string | null = null;
     // Code took a stance from a fact-checker's rating (factcheck.ts): the model's verdict, explanation
     // and plain answer were built on the checked statement, so they are stale, not inconsistent.
-    const stale = assessed.ratingOverrides > 0;
-    if (stale) event("rating_override", { claim: c.id, count: assessed.ratingOverrides, model: proposed });
+    // A stance code read from the official number itself (numeric.ts: NBP's single-definition rates)
+    // decides like a fact-checker's rating does: the model's verdict was built on its own reading.
+    const numericUpgrade = guard.passages.some((p, i) => p.stance === "supports" && assessed.passages[i]?.stance !== "supports");
+    const stale = assessed.ratingOverrides > 0 || numericUpgrade;
+    if (assessed.ratingOverrides > 0) event("rating_override", { claim: c.id, count: assessed.ratingOverrides, model: proposed });
     if (proposed !== d.verdict) {
       event("verdict_disagreement", { claim: c.id, code: d.verdict, model: proposed, rule: d.rule });
       explanation = (stale ? factcheckExplanation(d.decisive) : null) ?? templateExplanation(d.verdict, d.decisive);
@@ -613,6 +616,24 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       citations,
       warnings: [...base.warnings, ...d.warnings],
     });
+  }
+
+  // Misleading inference (pipeline §2): an authentic premise presented as proof of a conclusion the
+  // sources refute. The conclusion is "misleading" (a true fact used for a false conclusion), not plain
+  // "false"; the premise keeps its own verdict, so the same proposition is never scored twice.
+  for (const [i, c] of claimResults.entries()) {
+    const from = extraction.claims.find((x) => x.id === c.id)?.inference_from;
+    const premise = from && from !== c.id ? claimResults.find((x) => x.id === from) : undefined;
+    if (premise?.verdict !== "confirmed" || c.verdict !== "false") continue;
+    claimResults[i] = {
+      ...c,
+      verdict: "misleading",
+      verdict_label: VERDICT_LABEL_PL.misleading,
+      explanation: `Fakt, na który powołuje się ten wniosek, jest prawdziwy, ale z niego nie wynika, a źródła wnioskowi przeczą. ${
+        c.explanation.replace(/^(To nieprawda|Nie)\.\s*/, "")
+      }`,
+    };
+    event("verdict_disagreement", { claim: c.id, code: "misleading", rule: "misleading_inference", premise: premise.id });
   }
 
   // ── 8. Assemble ────────────────────────────────────────────────────────────

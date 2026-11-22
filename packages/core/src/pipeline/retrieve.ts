@@ -30,6 +30,27 @@ function rank(claim: ClaimQuery, records: SourceRecord[]): SourceRecord[] {
     .map((x) => x.r);
 }
 
+/**
+ * The best passage of every route first, then the rest by rank: long prose (fact-check articles) shares
+ * many words with any claim and would otherwise crowd a terse official record out of the few slots.
+ */
+export function pickPassages(ranked: SourceRecord[], limit: number): SourceRecord[] {
+  const picked = new Set<SourceRecord>();
+  const routes = new Set<string>();
+  for (const r of ranked) {
+    if (picked.size >= limit) break;
+    if (!routes.has(r.route)) {
+      routes.add(r.route);
+      picked.add(r);
+    }
+  }
+  for (const r of ranked) {
+    if (picked.size >= limit) break;
+    picked.add(r);
+  }
+  return ranked.filter((r) => picked.has(r));
+}
+
 export async function retrieve(
   claim: ClaimQuery,
   connectors: Connector[],
@@ -63,5 +84,5 @@ export async function retrieve(
     routes.find((r) => r.required && (r.status === "unavailable" || r.status === "error" || r.status === "timeout")) ??
       null;
   const unique = [...new Map(all.map((r) => [r.source_id, r])).values()];
-  return { records: rank(claim, unique).slice(0, LIMITS.passagesPerClaim), routes, requiredFailure };
+  return { records: pickPassages(rank(claim, unique), LIMITS.passagesPerClaim), routes, requiredFailure };
 }

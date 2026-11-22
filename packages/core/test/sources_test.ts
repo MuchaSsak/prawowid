@@ -397,3 +397,23 @@ Deno.test("Sejm ELI: a claim naming an act runs whatever its type; the claim's y
     globalThis.fetch = original;
   }
 });
+
+Deno.test("number check: an exact NBP table line filed as context counts as support; other statistics never upgrade", async () => {
+  const { numericGuard } = await import("../src/pipeline/numeric.ts");
+  const passage = (indicator: string, value: number) => ({
+    record: {
+      source_id: `x:${indicator}`, route: "nbp", title: "t", publisher: "p", url: "https://nbp.pl/x", published_at: null, retrieved_at: "",
+      tier: "official" as const, origin_key: "nbp", text: `2025-06-02: ${value}`,
+      data: { indicator, unit: "PLN", kind: "number" as const, points: [{ period: "2025-06-02", value }], target_periods: ["2025-06-02"] },
+    },
+    stance: "context" as const, modelStance: "context" as const, quote: `2025-06-02: ${value}`, quoteRejected: false, difference: null, data_period: null,
+  });
+  const nbp = numericGuard(3.15, [passage("exchange_rate", 3.1472)]);
+  assertEquals(nbp.passages[0].stance, "supports");
+  const refuted = numericGuard(3.15, [{ ...passage("exchange_rate", 3.1472), stance: "refutes" as const }]);
+  assertEquals(refuted.passages[0].stance, "supports", "rounding is not a different number");
+  const off = numericGuard(3.15, [passage("exchange_rate", 3.3)]);
+  assertEquals(off.passages[0].stance, "context");
+  const stat = numericGuard(5.2, [passage("unemployment", 5.2)]);
+  assertEquals(stat.passages[0].stance, "context", "survey vs registered definitions: never upgraded");
+});

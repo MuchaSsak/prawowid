@@ -212,3 +212,22 @@ Deno.test("fact-check ratings map to stances; partial ratings never become suppo
   assertEquals(f.ratingLine, "Ocena (Demagog): Częściowa prawda.");
   assert(isAskedChecker("Demagog", "Demagog") && isAskedChecker("AFP", "AFP Sprawdzam") && isAskedChecker("Demagoga", "Demagog") && !isAskedChecker("Reuters", "Demagog"));
 });
+
+Deno.test("quotes: lines quoted together are accepted only when each is verbatim in the passage", async () => {
+  const { quoteInPassage } = await import("../src/pipeline/assess.ts");
+  const record = "Akt: Ustawa z dnia 1 marca 2020 r. o testach.\nRodzaj: Ustawa.\nData aktu: 2020-03-01.";
+  assert(quoteInPassage(record, "Akt: Ustawa z dnia 1 marca 2020 r. o testach.\nData aktu: 2020-03-01."));
+  assert(!quoteInPassage(record, "Akt: Ustawa z dnia 1 marca 2020 r. o testach.\nData aktu: 2021-03-01."), "an invented line is rejected");
+  assert(!quoteInPassage(record, "Akt: Ustawa z dnia 1 marca 2020 r. o testach.\n2020"), "tiny non-adjacent fragments are rejected");
+  assert(!quoteInPassage(record, "Ustawa z dnia 2 marca 2020 r."), "a single invented sentence is rejected");
+  assert(quoteInPassage(record, "Akt: Ustawa z dnia 1 marca 2020 r. o testach. Data aktu: 2020-03-01."), "lines joined by a space");
+  assert(!quoteInPassage(record, "Akt: Ustawa z dnia 1 marca 2020 r. o testach. Data aktu: 2099-03-01."), "an invented sentence among real ones");
+});
+
+Deno.test("retrieval: every route keeps its best passage before others fill the slots", async () => {
+  const { pickPassages } = await import("../src/pipeline/retrieve.ts");
+  const rec = (route: string, n: number) => ({ source_id: `${route}${n}`, route } as unknown as import("../src/mod.ts").SourceRecord);
+  const ranked = [rec("gfc", 1), rec("gfc", 2), rec("gfc", 3), rec("gfc", 4), rec("gfc", 5), rec("eli", 1)];
+  assertEquals(pickPassages(ranked, 5).map((r) => r.source_id), ["gfc1", "gfc2", "gfc3", "gfc4", "eli1"]);
+  assertEquals(pickPassages(ranked.slice(0, 3), 5).map((r) => r.source_id), ["gfc1", "gfc2", "gfc3"]);
+});
