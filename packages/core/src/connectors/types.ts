@@ -70,6 +70,8 @@ export interface ConnectorContext {
    * them (e.g. fetching a switched-off publisher's article).
    */
   isSwitchedOff?: (record: SourceRecord) => boolean;
+  /** DNS resolver for public-address checks when a connector fetches a web page (SSRF guard). */
+  resolveHost?: (hostname: string) => Promise<string[]>;
 }
 
 export interface Connector {
