@@ -27,7 +27,9 @@
     "eval": "cd eval && deno task eval",
     "eval:quick": "cd eval && deno task eval:quick",
     "eval:organizer": "cd eval && deno task eval:organizer",
-    "eval:remote": "cd eval && deno task eval:remote"
+    "eval:remote": "cd eval && deno task eval:remote",
+    "corpus:convert": "deno run --allow-read --allow-write scripts/convert_alert_data.ts",
+    "corpus:build": "deno run --allow-read --allow-write scripts/build_corpus_index.ts"
   },
   "devDependencies": {
     "turbo": "^2.5.0"

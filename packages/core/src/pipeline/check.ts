@@ -49,6 +49,7 @@ import { retrieve } from "./retrieve.ts";
 import { type ContextResult, findContextMatches, NARRATIVE_MATCHERS } from "../narratives/mod.ts";
 import type { KnownIncidentStore, NarrativeMatcher } from "../narratives/types.ts";
 import { decideVerdict } from "./verdict.ts";
+import { SOURCE_DISABLED_DETAIL } from "../sources/controls.ts";
 
 export interface CoreDeps {
   config: Config;
@@ -65,6 +66,11 @@ export interface CoreDeps {
   connectors?: Connector[];
   /** Known-incident matchers (context, never evidence). Default: NARRATIVE_MATCHERS. */
   narrativeMatchers?: NarrativeMatcher[];
+  /**
+   * Extra part of the result cache key, e.g. the source-controls revision (sources/controls.ts), so an
+   * answer cached before an operator switched a source off is never served after it.
+   */
+  cacheScope?: string;
 }
 
 function llmMessage(err: unknown): string {
@@ -179,7 +185,8 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
 
   // ── 1. Validate ────────────────────────────────────────────────────────────
   const value = typeof req.input?.value === "string" ? req.input.value : "";
-  const userMessageRaw = (req.user_message ?? "").slice(0, 2000);
+  // Optional fields arrive unchecked from the HTTP body: a non-string must not throw (HTTP 500).
+  const userMessageRaw = (typeof req.user_message === "string" ? req.user_message : "").slice(0, 2000);
   if (!(INPUT_TYPES as readonly string[]).includes(inputType) || !value.trim()) {
     return finish("input_rejected", "Wklej tekst, link albo dodaj obraz, wideo lub nagranie audio.");
   }
@@ -320,7 +327,16 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
   // ── 4. Cache (same canonical result across channels for 5 minutes, scenario G) ─
   const today = now.toISOString().slice(0, 10);
   const cacheKey = await sha256Hex(
-    JSON.stringify([inputType, today, normalizeForMatch(userMessage), material.map((m) => normalizeForMatch(m.text))]),
+    JSON.stringify([
+      inputType,
+      today,
+      normalizeForMatch(userMessage),
+      material.map((m) => normalizeForMatch(m.text)),
+      // Same article text at another URL or date is another input: its link and reference date differ.
+      response.input.url,
+      response.input.published_at,
+      ...(deps.cacheScope ? [deps.cacheScope] : []),
+    ]),
   );
   const cached = await deps.store.getCached(cacheKey);
   if (cached) {
@@ -386,15 +402,19 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
   }
   for (const w of extraction.implied_warnings) response.warnings.push({ type: "implied_claim", text: w });
 
-  if (extraction.input_kind === "too_vague" || (extraction.input_kind !== "checkable" && extraction.claims.length === 0)) {
+  if (extraction.input_kind === "checkable" && extraction.claims.length === 0) {
+    // The model said there is something to check, but no claim survived validation (e.g. a span that
+    // is not verbatim): our failure, a system state, never "nothing to check" (hard constraint 8).
+    return finish("technical_error", "Nie udało się wiarygodnie wydzielić twierdzeń z tego tekstu. Spróbuj ponownie.");
+  }
+  if (extraction.input_kind === "too_vague" || extraction.claims.length === 0) {
     const map: Record<string, RequestStatus> = {
       too_vague: "needs_clarification",
       out_of_scope: "out_of_scope",
       joke_or_nonsense: "not_a_claim",
       opinion_only: "not_a_claim",
-      checkable: "not_a_claim",
     };
-    return finish(map[extraction.input_kind], extraction.clarification_question);
+    return finish(map[extraction.input_kind] ?? "not_a_claim", extraction.clarification_question);
   }
 
   // ── 7. Evidence per claim, in parallel ─────────────────────────────────────
@@ -473,7 +493,10 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       const state = r.requiredFailure.status === "unavailable" ? "source_unavailable" : "technical_error";
       return withContext({ ...base, system_state: state, system_message: claimStateMessage(state, `${r.requiredFailure.label}: ${r.requiredFailure.detail ?? r.requiredFailure.status}`) });
     }
-    const optionalRouteMissing = r.routes.some((x) => !x.required && x.status !== "hits" && x.status !== "no_hits");
+    // A route an operator switched off is the deployment's choice, not a missing database.
+    const optionalRouteMissing = r.routes.some((x) =>
+      !x.required && x.status !== "hits" && x.status !== "no_hits" && x.detail !== SOURCE_DISABLED_DETAIL
+    );
 
     if (r.records.length === 0) {
       return withContext({
@@ -520,6 +543,18 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     for (const g of guard.downgrades) event("number_check", { claim: c.id, ...g });
     const d = decideVerdict(guard.passages, { optionalRouteMissing });
     d.warnings.push(...guard.warnings);
+    const archival = guard.passages
+      .map((p) => p.record.published_at)
+      .filter((date): date is string => Boolean(date))
+      .filter((date) => {
+        const published = Date.parse(date);
+        const now = Date.parse(today);
+        return Number.isFinite(published) && Number.isFinite(now) && now - published > 365 * 86_400_000;
+      });
+    if (archival.length) d.warnings.push({
+      type: "archival_material",
+      text: "Materiał pochodzi sprzed ponad roku; sprawdź, czy nadal opisuje aktualny stan.",
+    });
     const proposed = assessed.assessment.proposed_verdict;
     let explanation = assessed.assessment.explanation;
     let missingOverride: string | null = null;
@@ -599,6 +634,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     };
   }
   const result = await finish(status, null);
-  if (status === "ok" || status === "partial") await deps.store.setCached(cacheKey, structuredClone(result), sessionHash);
+  // Only complete answers are cached: a partial one (a source failed) must be retried, not replayed.
+  if (status === "ok") await deps.store.setCached(cacheKey, structuredClone(result), sessionHash);
   return result;
 }

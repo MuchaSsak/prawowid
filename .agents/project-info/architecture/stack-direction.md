@@ -5,7 +5,7 @@ What the team has said about technologies. **Decided so far:** the first build (
 - **API:** **Deno Deploy** hosts the API that accepts the user's text, URL or image input. (user, 2026-11-21: "our deno deploy api")
   - **Caution:** Deno Deploy will be **sunset in April 2027** (Deno joining Cloudflare), verified on docs.deno.com 2026-11-21. Keep `packages/core` runtime-agnostic, and name the migration path (Supabase Edge Functions / Cloudflare Workers / a container on an EU VPS).
 - **LLM gateway:** very likely **OpenRouter**. A Claude model via OpenRouter is one option. (user, 2026-11-21)
-- **Retrieval store:** undecided. Possibly a **vector DB in Supabase** (pgvector). (user, 2026-11-21)
+- **Retrieval store:** local in-memory BM25 snapshot for the MVP (`IndexedCorpusStore`); a vector store is proposed only if eval shows BM25 is a narrow bottleneck.
 - "jev": most likely **TypeSafe Jev** (a typed-decision model listed on OpenRouter as `typesafe/jev-router`, early access). **Assumption**: the team should confirm.
 
 Research supporting these choices: [stack-research.md](stack-research.md), [technical-approach-research.md](technical-approach-research.md), [data-sources-research.md](data-sources-research.md).

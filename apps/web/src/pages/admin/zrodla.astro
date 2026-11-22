@@ -1,0 +1,131 @@
+---
+import "@fontsource-variable/inter-tight";
+import "../../styles/global.css";
+import "../../styles/admin.css";
+
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
+const sections = [
+  ["corpus", "Korpus"],
+  ["publisher", "Wydawcy"],
+];
+---
+<!doctype html>
+<html lang="pl" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex" />
+    <meta name="description" content="Panel Prawdomatu: włączanie i wyłączanie źródeł dowodów." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Źródła · Panel Prawdomat</title>
+  </head>
+  <body class="admin" data-api={apiUrl}>
+    <div id="test-bar" class="test-bar" role="status" hidden>
+      Dane przykładowe włączone
+      <button type="button" id="test-off" class="test-off">Wyłącz</button>
+    </div>
+
+    <section id="gate" class="gate" hidden>
+      <form id="gate-form" class="gate-card">
+        <a class="brand" href="/">
+          <svg class="mark" data-rosette="mark" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+          Prawdomat
+        </a>
+        <h2>Klucz administratora</h2>
+        <label class="sr-only" for="token">Klucz administratora</label>
+        <div class="gate-row">
+          <input id="token" name="token" type="password" autocomplete="current-password" placeholder="Klucz" required />
+          <button type="submit" class="pill-btn">Otwórz</button>
+        </div>
+        <p id="gate-error" class="gate-error" role="alert" hidden></p>
+        <button type="button" id="gate-sample" class="text-btn">Pokaż dane przykładowe</button>
+      </form>
+    </section>
+
+    <div class="admin-shell">
+      <aside class="side">
+        <a class="brand" href="/">
+          <svg class="mark" data-rosette="mark" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+          Prawdomat
+        </a>
+        <p class="side-label">Panel</p>
+        <nav aria-label="Panel">
+          <a class="side-link" href="/admin/analityka">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>
+            Analityka
+          </a>
+          <a class="side-link" href="/admin/zrodla" aria-current="page">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6c0 1.7-3.6 3-8 3S4 7.7 4 6s3.6-3 8-3 8 1.3 8 3zM4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6" /></svg>
+            Źródła
+          </a>
+          <a class="side-link" href="/admin/dokumenty">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5" /></svg>
+            Dokumenty
+          </a>
+        </nav>
+        <div class="side-foot">
+          <button type="button" id="logout" class="side-link side-btn" hidden>Wyloguj</button>
+          <a class="side-link" href="/">← Strona główna</a>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+        <header class="admin-head">
+          <div>
+            <h1>Źródła</h1>
+            <p class="head-sub">Wyłączone źródło od razu przestaje służyć jako dowód.</p>
+          </div>
+          <div class="filters">
+            <label class="sr-only" for="filter">Filtruj źródła po nazwie lub identyfikatorze</label>
+            <input id="filter" class="filter-input" type="search" placeholder="Filtruj źródła" autocomplete="off" />
+            <button type="button" id="sample-switch" class="switch" role="switch" aria-checked="false">
+              <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+              Dane przykładowe
+            </button>
+            <button type="button" id="refresh" class="icon-btn" aria-label="Odśwież">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" /></svg>
+            </button>
+          </div>
+        </header>
+
+        <p id="notice" class="notice" role="status" hidden></p>
+
+        <div id="content" class="dash" hidden>
+          <p id="persist-note" class="notice span-2" hidden>Zmiany obowiązują do restartu serwera: brak trwałego zapisu.</p>
+
+          <section class="a-card" aria-labelledby="title-route">
+            <div class="card-title"><h2 id="title-route">Trasy na żywo</h2><p id="sub-route" class="sub"></p></div>
+            <div id="list-route"></div>
+          </section>
+
+          <section class="a-card search-card" aria-labelledby="search-title">
+            <div class="card-title"><h2 id="search-title">Test wyszukiwania</h2><p class="sub">Co korpus znajduje we włączonych źródłach</p></div>
+            <form id="search-form" class="search-row" role="search">
+              <label class="sr-only" for="q">Fraza</label>
+              <input id="q" name="q" type="search" placeholder="np. ostrzeżenie przed wiatrem" autocomplete="off" required />
+              <button type="submit" class="pill-btn">Szukaj</button>
+            </form>
+            <div id="search-out" class="search-out" aria-live="polite"></div>
+          </section>
+
+          {sections.map(([kind, title]) => (
+            <section class="a-card span-2" aria-labelledby={`title-${kind}`}>
+              <div class="card-title"><h2 id={`title-${kind}`}>{title}</h2><p id={`sub-${kind}`} class="sub"></p></div>
+              <div id={`list-${kind}`}></div>
+            </section>
+          ))}
+
+          <section class="a-card span-2" aria-labelledby="audit-title">
+            <div class="card-title"><h2 id="audit-title">Historia zmian</h2><p class="sub">Czas polski</p></div>
+            <div id="audit"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      import { initSources } from "../../lib/admin/sources.ts";
+      initSources();
+    </script>
+  </body>
+</html>

@@ -45,6 +45,8 @@ Run the full benchmark only before a demo, a submission or a prompt/model change
 - **End-to-end:** completed, valid v1 contract, case expectations met. **Channel consistency:** G cases re-sent as `channel: messaging` with another session; verdicts and citation IDs must match.
 
 ## Results
+**Run 2026-11-22 (55 cases, 9692 source records / 47374 indexed fragments):** saved to `eval/results/2026-11-22T00-30-20.json` and `eval/results/latest.md`. The run could not use provider credentials because `../.env` was unavailable; 54 labelled cases produced `status:technical_error`, so macro-F1 0.00 is not comparable with the 0.71 live baseline and is not evidence of BM25 quality.
+
 Full runs, local core, mistral-small-2603 (extraction) + mistral-large-2512 (assessment), 2026-11-21:
 
 | Metric | Run 1 (baseline, 37) | Run 2 (37) | **Run 3 (50 cases, prompts v2)** | Target |

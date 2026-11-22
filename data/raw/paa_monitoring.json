@@ -1,0 +1,3502 @@
+[
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:fe14db57-fc60-4845-8d77-8e636fada3c4",
+    "title": "Sidra - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Sidra\nMoc dawki: 0.068 µSv/h",
+    "summary": "0.068 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Sidra"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "fe14db57-fc60-4845-8d77-8e636fada3c4",
+      "tip_value": "0.068 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.459454,
+      "latitude": 53.546186,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2ddc",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.459454,
+            53.546186
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "fe14db57-fc60-4845-8d77-8e636fada3c4",
+          "stacja": "Sidra",
+          "color": "#1dadae",
+          "tip_value": "0.068 µSv/h",
+          "tip_name": "Sidra",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "f43e64c43622b6aede60ab9a8e7d9570ba70c392f501c0edbea43a0b35299136",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:fde7589e-436b-4dc3-8f89-cf906c5efcfc",
+    "title": "Krzywe - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Krzywe\nMoc dawki: 0.084 µSv/h",
+    "summary": "0.084 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Krzywe"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "fde7589e-436b-4dc3-8f89-cf906c5efcfc",
+      "tip_value": "0.084 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.36519,
+      "latitude": 49.204003,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2dea",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.36519,
+            49.204003
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "fde7589e-436b-4dc3-8f89-cf906c5efcfc",
+          "stacja": "Krzywe",
+          "color": "#1dadae",
+          "tip_value": "0.084 µSv/h",
+          "tip_name": "Krzywe",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "2bcba4f23bc1c21375b0a5c9ebd253fde98365e105138dcbbec6fe2554895198",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:fc21c5cc-b77c-4162-a5dc-3feb78bcc84a",
+    "title": "Kalisz - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Kalisz\nMoc dawki: 0.066 µSv/h",
+    "summary": "0.066 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Kalisz"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "fc21c5cc-b77c-4162-a5dc-3feb78bcc84a",
+      "tip_value": "0.066 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 18.08059,
+      "latitude": 51.78119,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2de9",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            18.08059,
+            51.78119
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "fc21c5cc-b77c-4162-a5dc-3feb78bcc84a",
+          "stacja": "Kalisz",
+          "color": "#1dadae",
+          "tip_value": "0.066 µSv/h",
+          "tip_name": "Kalisz",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "746beea1886bf1412177ed03529be97b5147e655da6fcf2043fb9f076df38265",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:faa5e035-ce88-4270-9967-82ea06d8ef73",
+    "title": "Zielona Góra - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Zielona Góra\nMoc dawki: 0.046 µSv/h",
+    "summary": "0.046 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Zielona Góra"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "faa5e035-ce88-4270-9967-82ea06d8ef73",
+      "tip_value": "0.046 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 15.444644,
+      "latitude": 51.866117,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2dfd",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            15.444644,
+            51.866117
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "faa5e035-ce88-4270-9967-82ea06d8ef73",
+          "stacja": "Zielona Góra",
+          "color": "#1dadae",
+          "tip_value": "0.046 µSv/h",
+          "tip_name": "Zielona Góra",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "6b8b337adb5ef78791b7e6c482dc5e48e040149e1f1d4f1a4ce7cc0728905041",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:f7100907-166a-41ca-ab12-bcb80e699c8b",
+    "title": "Suwałki - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Suwałki\nMoc dawki: 0.079 µSv/h",
+    "summary": "0.079 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Suwałki"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "f7100907-166a-41ca-ab12-bcb80e699c8b",
+      "tip_value": "0.079 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.948798,
+      "latitude": 54.130738,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2de1",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.948798,
+            54.130738
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "f7100907-166a-41ca-ab12-bcb80e699c8b",
+          "stacja": "Suwałki",
+          "color": "#1dadae",
+          "tip_value": "0.079 µSv/h",
+          "tip_name": "Suwałki",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "e29935697ede8d6547ec3102063b0a5f4013409845e78eafc42802872e1e8157",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:f63b5a43-1a7f-43b2-912d-f0a97680a280",
+    "title": "Radzyń Podlaski - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Radzyń Podlaski\nMoc dawki: 0.069 µSv/h",
+    "summary": "0.069 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Radzyń Podlaski"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "f63b5a43-1a7f-43b2-912d-f0a97680a280",
+      "tip_value": "0.069 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.6432,
+      "latitude": 51.7846,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2dd9",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.6432,
+            51.7846
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "f63b5a43-1a7f-43b2-912d-f0a97680a280",
+          "stacja": "Radzyń Podlaski",
+          "color": "#1dadae",
+          "tip_value": "0.069 µSv/h",
+          "tip_name": "Radzyń Podlaski",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "57f121f017a2e5593f267ceaa97afd1c57ae40a980a1c7a5493751bf0f7d7585",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:edcb98b0-1c46-4f09-aaec-bb43f24ad4f9",
+    "title": "Tuszyn - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Tuszyn\nMoc dawki: 0.062 µSv/h",
+    "summary": "0.062 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Tuszyn"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "edcb98b0-1c46-4f09-aaec-bb43f24ad4f9",
+      "tip_value": "0.062 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 19.554916,
+      "latitude": 51.616016,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2de4",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            19.554916,
+            51.616016
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "edcb98b0-1c46-4f09-aaec-bb43f24ad4f9",
+          "stacja": "Tuszyn",
+          "color": "#1dadae",
+          "tip_value": "0.062 µSv/h",
+          "tip_name": "Tuszyn",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "373e7da3d1add08af8148a3205755aebcc433e316572ed91a3fc1ebc0325472b",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:ebc5d128-034a-4d23-9b65-2fc403114740",
+    "title": "Rzeszów - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Rzeszów\nMoc dawki: 0.085 µSv/h",
+    "summary": "0.085 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Rzeszów"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "ebc5d128-034a-4d23-9b65-2fc403114740",
+      "tip_value": "0.085 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 21.9752,
+      "latitude": 49.9956,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2de6",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            21.9752,
+            49.9956
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "ebc5d128-034a-4d23-9b65-2fc403114740",
+          "stacja": "Rzeszów",
+          "color": "#1dadae",
+          "tip_value": "0.085 µSv/h",
+          "tip_name": "Rzeszów",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "c1d83f64afcbe48f7acb3f40fd768d5ea4b71b1049fd870d0de874c6cee0ae11",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:e6f0e81e-353b-4fec-bf91-bbfb57bd6893",
+    "title": "Wólka Dobryńska - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Wólka Dobryńska\nMoc dawki: 0.065 µSv/h",
+    "summary": "0.065 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Wólka Dobryńska"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "e6f0e81e-353b-4fec-bf91-bbfb57bd6893",
+      "tip_value": "0.065 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.4533,
+      "latitude": 52.03504,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e0e",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.4533,
+            52.03504
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "e6f0e81e-353b-4fec-bf91-bbfb57bd6893",
+          "stacja": "Wólka Dobryńska",
+          "color": "#1dadae",
+          "tip_value": "0.065 µSv/h",
+          "tip_name": "Wólka Dobryńska",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "aa36138c991c5f3ff4052c996b0bb4e55bb2e433b7916c172c03676a983e6b85",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:d9dde862-b303-4662-83ce-d6877911cfe4",
+    "title": "Kraśnik - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Kraśnik\nMoc dawki: 0.058 µSv/h",
+    "summary": "0.058 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Kraśnik"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "d9dde862-b303-4662-83ce-d6877911cfe4",
+      "tip_value": "0.058 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.2519,
+      "latitude": 50.9136,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e00",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.2519,
+            50.9136
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "d9dde862-b303-4662-83ce-d6877911cfe4",
+          "stacja": "Kraśnik",
+          "color": "#1dadae",
+          "tip_value": "0.058 µSv/h",
+          "tip_name": "Kraśnik",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "332ca4a6373fbb1313db42c30f50264c5ce66915d2d99d9197fc6ad56e8c540e",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:d86e9e70-7d7e-4398-a0ca-20068713ce9d",
+    "title": "Radom - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Radom\nMoc dawki: 0.060 µSv/h",
+    "summary": "0.060 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Radom"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "d86e9e70-7d7e-4398-a0ca-20068713ce9d",
+      "tip_value": "0.060 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 21.08061,
+      "latitude": 51.40255,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2de8",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            21.08061,
+            51.40255
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "d86e9e70-7d7e-4398-a0ca-20068713ce9d",
+          "stacja": "Radom",
+          "color": "#1dadae",
+          "tip_value": "0.060 µSv/h",
+          "tip_name": "Radom",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "5abb3c7b55293c72338f4fd8c800d2134badebf8c1fdcc7c55c55582b69c8958",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:d4aa6675-7bfc-4295-ba0c-632f1e0c3d61",
+    "title": "Siemianowka - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Siemianowka\nMoc dawki: 0.053 µSv/h",
+    "summary": "0.053 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Siemianowka"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "d4aa6675-7bfc-4295-ba0c-632f1e0c3d61",
+      "tip_value": "0.053 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.83676,
+      "latitude": 52.90413,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2de0",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.83676,
+            52.90413
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "d4aa6675-7bfc-4295-ba0c-632f1e0c3d61",
+          "stacja": "Siemianowka",
+          "color": "#1dadae",
+          "tip_value": "0.053 µSv/h",
+          "tip_name": "Siemianowka",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "939e22f8c104505b78c039f60c6ff5bf4bfe4eb0ba13088555c362cdb79e4fc8",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:d2e87d20-28e2-47ea-860d-98a4e98d8726",
+    "title": "Gdynia - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Gdynia\nMoc dawki: 0.106 µSv/h",
+    "summary": "0.106 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Gdynia"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "d2e87d20-28e2-47ea-860d-98a4e98d8726",
+      "tip_value": "0.106 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1d8aae",
+      "longitude": 18.5462,
+      "latitude": 54.5207,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2df1",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            18.5462,
+            54.5207
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "d2e87d20-28e2-47ea-860d-98a4e98d8726",
+          "stacja": "Gdynia",
+          "color": "#1d8aae",
+          "tip_value": "0.106 µSv/h",
+          "tip_name": "Gdynia",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "bf719a73421dfbded66e73c94a3ce11957cafdbe59d10d3ec6b07d3f7459223a",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:d2b404d9-bd37-4a7f-973b-87073a35ea80",
+    "title": "Jasło - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Jasło\nMoc dawki: 0.084 µSv/h",
+    "summary": "0.084 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Jasło"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "d2b404d9-bd37-4a7f-973b-87073a35ea80",
+      "tip_value": "0.084 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 21.4544,
+      "latitude": 49.7448,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2dda",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            21.4544,
+            49.7448
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "d2b404d9-bd37-4a7f-973b-87073a35ea80",
+          "stacja": "Jasło",
+          "color": "#1dadae",
+          "tip_value": "0.084 µSv/h",
+          "tip_name": "Jasło",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "ef4f0ef021399b0709cd5aee11eeda46876e958e503bd22e00e476314497b65d",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:d0f84e5d-122c-4f6b-b1a4-9b4d7176126a",
+    "title": "Olsztyn - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Olsztyn\nMoc dawki: 0.052 µSv/h",
+    "summary": "0.052 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Olsztyn"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "d0f84e5d-122c-4f6b-b1a4-9b4d7176126a",
+      "tip_value": "0.052 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 20.42021,
+      "latitude": 53.77552,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e14",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            20.42021,
+            53.77552
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "d0f84e5d-122c-4f6b-b1a4-9b4d7176126a",
+          "stacja": "Olsztyn",
+          "color": "#1dadae",
+          "tip_value": "0.052 µSv/h",
+          "tip_name": "Olsztyn",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "a88d16d506525441276b1656c16496f19d845f5ced3b43c4b559109ab69bd7b8",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:cc261a4c-1b27-45c1-91c0-cc6def3ed133",
+    "title": "Machnów Nowy - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Machnów Nowy\nMoc dawki: 0.071 µSv/h",
+    "summary": "0.071 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Machnów Nowy"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "cc261a4c-1b27-45c1-91c0-cc6def3ed133",
+      "tip_value": "0.071 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.65875,
+      "latitude": 50.36671,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e0c",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.65875,
+            50.36671
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "cc261a4c-1b27-45c1-91c0-cc6def3ed133",
+          "stacja": "Machnów Nowy",
+          "color": "#1dadae",
+          "tip_value": "0.071 µSv/h",
+          "tip_name": "Machnów Nowy",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "150ce3ba62234e5f0713d7a251d662a7b0a4f3903298e0719412b90ffef78b63",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:c6b8562b-b642-4630-9bf2-f77511fdc586",
+    "title": "Polska Nowa Wieś - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Polska Nowa Wieś\nMoc dawki: 0.066 µSv/h",
+    "summary": "0.066 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Polska Nowa Wieś"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "c6b8562b-b642-4630-9bf2-f77511fdc586",
+      "tip_value": "0.066 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 17.7823,
+      "latitude": 50.6288,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e0f",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            17.7823,
+            50.6288
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "c6b8562b-b642-4630-9bf2-f77511fdc586",
+          "stacja": "Polska Nowa Wieś",
+          "color": "#1dadae",
+          "tip_value": "0.066 µSv/h",
+          "tip_name": "Polska Nowa Wieś",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "030567ec491460669218c25e44235527fcea98a68acaa49fa21de73c24ef28c0",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:c2aaa60d-6e8a-4d48-b8fe-67a06cc965f3",
+    "title": "Stare Sioło - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Stare Sioło\nMoc dawki: 0.065 µSv/h",
+    "summary": "0.065 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Stare Sioło"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "c2aaa60d-6e8a-4d48-b8fe-67a06cc965f3",
+      "tip_value": "0.065 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.97397,
+      "latitude": 50.17815,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2df3",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.97397,
+            50.17815
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "c2aaa60d-6e8a-4d48-b8fe-67a06cc965f3",
+          "stacja": "Stare Sioło",
+          "color": "#1dadae",
+          "tip_value": "0.065 µSv/h",
+          "tip_name": "Stare Sioło",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "3e98099acc24ea936139961ff27b3e71f8f0bed93b42027d3527dc6455fbc74d",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:bc0828b1-43f2-47bc-b4fe-a1df26874f9e",
+    "title": "Mielec - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Mielec\nMoc dawki: 0.066 µSv/h",
+    "summary": "0.066 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Mielec"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "bc0828b1-43f2-47bc-b4fe-a1df26874f9e",
+      "tip_value": "0.066 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 21.4731,
+      "latitude": 50.2938,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e11",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            21.4731,
+            50.2938
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "bc0828b1-43f2-47bc-b4fe-a1df26874f9e",
+          "stacja": "Mielec",
+          "color": "#1dadae",
+          "tip_value": "0.066 µSv/h",
+          "tip_name": "Mielec",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "3f31b4b4d405c6f349198c5e657fcec6caeef58ef46ecc7dc5c29cbfcf70af3a",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:bb0e6565-fb49-4cab-8a22-0ffcbabf2ae3",
+    "title": "Włodawa - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Włodawa\nMoc dawki: 0.058 µSv/h",
+    "summary": "0.058 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Włodawa"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "bb0e6565-fb49-4cab-8a22-0ffcbabf2ae3",
+      "tip_value": "0.058 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.54095,
+      "latitude": 51.54144,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e09",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.54095,
+            51.54144
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "bb0e6565-fb49-4cab-8a22-0ffcbabf2ae3",
+          "stacja": "Włodawa",
+          "color": "#1dadae",
+          "tip_value": "0.058 µSv/h",
+          "tip_name": "Włodawa",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "103d14747605944c0f71ec842ffc496c422e8ea6270a5a1aa6ca4388847e43a0",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:ba00fa8f-d9a1-4e28-a790-a477380dc14d",
+    "title": "Babiki - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Babiki\nMoc dawki: 0.083 µSv/h",
+    "summary": "0.083 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Babiki"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "ba00fa8f-d9a1-4e28-a790-a477380dc14d",
+      "tip_value": "0.083 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.69866,
+      "latitude": 53.36044,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2dec",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.69866,
+            53.36044
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "ba00fa8f-d9a1-4e28-a790-a477380dc14d",
+          "stacja": "Babiki",
+          "color": "#1dadae",
+          "tip_value": "0.083 µSv/h",
+          "tip_name": "Babiki",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "0e83e2b831f77e259c0cb010267bf8abfa0099a3aadf1117f187319f5a5e0aed",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:b974aef7-d428-4d4a-a8c0-43a3a0ae2570",
+    "title": "Warszawa - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Warszawa\nMoc dawki: 0.103 µSv/h",
+    "summary": "0.103 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Warszawa"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "b974aef7-d428-4d4a-a8c0-43a3a0ae2570",
+      "tip_value": "0.103 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1d8aae",
+      "longitude": 20.983913,
+      "latitude": 52.301689,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e0a",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            20.983913,
+            52.301689
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "b974aef7-d428-4d4a-a8c0-43a3a0ae2570",
+          "stacja": "Warszawa",
+          "color": "#1d8aae",
+          "tip_value": "0.103 µSv/h",
+          "tip_name": "Warszawa",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "1c24b6d74d6265de41062eec10a4848e455f83fc0a1ad995a2f9480c36901cde",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:ae3bcf50-43ff-4d8a-a45c-1ad07ec514a2",
+    "title": "Przeworsk - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Przeworsk\nMoc dawki: 0.087 µSv/h",
+    "summary": "0.087 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Przeworsk"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "ae3bcf50-43ff-4d8a-a45c-1ad07ec514a2",
+      "tip_value": "0.087 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.4854,
+      "latitude": 50.0632,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e06",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.4854,
+            50.0632
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "ae3bcf50-43ff-4d8a-a45c-1ad07ec514a2",
+          "stacja": "Przeworsk",
+          "color": "#1dadae",
+          "tip_value": "0.087 µSv/h",
+          "tip_name": "Przeworsk",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "2d58276216bcbe05d83e51504330c471186ec9ee194e445fca6bb9807e3cdd23",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:a4dda39f-7ca9-42ce-83bf-8106f5470097",
+    "title": "Częstochowa - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Częstochowa\nMoc dawki: 0.065 µSv/h",
+    "summary": "0.065 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Częstochowa"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "a4dda39f-7ca9-42ce-83bf-8106f5470097",
+      "tip_value": "0.065 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 19.16337,
+      "latitude": 50.82021,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2de7",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            19.16337,
+            50.82021
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "a4dda39f-7ca9-42ce-83bf-8106f5470097",
+          "stacja": "Częstochowa",
+          "color": "#1dadae",
+          "tip_value": "0.065 µSv/h",
+          "tip_name": "Częstochowa",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "8c49928bacbf22198a920e613962c81f1ee706a7688ac6f89239ee668a31db82",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:a4d1366c-b78c-4d14-b8f7-03aed4e509a1",
+    "title": "Katowice - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Katowice\nMoc dawki: 0.100 µSv/h",
+    "summary": "0.100 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Katowice"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "a4d1366c-b78c-4d14-b8f7-03aed4e509a1",
+      "tip_value": "0.100 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1d8aae",
+      "longitude": 19.03262,
+      "latitude": 50.24057,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2dfa",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            19.03262,
+            50.24057
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "a4d1366c-b78c-4d14-b8f7-03aed4e509a1",
+          "stacja": "Katowice",
+          "color": "#1d8aae",
+          "tip_value": "0.100 µSv/h",
+          "tip_name": "Katowice",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "c3b19aa31886cc01ef33806430dfdc89ae724e1597a0cd3d532be39b3ec5ed7a",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:9f5ecd6a-be9c-464e-9181-aa3290a98843",
+    "title": "Marynowo - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Marynowo\nMoc dawki: 0.082 µSv/h",
+    "summary": "0.082 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Marynowo"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "9f5ecd6a-be9c-464e-9181-aa3290a98843",
+      "tip_value": "0.082 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.346581,
+      "latitude": 54.091991,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2ddb",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.346581,
+            54.091991
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "9f5ecd6a-be9c-464e-9181-aa3290a98843",
+          "stacja": "Marynowo",
+          "color": "#1dadae",
+          "tip_value": "0.082 µSv/h",
+          "tip_name": "Marynowo",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "c0e53c48433f2562ccb99c84630072a514206cc8a087d47120f4f5f4e4307365",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:9d540427-30a9-4071-8e34-bc737e0e70d2",
+    "title": "Grabowiec - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Grabowiec\nMoc dawki: 0.070 µSv/h",
+    "summary": "0.070 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Grabowiec"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "9d540427-30a9-4071-8e34-bc737e0e70d2",
+      "tip_value": "0.070 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.072873,
+      "latitude": 52.761304,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e02",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.072873,
+            52.761304
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "9d540427-30a9-4071-8e34-bc737e0e70d2",
+          "stacja": "Grabowiec",
+          "color": "#1dadae",
+          "tip_value": "0.070 µSv/h",
+          "tip_name": "Grabowiec",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "df4a5fe66e8ab44de571f5af7356da1275e082d6908223b48fc2410f84bfde32",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:98019c79-d9ac-43ca-964b-d40eda859c8a",
+    "title": "Stuposiany - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Stuposiany\nMoc dawki: 0.081 µSv/h",
+    "summary": "0.081 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Stuposiany"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "98019c79-d9ac-43ca-964b-d40eda859c8a",
+      "tip_value": "0.081 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.6826,
+      "latitude": 49.193,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e04",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.6826,
+            49.193
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "98019c79-d9ac-43ca-964b-d40eda859c8a",
+          "stacja": "Stuposiany",
+          "color": "#1dadae",
+          "tip_value": "0.081 µSv/h",
+          "tip_name": "Stuposiany",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "6753e2374461edd5e18fcb09b64a41a730980938286c4dd27e6463cd4611e7af",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:9759541b-e7af-46e7-8c06-678d0497dbba",
+    "title": "Lublin - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Lublin\nMoc dawki: 0.099 µSv/h",
+    "summary": "0.099 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Lublin"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "9759541b-e7af-46e7-8c06-678d0497dbba",
+      "tip_value": "0.099 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.5127,
+      "latitude": 51.261,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e0b",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.5127,
+            51.261
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "9759541b-e7af-46e7-8c06-678d0497dbba",
+          "stacja": "Lublin",
+          "color": "#1dadae",
+          "tip_value": "0.099 µSv/h",
+          "tip_name": "Lublin",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "c9707b277550975e3619c5652191b667b5442aaf0857e516214713fc0e989825",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:95a5364b-aeed-45f9-967b-25ddca48d089",
+    "title": "Oseredek - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Oseredek\nMoc dawki: 0.065 µSv/h",
+    "summary": "0.065 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Oseredek"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "95a5364b-aeed-45f9-967b-25ddca48d089",
+      "tip_value": "0.065 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.1797,
+      "latitude": 50.4251,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2de5",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.1797,
+            50.4251
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "95a5364b-aeed-45f9-967b-25ddca48d089",
+          "stacja": "Oseredek",
+          "color": "#1dadae",
+          "tip_value": "0.065 µSv/h",
+          "tip_name": "Oseredek",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "70a09465e91fafc10cb5e8e5a51f1e832b66ddec0cae87d7b53858df8f9c67fc",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:90b64b09-9ad6-4054-8658-d029ff4d7c5a",
+    "title": "Bielsko Biała - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Bielsko Biała\nMoc dawki: 0.102 µSv/h",
+    "summary": "0.102 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Bielsko Biała"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "90b64b09-9ad6-4054-8658-d029ff4d7c5a",
+      "tip_value": "0.102 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1d8aae",
+      "longitude": 19.00219,
+      "latitude": 49.80665,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2ded",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            19.00219,
+            49.80665
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "90b64b09-9ad6-4054-8658-d029ff4d7c5a",
+          "stacja": "Bielsko Biała",
+          "color": "#1d8aae",
+          "tip_value": "0.102 µSv/h",
+          "tip_name": "Bielsko Biała",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "1f34f592b291d63b87f9e208b804f867ce582517da5743746b2e348039ac3831",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:8da41b2e-b94c-4b18-8f08-bcc88b4a427b",
+    "title": "Dylągowa - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Dylągowa\nMoc dawki: 0.090 µSv/h",
+    "summary": "0.090 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Dylągowa"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "8da41b2e-b94c-4b18-8f08-bcc88b4a427b",
+      "tip_value": "0.090 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.296,
+      "latitude": 49.7609,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2dfb",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.296,
+            49.7609
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "8da41b2e-b94c-4b18-8f08-bcc88b4a427b",
+          "stacja": "Dylągowa",
+          "color": "#1dadae",
+          "tip_value": "0.090 µSv/h",
+          "tip_name": "Dylągowa",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "93f89179ffd4f9a16e643a82ebeaf49898409992f8be001a33ed4d64c9ba7bb3",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:76a828c9-ec8f-4289-b128-55f99b06ff29",
+    "title": "Wola Wereszczyńska - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Wola Wereszczyńska\nMoc dawki: 0.058 µSv/h",
+    "summary": "0.058 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Wola Wereszczyńska"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "76a828c9-ec8f-4289-b128-55f99b06ff29",
+      "tip_value": "0.058 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.1297,
+      "latitude": 51.4423,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2dfe",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.1297,
+            51.4423
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "76a828c9-ec8f-4289-b128-55f99b06ff29",
+          "stacja": "Wola Wereszczyńska",
+          "color": "#1dadae",
+          "tip_value": "0.058 µSv/h",
+          "tip_name": "Wola Wereszczyńska",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "ff01cc40f092c7b42ba374c2cacffe2bc8d7923f7bc96e317d1c93bd5d341737",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:6083b5da-1d81-4dfd-ac93-b8bcd091e968",
+    "title": "Łódź - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Łódź\nMoc dawki: 0.090 µSv/h",
+    "summary": "0.090 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Łódź"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "6083b5da-1d81-4dfd-ac93-b8bcd091e968",
+      "tip_value": "0.090 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 19.45,
+      "latitude": 51.7446,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e0d",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            19.45,
+            51.7446
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "6083b5da-1d81-4dfd-ac93-b8bcd091e968",
+          "stacja": "Łódź",
+          "color": "#1dadae",
+          "tip_value": "0.090 µSv/h",
+          "tip_name": "Łódź",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "6c3ef8cdfe4278d2b2563403840a9b238e1ff741fcee8d9229b40fd088653e84",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:5d7b47ee-1482-4798-b787-a57d623bfd00",
+    "title": "Wólka Terechowska - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Wólka Terechowska\nMoc dawki: 0.062 µSv/h",
+    "summary": "0.062 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Wólka Terechowska"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "5d7b47ee-1482-4798-b787-a57d623bfd00",
+      "tip_value": "0.062 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.388952,
+      "latitude": 52.528634,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2df2",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.388952,
+            52.528634
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "5d7b47ee-1482-4798-b787-a57d623bfd00",
+          "stacja": "Wólka Terechowska",
+          "color": "#1dadae",
+          "tip_value": "0.062 µSv/h",
+          "tip_name": "Wólka Terechowska",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "0de21480f3ba9e1119735476c69173be6b1cc0f40eb5bdc2c54f71608b81b297",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:5a69046a-4aeb-4ec6-a008-ab1a14d0e579",
+    "title": "Mokre - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Mokre\nMoc dawki: 0.075 µSv/h",
+    "summary": "0.075 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Mokre"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "5a69046a-4aeb-4ec6-a008-ab1a14d0e579",
+      "tip_value": "0.075 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.205527,
+      "latitude": 50.698315,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2dff",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.205527,
+            50.698315
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "5a69046a-4aeb-4ec6-a008-ab1a14d0e579",
+          "stacja": "Mokre",
+          "color": "#1dadae",
+          "tip_value": "0.075 µSv/h",
+          "tip_name": "Mokre",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "1a14280c1fcd0846129cbc23fcb14beba4d0f22505794e70a8921bf1c2f01cad",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:56603dfd-fd44-463e-a0f0-16da4e441f59",
+    "title": "Waliły Stacja - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Waliły Stacja\nMoc dawki: 0.071 µSv/h",
+    "summary": "0.071 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Waliły Stacja"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "56603dfd-fd44-463e-a0f0-16da4e441f59",
+      "tip_value": "0.071 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.657967,
+      "latitude": 53.107872,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2dd8",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.657967,
+            53.107872
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "56603dfd-fd44-463e-a0f0-16da4e441f59",
+          "stacja": "Waliły Stacja",
+          "color": "#1dadae",
+          "tip_value": "0.071 µSv/h",
+          "tip_name": "Waliły Stacja",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "43cb1f329458c30c3a9bb94270bbc1bea03ea3bb91258e1a609202794fc198e4",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:50c6972f-e4b5-43aa-b017-87bb94c3c151",
+    "title": "Chełm - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Chełm\nMoc dawki: 0.058 µSv/h",
+    "summary": "0.058 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Chełm"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "50c6972f-e4b5-43aa-b017-87bb94c3c151",
+      "tip_value": "0.058 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.4774,
+      "latitude": 51.15096,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e10",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.4774,
+            51.15096
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "50c6972f-e4b5-43aa-b017-87bb94c3c151",
+          "stacja": "Chełm",
+          "color": "#1dadae",
+          "tip_value": "0.058 µSv/h",
+          "tip_name": "Chełm",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "6f356243fb451a7c67a2adc374c40999a1aa8ca8bc8d189d125992fa46d5e0cc",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:4fbecc9b-5d84-4d78-ba2a-ed45d404b4f0",
+    "title": "Siemiatycze - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Siemiatycze\nMoc dawki: 0.065 µSv/h",
+    "summary": "0.065 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Siemiatycze"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "4fbecc9b-5d84-4d78-ba2a-ed45d404b4f0",
+      "tip_value": "0.065 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.88256,
+      "latitude": 52.40571,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2df7",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.88256,
+            52.40571
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "4fbecc9b-5d84-4d78-ba2a-ed45d404b4f0",
+          "stacja": "Siemiatycze",
+          "color": "#1dadae",
+          "tip_value": "0.065 µSv/h",
+          "tip_name": "Siemiatycze",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "c4ec459328b7abf4e13cb34a3edcf716b7a7afc905cd2e561601a71e55ee527e",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:4210216f-e980-4aee-afb1-4c69beb1c6d9",
+    "title": "Białystok - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Białystok\nMoc dawki: 0.072 µSv/h",
+    "summary": "0.072 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Białystok"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "4210216f-e980-4aee-afb1-4c69beb1c6d9",
+      "tip_value": "0.072 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.08572,
+      "latitude": 53.16813,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2df5",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.08572,
+            53.16813
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "4210216f-e980-4aee-afb1-4c69beb1c6d9",
+          "stacja": "Białystok",
+          "color": "#1dadae",
+          "tip_value": "0.072 µSv/h",
+          "tip_name": "Białystok",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "aada931e59dc90df220f6161cbff3e7967121b4c528dfce1ad49e2db6fa9eaea",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:3c4d84ef-1fd3-4c5c-a69b-3d5cc4d1ffbb",
+    "title": "Kraków - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Kraków\nMoc dawki: 0.130 µSv/h",
+    "summary": "0.130 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Kraków"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "3c4d84ef-1fd3-4c5c-a69b-3d5cc4d1ffbb",
+      "tip_value": "0.130 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1d8aae",
+      "longitude": 19.8886,
+      "latitude": 50.0902,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2de2",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            19.8886,
+            50.0902
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "3c4d84ef-1fd3-4c5c-a69b-3d5cc4d1ffbb",
+          "stacja": "Kraków",
+          "color": "#1d8aae",
+          "tip_value": "0.130 µSv/h",
+          "tip_name": "Kraków",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "37e169bf804f78619a80c13b77e1763edea292a1baa396b9fbb45ceaedf5e017",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:38f2c0e7-dadd-4ed6-9871-2d4d5786009d",
+    "title": "Teodorówka - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Teodorówka\nMoc dawki: 0.052 µSv/h",
+    "summary": "0.052 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Teodorówka"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "38f2c0e7-dadd-4ed6-9871-2d4d5786009d",
+      "tip_value": "0.052 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.7831,
+      "latitude": 50.5417,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e07",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.7831,
+            50.5417
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "38f2c0e7-dadd-4ed6-9871-2d4d5786009d",
+          "stacja": "Teodorówka",
+          "color": "#1dadae",
+          "tip_value": "0.052 µSv/h",
+          "tip_name": "Teodorówka",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "3fcefcf064a225b0f3ab53e3dd1019a6acb4e171265e142c526f6e8d62a65725",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:345d5b41-7e43-4b96-b0b7-81d902ae8c9e",
+    "title": "Czerniczyn - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Czerniczyn\nMoc dawki: 0.091 µSv/h",
+    "summary": "0.091 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Czerniczyn"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "345d5b41-7e43-4b96-b0b7-81d902ae8c9e",
+      "tip_value": "0.091 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.89329,
+      "latitude": 50.75765,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2def",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.89329,
+            50.75765
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "345d5b41-7e43-4b96-b0b7-81d902ae8c9e",
+          "stacja": "Czerniczyn",
+          "color": "#1dadae",
+          "tip_value": "0.091 µSv/h",
+          "tip_name": "Czerniczyn",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "eac178f96d2c83aa00c99b20bd59ac44e424f01b4cb9a0d0af3e6059e22e8af8",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:307b86fc-0658-49b6-92b4-c676aeb5472a",
+    "title": "Łeba - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Łeba\nMoc dawki: 0.054 µSv/h",
+    "summary": "0.054 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Łeba"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "307b86fc-0658-49b6-92b4-c676aeb5472a",
+      "tip_value": "0.054 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 17.534802,
+      "latitude": 54.753743,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2de3",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            17.534802,
+            54.753743
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "307b86fc-0658-49b6-92b4-c676aeb5472a",
+          "stacja": "Łeba",
+          "color": "#1dadae",
+          "tip_value": "0.054 µSv/h",
+          "tip_name": "Łeba",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "830032d048168a89eb6d0d1f70995c4fd8ffab35355562abe79ad62422da4839",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:2c1d81dc-6506-4e0e-9e74-098e59f468f1",
+    "title": "Legnica - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Legnica\nMoc dawki: 0.075 µSv/h",
+    "summary": "0.075 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Legnica"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "2c1d81dc-6506-4e0e-9e74-098e59f468f1",
+      "tip_value": "0.075 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 16.15209,
+      "latitude": 51.16546,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e12",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            16.15209,
+            51.16546
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "2c1d81dc-6506-4e0e-9e74-098e59f468f1",
+          "stacja": "Legnica",
+          "color": "#1dadae",
+          "tip_value": "0.075 µSv/h",
+          "tip_name": "Legnica",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "9ba1e8ee0f880742976e7e552b074e935b5ef84800529cb65f750398addb8c92",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:2796c64c-25d5-4d4e-ade3-0002cf558392",
+    "title": "Horodyszcze - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Horodyszcze\nMoc dawki: 0.069 µSv/h",
+    "summary": "0.069 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Horodyszcze"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "2796c64c-25d5-4d4e-ade3-0002cf558392",
+      "tip_value": "0.069 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.181616,
+      "latitude": 51.753703,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e01",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.181616,
+            51.753703
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "2796c64c-25d5-4d4e-ade3-0002cf558392",
+          "stacja": "Horodyszcze",
+          "color": "#1dadae",
+          "tip_value": "0.069 µSv/h",
+          "tip_name": "Horodyszcze",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "5361685321fcd030f6260cf45e29ee8e5b776c22d89acd994af36b3e530c4d74",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:2527a430-0822-476a-9936-21d1f9a8f2af",
+    "title": "Koszalin - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Koszalin\nMoc dawki: 0.083 µSv/h",
+    "summary": "0.083 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Koszalin"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "2527a430-0822-476a-9936-21d1f9a8f2af",
+      "tip_value": "0.083 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 16.15444,
+      "latitude": 54.20452,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2ddf",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            16.15444,
+            54.20452
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "2527a430-0822-476a-9936-21d1f9a8f2af",
+          "stacja": "Koszalin",
+          "color": "#1dadae",
+          "tip_value": "0.083 µSv/h",
+          "tip_name": "Koszalin",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "1e8dae075965be228a9bd4bea91cff16893849e91066c29462a44809f8ba2fcb",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:248a46df-165d-4680-8107-2133ffc4c230",
+    "title": "Wrocław - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Wrocław\nMoc dawki: 0.078 µSv/h",
+    "summary": "0.078 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Wrocław"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "248a46df-165d-4680-8107-2133ffc4c230",
+      "tip_value": "0.078 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 16.8822,
+      "latitude": 51.1134,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e08",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            16.8822,
+            51.1134
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "248a46df-165d-4680-8107-2133ffc4c230",
+          "stacja": "Wrocław",
+          "color": "#1dadae",
+          "tip_value": "0.078 µSv/h",
+          "tip_name": "Wrocław",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "0e5cb916d822c0d9cfc4bab377e6d940b2e01f2dd0a66be0418ed45e7132f51f",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:198810b5-ab20-42ca-8403-d215ba182690",
+    "title": "Szczecin - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Szczecin\nMoc dawki: 0.055 µSv/h",
+    "summary": "0.055 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Szczecin"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "198810b5-ab20-42ca-8403-d215ba182690",
+      "tip_value": "0.055 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 14.6226,
+      "latitude": 53.39521,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2df6",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            14.6226,
+            53.39521
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "198810b5-ab20-42ca-8403-d215ba182690",
+          "stacja": "Szczecin",
+          "color": "#1dadae",
+          "tip_value": "0.055 µSv/h",
+          "tip_name": "Szczecin",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "dd48fd171fe281c434d1d8074dff37ca2052d11327b2b3fec6fb07447fa26aed",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:189d0c06-7ca7-470b-9841-60357d1e69cb",
+    "title": "Tarnawce - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Tarnawce\nMoc dawki: 0.078 µSv/h",
+    "summary": "0.078 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Tarnawce"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "189d0c06-7ca7-470b-9841-60357d1e69cb",
+      "tip_value": "0.078 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.65256,
+      "latitude": 49.78993,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2df0",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.65256,
+            49.78993
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "189d0c06-7ca7-470b-9841-60357d1e69cb",
+          "stacja": "Tarnawce",
+          "color": "#1dadae",
+          "tip_value": "0.078 µSv/h",
+          "tip_name": "Tarnawce",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "2314cb8e58011d8e8a7d861040ca64e5e24bea3a1f99bf315a47f0428e9d5e0a",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:158a3029-8d37-45d5-ae16-7793cb2afc8c",
+    "title": "Kielce - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Kielce\nMoc dawki: 0.073 µSv/h",
+    "summary": "0.073 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Kielce"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "158a3029-8d37-45d5-ae16-7793cb2afc8c",
+      "tip_value": "0.073 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 20.64964,
+      "latitude": 50.85315,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2df8",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            20.64964,
+            50.85315
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "158a3029-8d37-45d5-ae16-7793cb2afc8c",
+          "stacja": "Kielce",
+          "color": "#1dadae",
+          "tip_value": "0.073 µSv/h",
+          "tip_name": "Kielce",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "a25cb2bca9b7b378e49d0892399ede962be1c40cde0a193de73668e0970cc6be",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:0c96abad-85c0-4a5e-ab07-0b7fbd4b7a43",
+    "title": "Opole Lubelskie - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Opole Lubelskie\nMoc dawki: 0.056 µSv/h",
+    "summary": "0.056 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Opole Lubelskie"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "0c96abad-85c0-4a5e-ab07-0b7fbd4b7a43",
+      "tip_value": "0.056 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 21.9753,
+      "latitude": 51.1511,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2ddd",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            21.9753,
+            51.1511
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "0c96abad-85c0-4a5e-ab07-0b7fbd4b7a43",
+          "stacja": "Opole Lubelskie",
+          "color": "#1dadae",
+          "tip_value": "0.056 µSv/h",
+          "tip_name": "Opole Lubelskie",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "b87161e6b6ce5e4d3c4bb0ff58d7fd9735c783c9d2704ece048734b6ddbf153d",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:0ba0180d-1a44-4e58-a0e1-fb873a480765",
+    "title": "Krasnystaw - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Krasnystaw\nMoc dawki: 0.078 µSv/h",
+    "summary": "0.078 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Krasnystaw"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "0ba0180d-1a44-4e58-a0e1-fb873a480765",
+      "tip_value": "0.078 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.162106,
+      "latitude": 50.982563,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e05",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.162106,
+            50.982563
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "0ba0180d-1a44-4e58-a0e1-fb873a480765",
+          "stacja": "Krasnystaw",
+          "color": "#1dadae",
+          "tip_value": "0.078 µSv/h",
+          "tip_name": "Krasnystaw",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "58bc90b2574107fe64c96f7b637e2c1c3674e234758e41e53a768f6941c6c7aa",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:0a84845e-5e8d-427f-8b30-ca425a84bb04",
+    "title": "Zagórz - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Zagórz\nMoc dawki: 0.087 µSv/h",
+    "summary": "0.087 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Zagórz"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "0a84845e-5e8d-427f-8b30-ca425a84bb04",
+      "tip_value": "0.087 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.29155,
+      "latitude": 49.50991,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2dde",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.29155,
+            49.50991
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "0a84845e-5e8d-427f-8b30-ca425a84bb04",
+          "stacja": "Zagórz",
+          "color": "#1dadae",
+          "tip_value": "0.087 µSv/h",
+          "tip_name": "Zagórz",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "2de491d785d0c7bb5f470279e314451973b498af093232947a4ba1ee28e0bacb",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:0793e6a0-6927-43a0-980d-98e0a0bc0cdf",
+    "title": "Bartniki - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Bartniki\nMoc dawki: 0.081 µSv/h",
+    "summary": "0.081 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Bartniki"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "0793e6a0-6927-43a0-980d-98e0a0bc0cdf",
+      "tip_value": "0.081 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.52511,
+      "latitude": 53.77477,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e03",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.52511,
+            53.77477
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "0793e6a0-6927-43a0-980d-98e0a0bc0cdf",
+          "stacja": "Bartniki",
+          "color": "#1dadae",
+          "tip_value": "0.081 µSv/h",
+          "tip_name": "Bartniki",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "8301b52c7c42a47f4d441d144500e483de0cd8b1dfe2fcf7ab710bd8908f78ff",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:06ea65b5-ee8d-4621-b8cb-4fda46b12224",
+    "title": "Toruń - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Toruń\nMoc dawki: 0.052 µSv/h",
+    "summary": "0.052 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Toruń"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "06ea65b5-ee8d-4621-b8cb-4fda46b12224",
+      "tip_value": "0.052 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 18.59625,
+      "latitude": 53.0421,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2deb",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            18.59625,
+            53.0421
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "06ea65b5-ee8d-4621-b8cb-4fda46b12224",
+          "stacja": "Toruń",
+          "color": "#1dadae",
+          "tip_value": "0.052 µSv/h",
+          "tip_name": "Toruń",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "bf38a5570416d2f34f2716775b6e0499ba7c2e686abd81632ed83104144338b9",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:0415d9a4-64e1-4638-bff2-144ee8836ba5",
+    "title": "Tarnów - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Tarnów\nMoc dawki: 0.086 µSv/h",
+    "summary": "0.086 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Tarnów"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "0415d9a4-64e1-4638-bff2-144ee8836ba5",
+      "tip_value": "0.086 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 20.93579,
+      "latitude": 50.027494,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2dee",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            20.93579,
+            50.027494
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "0415d9a4-64e1-4638-bff2-144ee8836ba5",
+          "stacja": "Tarnów",
+          "color": "#1dadae",
+          "tip_value": "0.086 µSv/h",
+          "tip_name": "Tarnów",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "de50c44150f2a205e6179185b03b00b571b5b5cdaedbaa4d4d4791a17f9e79a2",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "imgw:840ce25c-8cfc-4373-9699-fb6b060a8c04",
+    "title": "Zakopane - IMGW - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: IMGW\nStacja: Zakopane - IMGW\nMoc dawki: 0.100 µSv/h",
+    "summary": "0.100 µSv/h",
+    "language": "pl",
+    "category": "imgw",
+    "location": [
+      "Zakopane - IMGW"
+    ],
+    "raw": {
+      "network": "imgw",
+      "station_id": "840ce25c-8cfc-4373-9699-fb6b060a8c04",
+      "tip_value": "0.100 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1d8aae",
+      "longitude": 19.9602,
+      "latitude": 49.2934,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_imgw_auto_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e16",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            19.9602,
+            49.2934
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "840ce25c-8cfc-4373-9699-fb6b060a8c04",
+          "stacja": "Zakopane - IMGW",
+          "color": "#1d8aae",
+          "tip_value": "0.100 µSv/h",
+          "tip_name": "Zakopane - IMGW",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "e0663763c4f8814d4dd8996e1bc8ba8f9ab4965088d7490840857cd5b1f30a34",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "imgw:64258246-6d50-49fa-b489-8ceaef739b91",
+    "title": "Lesko - IMGW - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: IMGW\nStacja: Lesko - IMGW\nMoc dawki: 0.096 µSv/h",
+    "summary": "0.096 µSv/h",
+    "language": "pl",
+    "category": "imgw",
+    "location": [
+      "Lesko - IMGW"
+    ],
+    "raw": {
+      "network": "imgw",
+      "station_id": "64258246-6d50-49fa-b489-8ceaef739b91",
+      "tip_value": "0.096 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 22.3407,
+      "latitude": 49.4688,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_imgw_auto_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e15",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.3407,
+            49.4688
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "64258246-6d50-49fa-b489-8ceaef739b91",
+          "stacja": "Lesko - IMGW",
+          "color": "#1dadae",
+          "tip_value": "0.096 µSv/h",
+          "tip_name": "Lesko - IMGW",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "27fcb3d166c26e17c6dfae9e9ea9d5cb8b52add3fb3887196e9a6659065ba9ee",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "imgw:6297afba-7f6b-409b-8f4e-54cf6d75d775",
+    "title": "Gdynia - IMGW - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: IMGW\nStacja: Gdynia - IMGW\nMoc dawki: 0.087 µSv/h",
+    "summary": "0.087 µSv/h",
+    "language": "pl",
+    "category": "imgw",
+    "location": [
+      "Gdynia - IMGW"
+    ],
+    "raw": {
+      "network": "imgw",
+      "station_id": "6297afba-7f6b-409b-8f4e-54cf6d75d775",
+      "tip_value": "0.087 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 18.5464,
+      "latitude": 54.5207,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_imgw_auto_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e18",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            18.5464,
+            54.5207
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "6297afba-7f6b-409b-8f4e-54cf6d75d775",
+          "stacja": "Gdynia - IMGW",
+          "color": "#1dadae",
+          "tip_value": "0.087 µSv/h",
+          "tip_name": "Gdynia - IMGW",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "8a3cb8ecb98f4d88f6613e6bcebbb13c930305894e020806090f5b1795eac216",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "imgw:5d74b245-6f73-4052-87a2-e70db472b0fc",
+    "title": "Warszawa - IMGW - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: IMGW\nStacja: Warszawa - IMGW\nMoc dawki: 0.065 µSv/h",
+    "summary": "0.065 µSv/h",
+    "language": "pl",
+    "category": "imgw",
+    "location": [
+      "Warszawa - IMGW"
+    ],
+    "raw": {
+      "network": "imgw",
+      "station_id": "5d74b245-6f73-4052-87a2-e70db472b0fc",
+      "tip_value": "0.065 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 20.9632,
+      "latitude": 52.2815,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_imgw_auto_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e17",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            20.9632,
+            52.2815
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "5d74b245-6f73-4052-87a2-e70db472b0fc",
+          "stacja": "Warszawa - IMGW",
+          "color": "#1dadae",
+          "tip_value": "0.065 µSv/h",
+          "tip_name": "Warszawa - IMGW",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "d613d799b7dced073b8e5dd825ffa54b4e6a6fe232f5600547811955700fa355",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "imgw:57589ff0-ec95-4424-9da2-44411fadda74",
+    "title": "Świnoujście - IMGW - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: IMGW\nStacja: Świnoujście - IMGW\nMoc dawki: 0.069 µSv/h",
+    "summary": "0.069 µSv/h",
+    "language": "pl",
+    "category": "imgw",
+    "location": [
+      "Świnoujście - IMGW"
+    ],
+    "raw": {
+      "network": "imgw",
+      "station_id": "57589ff0-ec95-4424-9da2-44411fadda74",
+      "tip_value": "0.069 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 14.2401,
+      "latitude": 53.9218,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_imgw_auto_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e1a",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            14.2401,
+            53.9218
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "57589ff0-ec95-4424-9da2-44411fadda74",
+          "stacja": "Świnoujście - IMGW",
+          "color": "#1dadae",
+          "tip_value": "0.069 µSv/h",
+          "tip_name": "Świnoujście - IMGW",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "bd0393c1e125fcfbd4494c115f5e80953a8b9e94b92cba7eade351d3da5eb213",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "imgw:40765cca-080f-411c-a9ca-438286a067fc",
+    "title": "Gorzów - IMGW - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: IMGW\nStacja: Gorzów - IMGW\nMoc dawki: 0.079 µSv/h",
+    "summary": "0.079 µSv/h",
+    "language": "pl",
+    "category": "imgw",
+    "location": [
+      "Gorzów - IMGW"
+    ],
+    "raw": {
+      "network": "imgw",
+      "station_id": "40765cca-080f-411c-a9ca-438286a067fc",
+      "tip_value": "0.079 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 15.2774,
+      "latitude": 52.7408,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_imgw_auto_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e19",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            15.2774,
+            52.7408
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "40765cca-080f-411c-a9ca-438286a067fc",
+          "stacja": "Gorzów - IMGW",
+          "color": "#1dadae",
+          "tip_value": "0.079 µSv/h",
+          "tip_name": "Gorzów - IMGW",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "0cbdce672c2cb5aadb7a14737d08bdbccaea621d040e98857bd38d4cfc2e6f02",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "imgw:331772e1-47fe-406a-ab52-78c1ecdc3770",
+    "title": "Mikołajki - IMGW - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: IMGW\nStacja: Mikołajki - IMGW\nMoc dawki: 0.084 µSv/h",
+    "summary": "0.084 µSv/h",
+    "language": "pl",
+    "category": "imgw",
+    "location": [
+      "Mikołajki - IMGW"
+    ],
+    "raw": {
+      "network": "imgw",
+      "station_id": "331772e1-47fe-406a-ab52-78c1ecdc3770",
+      "tip_value": "0.084 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 21.588,
+      "latitude": 53.7895,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_imgw_auto_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e1b",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            21.588,
+            53.7895
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "331772e1-47fe-406a-ab52-78c1ecdc3770",
+          "stacja": "Mikołajki - IMGW",
+          "color": "#1dadae",
+          "tip_value": "0.084 µSv/h",
+          "tip_name": "Mikołajki - IMGW",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "6ba476155838af11f1431e6a5e89c86499688c58772f67fbb2207acee15013b0",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "imgw:1000100f-97dc-4b68-9cb4-08d841a7dcdb",
+    "title": "Legnica - IMGW - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: IMGW\nStacja: Legnica - IMGW\nMoc dawki: 0.081 µSv/h",
+    "summary": "0.081 µSv/h",
+    "language": "pl",
+    "category": "imgw",
+    "location": [
+      "Legnica - IMGW"
+    ],
+    "raw": {
+      "network": "imgw",
+      "station_id": "1000100f-97dc-4b68-9cb4-08d841a7dcdb",
+      "tip_value": "0.081 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 16.2078,
+      "latitude": 51.193,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_imgw_auto_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e1d",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            16.2078,
+            51.193
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "1000100f-97dc-4b68-9cb4-08d841a7dcdb",
+          "stacja": "Legnica - IMGW",
+          "color": "#1dadae",
+          "tip_value": "0.081 µSv/h",
+          "tip_name": "Legnica - IMGW",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "22f5b7d29b872fe140918898b3ca801031e3ae01f2015e66b0d769f9966d711c",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "imgw:0f81e922-3ca1-44e1-a331-b23cb7e5b34e",
+    "title": "Włodawa - IMGW - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-21 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: IMGW\nStacja: Włodawa - IMGW\nMoc dawki: 0.063 µSv/h",
+    "summary": "0.063 µSv/h",
+    "language": "pl",
+    "category": "imgw",
+    "location": [
+      "Włodawa - IMGW"
+    ],
+    "raw": {
+      "network": "imgw",
+      "station_id": "0f81e922-3ca1-44e1-a331-b23cb7e5b34e",
+      "tip_value": "0.063 µSv/h",
+      "tip_date": "2026-11-21 00:00",
+      "color": "#1dadae",
+      "longitude": 23.5307,
+      "latitude": 51.5537,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_imgw_auto_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e1c",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.5307,
+            51.5537
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "0f81e922-3ca1-44e1-a331-b23cb7e5b34e",
+          "stacja": "Włodawa - IMGW",
+          "color": "#1dadae",
+          "tip_value": "0.063 µSv/h",
+          "tip_name": "Włodawa - IMGW",
+          "tip_date": "2026-11-21 00:00"
+        }
+      }
+    },
+    "raw_sha256": "ac0e3c24693b3ee83b835ba7a8840599ef86eb9f76930febae25abb29fb9ee98",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:db7b20c4-8040-4ab8-9946-4e541f3878a4",
+    "title": "Wiżajny - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-20 23:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Wiżajny\nMoc dawki: 0.079 µSv/h",
+    "summary": "0.079 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Wiżajny"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "db7b20c4-8040-4ab8-9946-4e541f3878a4",
+      "tip_value": "0.079 µSv/h",
+      "tip_date": "2026-11-20 23:00",
+      "color": "#1dadae",
+      "longitude": 22.858696,
+      "latitude": 54.375658,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2dfc",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.858696,
+            54.375658
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "db7b20c4-8040-4ab8-9946-4e541f3878a4",
+          "stacja": "Wiżajny",
+          "color": "#1dadae",
+          "tip_value": "0.079 µSv/h",
+          "tip_name": "Wiżajny",
+          "tip_date": "2026-11-20 23:00"
+        }
+      }
+    },
+    "raw_sha256": "7eac403a4611920ddde60b6623dc0fd580ef6672cb43815a7b22e17a1f4b7808",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:51d7acb2-744b-4219-94fa-af6514815caf",
+    "title": "Hajnówka - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-17 05:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Hajnówka\nMoc dawki: 0.090 µSv/h",
+    "summary": "0.090 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Hajnówka"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "51d7acb2-744b-4219-94fa-af6514815caf",
+      "tip_value": "0.090 µSv/h",
+      "tip_date": "2026-11-17 05:00",
+      "color": "#1dadae",
+      "longitude": 23.585115,
+      "latitude": 52.722542,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2df4",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.585115,
+            52.722542
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "51d7acb2-744b-4219-94fa-af6514815caf",
+          "stacja": "Hajnówka",
+          "color": "#1dadae",
+          "tip_value": "0.090 µSv/h",
+          "tip_name": "Hajnówka",
+          "tip_date": "2026-11-17 05:00"
+        }
+      }
+    },
+    "raw_sha256": "02d792fa2bbdc2d5260ea6668d5f247f04dd07318ac316928b1a7b0930217bc7",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:c9170066-c979-49ac-9a36-a1e61ac410f5",
+    "title": "Konstantynów - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-11-11 03:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Konstantynów\nMoc dawki: 0.073 µSv/h",
+    "summary": "0.073 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Konstantynów"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "c9170066-c979-49ac-9a36-a1e61ac410f5",
+      "tip_value": "0.073 µSv/h",
+      "tip_date": "2026-11-11 03:00",
+      "color": "#1dadae",
+      "longitude": 23.106859,
+      "latitude": 52.23067,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2df9",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            23.106859,
+            52.23067
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "c9170066-c979-49ac-9a36-a1e61ac410f5",
+          "stacja": "Konstantynów",
+          "color": "#1dadae",
+          "tip_value": "0.073 µSv/h",
+          "tip_name": "Konstantynów",
+          "tip_date": "2026-11-11 03:00"
+        }
+      }
+    },
+    "raw_sha256": "f7adf2c6646e49fedda9cb18fed873f20067d4d08caa8c5346340c2d74970b2f",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  },
+  {
+    "source": "paa_monitoring",
+    "source_url": "https://monitoring.paa.gov.pl/maps-portal/",
+    "external_id": "pms:f0c35e8c-e97d-4114-98df-2ed9527c32aa",
+    "title": "Gołdap - moc dawki",
+    "detail_url": null,
+    "published_at": "2026-10-25 00:00",
+    "updated_at": null,
+    "valid_from": null,
+    "valid_to": null,
+    "content": "Sieć: PMS\nStacja: Gołdap\nMoc dawki: 0.063 µSv/h",
+    "summary": "0.063 µSv/h",
+    "language": "pl",
+    "category": "pms",
+    "location": [
+      "Gołdap"
+    ],
+    "raw": {
+      "network": "pms",
+      "station_id": "f0c35e8c-e97d-4114-98df-2ed9527c32aa",
+      "tip_value": "0.063 µSv/h",
+      "tip_date": "2026-10-25 00:00",
+      "color": "#1dadae",
+      "longitude": 22.31208,
+      "latitude": 54.30982,
+      "feature": {
+        "type": "Feature",
+        "id": "kcad_siec_pms_moc_dawki_mapa.fid--3a5caa2f_1a2000b32c7_2e13",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            22.31208,
+            54.30982
+          ]
+        },
+        "geometry_name": "koordynaty",
+        "properties": {
+          "id": "f0c35e8c-e97d-4114-98df-2ed9527c32aa",
+          "stacja": "Gołdap",
+          "color": "#1dadae",
+          "tip_value": "0.063 µSv/h",
+          "tip_name": "Gołdap",
+          "tip_date": "2026-10-25 00:00"
+        }
+      }
+    },
+    "raw_sha256": "cc05692dd36f394b0a09b2898fbf6bd15265125fa3c33657ffc74b1b7e125333",
+    "first_seen_at": "2026-11-21T21:56:15.129384+00:00",
+    "last_seen_at": "2026-11-21T21:56:15.129384+00:00"
+  }
+]

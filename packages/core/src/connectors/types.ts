@@ -48,6 +48,9 @@ export interface SourceRecord {
   text: string;
   /** Official data records only: the values, so code can check the claimed number. */
   data?: RecordData;
+  /** Literal offsets in the underlying stored text, when a chunk is indexed. */
+  start_offset?: number;
+  end_offset?: number;
 }
 
 export class ConnectorError extends Error {
@@ -61,6 +64,12 @@ export interface ConnectorContext {
   config: Config;
   signal: AbortSignal;
   corpus: CorpusStore;
+  /**
+   * Set by the source switches (sources/controls.ts): true for a record an operator switched off.
+   * The switch layer drops those records itself; a connector reads this only to skip extra work on
+   * them (e.g. fetching a switched-off publisher's article).
+   */
+  isSwitchedOff?: (record: SourceRecord) => boolean;
 }
 
 export interface Connector {
@@ -72,6 +81,15 @@ export interface Connector {
   /** Returns a reason when the route cannot run in this deployment (missing key, empty corpus). */
   unavailableReason(ctx: ConnectorContext): string | null;
   search(claim: ClaimQuery, ctx: ConnectorContext): Promise<SourceRecord[]>;
+}
+
+/**
+ * A transport error message safe to show and log: runtimes put the full request URL in it, and some
+ * routes carry an API key in the query (Google Fact Check). Every query string is cut.
+ */
+export function safeErrorMessage(err: unknown): string {
+  const message = err instanceof Error ? err.message : String(err);
+  return message.replace(/(https?:\/\/[^\s?#)]*)[?#][^\s)]*/gi, "$1?…").slice(0, 300);
 }
 
 /** One retry for transient failures (network error, 5xx, 429), as the pipeline allows (§3). */
@@ -96,7 +114,7 @@ export async function fetchText(url: string, signal: AbortSignal, timeoutMs: num
       if (err instanceof DOMException && (err.name === "TimeoutError" || err.name === "AbortError")) {
         throw new ConnectorError("timeout", "timeout");
       }
-      throw new ConnectorError("error", (err as Error).message);
+      throw new ConnectorError("error", safeErrorMessage(err));
     }
     if (res.status === 429) throw new ConnectorError("rate_limited", "HTTP 429");
     if (!res.ok) throw new ConnectorError("error", `HTTP ${res.status}`);
@@ -123,7 +141,7 @@ async function fetchJsonOnce(url: string, signal: AbortSignal, timeoutMs: number
     if (err instanceof DOMException && (err.name === "TimeoutError" || err.name === "AbortError")) {
       throw new ConnectorError("timeout", "timeout");
     }
-    throw new ConnectorError("error", (err as Error).message);
+    throw new ConnectorError("error", safeErrorMessage(err));
   }
   if (res.status === 429) throw new ConnectorError("rate_limited", "HTTP 429");
   if (res.status === 401 || res.status === 403) {

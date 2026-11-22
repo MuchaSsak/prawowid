@@ -12,6 +12,9 @@
  *   GET    /api/v1/admin/checks      recent check log rows (masked question, time, sources, verdicts);
  *                                    needs Authorization: Bearer <ADMIN_TOKEN>, 404 when no token is set
  *   GET    /api/v1/admin/analytics   ?range=24h|7d|30d|90d|1y aggregates for the admin page (same token)
+ *   GET    /api/v1/admin/sources     every switchable evidence source and its on/off state (same token)
+ *   POST   /api/v1/admin/sources     { key, enabled } switches one source on or off, no deploy (same token)
+ *   GET    /api/v1/admin/sources/search?q=  what the enabled corpus finds for a phrase, no LLM (same token)
  *
  * Env (all optional except the LLM key in live mode):
  *   OPENROUTER_API_KEY, GOOGLE_FACT_CHECK_API_KEY   secrets (live mode)
@@ -35,6 +38,10 @@ import {
   loadConfig,
   type AnalyticsRange,
   ANALYTICS_RANGES,
+  applySourceControls,
+  collectionOf,
+  listSources,
+  type SourceControlState,
   buildAnalytics,
   LoggingCheckStore,
   mediaInputError,
@@ -44,20 +51,46 @@ import {
   mockResponse,
   CONNECTORS,
   INDICATORS,
-  HttpCorpusStore,
+  IndexedCorpusStore,
   NARRATIVE_MATCHERS,
   publicCatalog,
   runCheck,
 } from "@prawdowid/core";
 import { type Decision, ipKey, RateLimiter, waitText } from "./rate-limit.ts";
+import { openSourceControlStore } from "./source-controls.ts";
 
 const config = loadConfig({ get: (k) => Deno.env.get(k) });
 // Every saved check also becomes one JSON audit line in the host's log (no question text), so the
 // MVP check log survives restarts and instances until Supabase lands (decision 001).
 const store = new LoggingCheckStore(new MemoryCheckStore());
 const ADMIN_TOKEN = Deno.env.get("ADMIN_TOKEN") ?? "";
-const retrievalUrl = Deno.env.get("PRAWDOWID_RETRIEVAL_URL")?.trim() ?? "";
-const corpus = retrievalUrl ? new HttpCorpusStore(retrievalUrl) : new MemoryCorpusStore();
+const corpus = new IndexedCorpusStore();
+await corpus.loadIndex(new URL("../../data/corpus/alert-corpus-index.json", import.meta.url));
+/** Operator on/off switches for evidence sources (admin page /admin/zrodla). */
+const sourceControls = await openSourceControlStore();
+/** A switch store that hangs must not hang every check or admin call: fail closed after 2 s. */
+async function withDeadline<T>(work: Promise<T>): Promise<T> {
+  let timer: number | undefined;
+  try {
+    return await Promise.race([
+      work,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error("source controls timeout")), 2000);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+const readControls = () => withDeadline(sourceControls.read());
+/** Routes, corpus and allowlist with the switched-off sources removed, read once per request. */
+async function liveSources() {
+  const state = await readControls();
+  return {
+    state,
+    ...applySourceControls({ connectors: CONNECTORS, corpus, trustedSources: config.trustedSources }, state.disabled),
+  };
+}
 const PORT = Number(Deno.env.get("PORT") ?? 8787);
 const MODE: "live" | "mock" = Deno.env.get("PRAWDOWID_MODE") === "mock" ? "mock" : "live";
 const MOCK_DELAY_MS = Number(Deno.env.get("MOCK_DELAY_MS") ?? 600);
@@ -172,7 +205,8 @@ app.get("/api/v1/health", (c) => {
     },
     models: config.models,
     storage: "memory (mock, lost on restart)",
-    corpus: retrievalUrl ? { configured: true, retrieval_url: retrievalUrl } : { configured: false },
+    corpus: corpus.indexStatus(),
+    source_controls: sourceControls.persistence,
   });
 });
 
@@ -180,13 +214,18 @@ app.get("/api/v1/schema", (c) => c.json(contractJsonSchema()));
 
 // Open source catalog: the only publishers whose material can become evidence, and the statistics
 // we look up. Additive to contract v1 (decision 006).
-app.get("/api/v1/sources", (c) =>
-  c.json({
+app.get("/api/v1/sources", async (c) => {
+  // Switched-off publishers and routes disappear from the open list too (source controls).
+  const live = await liveSources().catch(() => null);
+  // Never list a switched-off source as usable just because the switches could not be read.
+  if (!live) return c.json({ error: "source list temporarily unavailable, try again" }, 503);
+  const off = new Set(live.state.disabled);
+  return c.json({
     contract_version: CONTRACT_VERSION,
     policy: "Dowodem może być tylko materiał z tej listy. Nie przeszukujemy otwartej sieci.",
-    sources: publicCatalog(config.trustedSources),
+    sources: publicCatalog(live.trustedSources),
     // The routes this deployment runs (architecture/extensibility.md); context routes never decide a verdict.
-    routes: CONNECTORS.map((r) => ({ id: r.id, label: r.label, required: r.required })),
+    routes: CONNECTORS.filter((r) => !off.has(`route:${r.id}`)).map((r) => ({ id: r.id, label: r.label, required: r.required })),
     context_routes: NARRATIVE_MATCHERS.map((m) => ({ id: m.id, label: m.label, catalog: m.catalog })),
     statistics: INDICATORS.map((i) => ({
       key: i.key,
@@ -195,7 +234,8 @@ app.get("/api/v1/sources", (c) =>
       definition: i.definition,
       sources: [i.eurostat && "eurostat", i.nbp && "nbp", i.gus_var && "gus"].filter(Boolean),
     })),
-  }));
+  });
+});
 
 app.get("/api/v1/mock/scenarios", (c) =>
   c.json({
@@ -262,7 +302,24 @@ app.post(
       return limitedResponse(c, total, "Chwilowo nie przyjmujemy nowych sprawdzeń", "Osiągnęliśmy limit sprawdzeń usługi.");
     }
     if (client) perClientLive.hit(`client:${client}`);
-    return c.json(await runCheck({ ...body, channel }, { config, store, corpus, resolveHost }));
+    // Pin the source switches for this whole check. If they can't be read, fail closed: answering
+    // with every source on could cite one an operator switched off.
+    let live: Awaited<ReturnType<typeof liveSources>>;
+    try {
+      live = await liveSources();
+    } catch {
+      return c.json(systemOnly("technical_error", "Chwilowy problem z usługą", "Nie mogliśmy wczytać listy źródeł. Spróbuj ponownie za chwilę."), 503);
+    }
+    return c.json(
+      await runCheck({ ...body, channel }, {
+        config: { ...config, trustedSources: live.trustedSources },
+        store,
+        corpus: live.corpus,
+        connectors: live.connectors,
+        resolveHost,
+        cacheScope: live.state.revision ? `sources:${live.state.revision}` : undefined,
+      }),
+    );
   },
 );
 
@@ -314,6 +371,73 @@ app.get("/api/v1/admin/analytics", async (c) => {
   const span = { "24h": 1, "7d": 7, "30d": 30, "90d": 90, "1y": 365 }[range as AnalyticsRange] * 86_400_000;
   const { checks, events } = await store.listSince(new Date(now.getTime() - 2 * span));
   return c.json(buildAnalytics(checks, events, { range: range as AnalyticsRange, now }));
+});
+
+// Source controls (admin page /admin/zrodla): switch evidence sources off and on without a deploy.
+async function sourcesReport(given?: SourceControlState) {
+  const state = given ?? await readControls();
+  return {
+    persistence: sourceControls.persistence,
+    revision: state.revision,
+    updated_at: state.updated_at,
+    sources: listSources(
+      { connectors: CONNECTORS, collections: corpus.collections(), trustedSources: config.trustedSources },
+      state.disabled,
+    ),
+    audit: state.audit,
+  };
+}
+
+app.get("/api/v1/admin/sources", async (c) => {
+  const denied = await adminDenied(c);
+  if (denied) return denied;
+  return c.json(await sourcesReport());
+});
+
+app.post("/api/v1/admin/sources", async (c) => {
+  const denied = await adminDenied(c);
+  if (denied) return denied;
+  const body = await c.req.json().catch(() => null) as { key?: unknown; enabled?: unknown } | null;
+  if (!body || typeof body.key !== "string" || typeof body.enabled !== "boolean") {
+    return c.json({ error: 'expected { "key": "<kind>:<id>", "enabled": true|false }' }, 400);
+  }
+  const state = await readControls();
+  // A switched-off key whose source has since gone (e.g. a rebuilt corpus) can still be switched back on.
+  const known = (await sourcesReport(state)).sources.some((s) => s.key === body.key) ||
+    (body.enabled && state.disabled.includes(body.key));
+  if (!known) return c.json({ error: `unknown source key: ${body.key.slice(0, 80)}` }, 400);
+  // Answer from the state the save returned: a second read could time out after the change persisted.
+  let saved: SourceControlState;
+  try {
+    saved = await withDeadline(sourceControls.set(body.key, body.enabled));
+  } catch {
+    // The write may still land: the outcome is unknown, so the page re-reads instead of reverting.
+    return c.json({ error: "save outcome unknown, reload the source list" }, 503);
+  }
+  return c.json(await sourcesReport(saved));
+});
+
+app.get("/api/v1/admin/sources/search", async (c) => {
+  const denied = await adminDenied(c);
+  if (denied) return denied;
+  const q = (c.req.query("q") ?? "").trim().slice(0, 300);
+  if (!q) return c.json({ error: "q is required" }, 400);
+  const live = await liveSources();
+  const t0 = performance.now();
+  // Same view a check uses: switched-off collections, publishers or the whole corpus route find nothing.
+  const hits = await live.corpus.search([q], 10);
+  const ms = Math.round((performance.now() - t0) * 10) / 10;
+  return c.json({
+    ms,
+    hits: hits.map((r) => ({
+      title: r.title,
+      publisher: r.publisher,
+      url: r.url,
+      published_at: r.published_at,
+      collection: collectionOf(r) ?? r.route,
+      excerpt: r.text.length > 280 ? `${r.text.slice(0, 279)}…` : r.text,
+    })),
+  });
 });
 
 app.delete("/api/v1/session/:id", async (c) => {

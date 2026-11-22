@@ -31,7 +31,15 @@ export interface Article {
 export type ResolveHost = (hostname: string) => Promise<string[]>;
 
 const TRACKING = /^(utm_\w+|fbclid|gclid|dclid|msclkid|yclid|igshid|mc_cid|mc_eid|_ga|_gl|ref_src|si|spm)$/i;
-const PRIVATE_PARAM = /(token|key|pass|pwd|secret|session|sid|auth|sig|signature|email|phone|code)/i;
+/** Private-looking words, matched against whole parameter-name parts (`access_token`, `userEmail`,
+ * `PHPSESSID`), never substrings, so `author`, `keyword`, `postcode`, `president` pass. */
+const PRIVATE_PARAM =
+  /^(token|key|apikey|pass|passwd|password|pwd|secret|session|sessionid|sessid|phpsessid|jsessionid|sid|auth|authtoken|accesstoken|sig|signature|email|phone|code)$/;
+
+export function isPrivateParam(name: string): boolean {
+  const parts = name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase().split(/[^a-z0-9]+/);
+  return PRIVATE_PARAM.test(name.toLowerCase()) || parts.some((p) => PRIVATE_PARAM.test(p));
+}
 
 export function isPrivateIp(ip: string): boolean {
   const v4 = ip.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
@@ -71,7 +79,7 @@ export function cleanUrl(raw: string): URL {
   }
   for (const key of [...url.searchParams.keys()]) {
     if (TRACKING.test(key)) url.searchParams.delete(key);
-    else if (PRIVATE_PARAM.test(key)) {
+    else if (isPrivateParam(key)) {
       throw new IntakeError(
         "blocked",
         "Link zawiera parametry, które mogą być prywatne. Wklej link bez nich albo wklej sam tekst.",
@@ -96,12 +104,71 @@ async function assertPublic(url: URL, resolveHost?: ResolveHost) {
 }
 
 // ── robots.txt (per-host cache) ───────────────────────────────────────────────
-const robotsCache = new Map<string, { rules: string[]; at: number }>();
+export interface RobotsRule {
+  allow: boolean;
+  pattern: string;
+}
+const robotsCache = new Map<string, { groups: RobotsRule[][]; at: number }>();
 
-function parseRobots(txt: string): string[] {
-  // Collect Disallow rules from groups for "*" or our bot. Minimal, prefix-based.
+/**
+ * User agents of AI crawlers and AI fetchers. We feed an AI fact-checking system, so a site that
+ * blocks them blocks us too, also for a single link a user pastes (decision 012, user 2026-11-22).
+ */
+const AI_AGENTS = [
+  "gptbot", "chatgpt-user", "oai-searchbot", "claudebot", "claude-user", "claude-searchbot", "claude-web",
+  "anthropic-ai", "ccbot", "google-extended", "perplexitybot", "perplexity-user", "bytespider", "cohere-ai",
+  "meta-externalagent", "meta-externalfetcher", "applebot-extended", "amazonbot", "diffbot", "youbot",
+  "mistralai-user", "ai2bot", "duckassistbot", "timpibot", "imagesiftbot", "omgili",
+];
+
+function agentApplies(agent: string): boolean {
+  return agent === "*" || agent.includes("prawdowid") || AI_AGENTS.some((a) => agent.includes(a));
+}
+
+/**
+ * The rules of every group that applies to us ("*", our bot, any AI crawler), one list per group.
+ * A path is allowed only if every group allows it: merging them would let "Allow: /" for "*" win a
+ * tie against "Disallow: /" for GPTBot.
+ */
+export function parseRobotsGroups(txt: string): RobotsRule[][] {
   const lines = txt.split(/\r?\n/).map((l) => l.replace(/#.*/, "").trim()).filter(Boolean);
-  const disallow: string[] = [];
+  const groups: RobotsRule[][] = [];
+  let current: RobotsRule[] | null = null;
+  let applies = false;
+  let lastWasAgent = false;
+  for (const line of lines) {
+    const [k, ...rest] = line.split(":");
+    const key = k.trim().toLowerCase();
+    const value = rest.join(":").trim();
+    if (key === "user-agent") {
+      const match = agentApplies(value.toLowerCase());
+      if (!lastWasAgent) {
+        current = [];
+        applies = false;
+      }
+      if (match && !applies) groups.push(current!);
+      applies = applies || match;
+      lastWasAgent = true;
+      continue;
+    }
+    lastWasAgent = false;
+    if (applies && current && (key === "disallow" || key === "allow") && value) {
+      const pattern = value.replace(/[^\x00-\x7f]+/g, (c) => encodeURIComponent(c));
+      current.push({ allow: key === "allow", pattern });
+    }
+  }
+  return groups;
+}
+
+/** A path is allowed when every applicable group allows it (the strictest reading). */
+export function robotsGroupsAllow(groups: RobotsRule[][], path: string): boolean {
+  return groups.every((g) => robotsRulesAllow(g, path));
+}
+
+/** Allow/Disallow rules from the groups for "*" or our bot (both merged, the stricter reading). */
+export function parseRobots(txt: string): RobotsRule[] {
+  const lines = txt.split(/\r?\n/).map((l) => l.replace(/#.*/, "").trim()).filter(Boolean);
+  const rules: RobotsRule[] = [];
   let applies = false;
   let lastWasAgent = false;
   for (const line of lines) {
@@ -116,34 +183,81 @@ function parseRobots(txt: string): string[] {
       continue;
     }
     lastWasAgent = false;
-    if (applies && key === "disallow" && value) disallow.push(value);
+    // An empty Disallow (or Allow) declares nothing.
+    if (applies && (key === "disallow" || key === "allow") && value) {
+      // Paths are compared percent-encoded; encode raw non-ASCII in the pattern the same way.
+      const pattern = value.replace(/[^\x00-\x7f]+/g, (c) => encodeURIComponent(c));
+      rules.push({ allow: key === "allow", pattern });
+    }
   }
-  return disallow;
+  return rules;
 }
 
-async function robotsAllows(url: URL): Promise<boolean> {
+/** RFC 9309 pattern match from the start of path+query: "*" = any sequence, trailing "$" = end.
+ * Iterative wildcard matching (O(n·m)), no regex, so a hostile robots.txt cannot cause backtracking. */
+function robotsPatternMatches(pattern: string, path: string): boolean {
+  const anchored = pattern.endsWith("$");
+  const p = anchored ? pattern.slice(0, -1) : pattern + "*";
+  let pi = 0, si = 0, star = -1, mark = 0;
+  while (si < path.length) {
+    if (pi < p.length && p[pi] !== "*" && p[pi] === path[si]) {
+      pi++;
+      si++;
+    } else if (pi < p.length && p[pi] === "*") {
+      star = pi++;
+      mark = si;
+    } else if (star !== -1) {
+      pi = star + 1;
+      si = ++mark;
+    } else return false;
+  }
+  while (pi < p.length && p[pi] === "*") pi++;
+  return pi === p.length;
+}
+
+/** The longest matching rule decides; Allow wins a tie; no matching rule = allowed. */
+export function robotsRulesAllow(rules: RobotsRule[], path: string): boolean {
+  let best: RobotsRule | null = null;
+  for (const rule of rules) {
+    if (!robotsPatternMatches(rule.pattern, path)) continue;
+    if (!best || rule.pattern.length > best.pattern.length || (rule.pattern.length === best.pattern.length && rule.allow)) {
+      best = rule;
+    }
+  }
+  return best?.allow ?? true;
+}
+
+async function robotsAllows(url: URL, resolveHost?: ResolveHost): Promise<boolean> {
   const origin = url.origin;
   let entry = robotsCache.get(origin);
   if (!entry || Date.now() - entry.at > 3600_000) {
-    let rules: string[] = [];
+    let groups: RobotsRule[][] = [];
     try {
-      const res = await fetch(`${origin}/robots.txt`, {
-        headers: { "User-Agent": USER_AGENT },
-        signal: AbortSignal.timeout(2500),
-        redirect: "follow",
-      });
-      if (res.ok) rules = parseRobots((await res.text()).slice(0, 200_000));
+      // Redirects are followed by hand, each target revalidated like an article redirect (public
+      // http(s), standard port, public DNS), so a site cannot point this fetch at an internal address.
+      const signal = AbortSignal.timeout(2500);
+      let target = new URL("/robots.txt", origin);
+      for (let hop = 0; hop <= LIMITS.urlMaxRedirects; hop++) {
+        const res = await fetch(target, { headers: { "User-Agent": USER_AGENT }, signal, redirect: "manual" });
+        if (res.status >= 300 && res.status < 400) {
+          const loc = res.headers.get("location");
+          await res.body?.cancel();
+          if (!loc || hop === LIMITS.urlMaxRedirects) break; // = no rules declared
+          target = cleanUrl(new URL(loc, target).toString());
+          await assertPublic(target, resolveHost);
+          continue;
+        }
+        if (res.ok) groups = parseRobotsGroups((await res.text()).slice(0, 200_000));
+        else await res.body?.cancel();
+        break;
+      }
     } catch {
-      rules = []; // unreachable robots.txt = no restrictions declared
+      groups = []; // unreachable robots.txt (or a blocked redirect) = no restrictions declared
     }
-    entry = { rules, at: Date.now() };
+    entry = { groups, at: Date.now() };
     robotsCache.set(origin, entry);
   }
-  const path = url.pathname + url.search;
-  return !entry.rules.some((rule) => {
-    const prefix = rule.replace(/\*.*$/, "").replace(/\$$/, "");
-    return prefix !== "" && path.startsWith(prefix);
-  });
+  return robotsGroupsAllow(entry.groups, url.pathname + url.search);
 }
 
 async function readCapped(res: Response, maxBytes: number): Promise<Uint8Array> {
@@ -201,7 +315,7 @@ export async function fetchArticle(raw: string, opts: { resolveHost?: ResolveHos
   try {
     for (let hop = 0; hop <= LIMITS.urlMaxRedirects; hop++) {
       await assertPublic(url, opts.resolveHost);
-      if (!(await robotsAllows(url))) {
+      if (!(await robotsAllows(url, opts.resolveHost))) {
         throw new IntakeError("robots", "Ta strona nie pozwala automatom na pobieranie treści. Wklej tekst artykułu.");
       }
       res = await fetch(url, {

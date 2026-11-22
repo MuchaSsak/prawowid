@@ -235,7 +235,20 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] update | /admin/analityka: export icon button (dropdown CSV or JSON of the current report, client-side, no API change)
 
 ## [2026-11-22] decision | Answers always in Polish (input and sources any language); dropped the answer-in-user-language idea (response-contract.md, codebase.md)
-- 2026-11-22: ocena danych z example/ (repo „dane”) pod korpus wektorowy → architecture/vector-db-integration-plan.md
-
+- 2026-11-22: ocena danych z example/ (repo „dane”) pod lokalny korpus BM25; stare wejście pgvector wektorowe zostało usunięte
+## [2026-11-22] ingest | Imported the current PavelSfk/Data JSON snapshot into local data/raw and copied collector provenance into tools/collector
+## [2026-11-22] lint | 0 structural findings: routing, index paths and skill parity are clean after the Data import
+## [2026-11-22] update | removed Python/pgvector corpus integration; added IndexedCorpusStore BM25, alert-data converter, local corpus index, archive policy and corpus-specific eval cases
+## [2026-11-22] lint | corpus migration pass
+## [2026-11-22] update | decision 013 source controls: BM25 search uses the load-time index (same results, ~2.1 s -> ~30 ms per search), switches for routes/collections/publishers in core + API + /admin/zrodla, corpus rebuilt with all usable raw data (9792 records, 48 353 fragments); codebase, api-reference, 012, 008, open-questions, index updated
+## [2026-11-22] lint | 1 finding: codebase.md still called the corpus route an empty mock -> fixed; routing, index, links and skill parity clean
+## [2026-11-22] update | retrieve keeps the best record of every route before filling by rank (Eurostat figure was pushed out by corpus fragments); GUS connector falls back to a saved API copy (scripts/snapshot_gus.ts); codebase updated
+## [2026-11-22] lint | clean: two codebase rows edited, links and index unaffected
+## [2026-11-22] update | corpus build reworked (user): passages instead of sentences, Demagog verdict cards + article opening, publisher names, origin_key per publisher, retrieved_at from raw, validity / snapshot headers; codebase and 012 updated
+## [2026-11-22] update | decision 013 edge cases (Fable review): publisher by most specific domain, publisher-only required route -> unavailable, corpus route off hides dates lookup too, disabled optional route keeps strength, 2 s read timeout, /api/v1/sources fails closed, stale keys re-enable
+## [2026-11-22] update | kgsok on the allowlist + build-time allowlist check (008), converter strips only real tags (012), per-tier rank fusion and sort-then-filter in BM25 (codebase); corpus 31 970 passages
+## [2026-11-22] lint | clean: edits to 008, 012, 013, codebase; links and index unaffected
+## [2026-11-22] update | full code review (Fable + Astra) fixes: robots.txt RFC 9309 matching + AI-crawler groups for pasted links (012, user decision), SSRF-safe robots redirects, whole-name private params, fact-check cards by shape (evidence-assessment), Demagog ratings kept in the corpus (3142/3142 cards), key-safe transport errors, partial route failures, cache fixes (codebase)
+## [2026-11-22] lint | clean: 012, codebase, evidence-assessment edited; links and index unaffected
 ## [2026-11-22] update | MVP re-check against the task PDF (user): web + deployed API live with keys, one live check ok (7.3 s); bot /health shows discord + messenger; logs still in memory; gaps unchanged (corpus 100/10, moderator notify, deliverables); hackathon/compliance-matrix.md
 ## [2026-11-22] lint | clean (scope: MVP rows of hackathon/compliance-matrix.md; anchor #language-policy resolves, index entry unchanged, routing and skill parity untouched)

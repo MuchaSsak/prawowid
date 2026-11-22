@@ -51,9 +51,12 @@ export const googleFactCheck: Connector = {
       }),
     );
     const ok = settled.filter((s): s is PromiseFulfilledResult<ClaimReviewResponse> => s.status === "fulfilled");
-    if (ok.length === 0) {
-      const first = settled[0] as PromiseRejectedResult | undefined;
-      throw first?.reason instanceof ConnectorError ? first.reason : new ConnectorError("error", "all queries failed");
+    // Some queries failed and the rest found nothing: that is not "no fact-check exists" (a required
+    // route), so report the failure instead of letting the claim become "brak dowodów".
+    const failed = settled.find((s): s is PromiseRejectedResult => s.status === "rejected");
+    const found = ok.reduce((n, { value }) => n + (value.claims?.length ?? 0), 0);
+    if (ok.length === 0 || (failed && found === 0)) {
+      throw failed?.reason instanceof ConnectorError ? failed.reason : new ConnectorError("error", "all queries failed");
     }
 
     const retrieved = new Date().toISOString();
@@ -91,7 +94,7 @@ export const googleFactCheck: Connector = {
         }
       }
     }
-    return enrichWithArticles(out, ctx.signal);
+    return enrichWithArticles(out, ctx.signal, ctx.isSwitchedOff);
   },
 };
 
@@ -105,8 +108,17 @@ export const googleFactCheck: Connector = {
  */
 export const ARTICLE_LABEL = "Fragment artykułu weryfikacji:";
 
-async function enrichWithArticles(records: SourceRecord[], signal: AbortSignal | undefined): Promise<SourceRecord[]> {
-  const picks = records.filter((r) => r.tier === "factcheck").slice(0, LIMITS.factcheckArticlesPerClaim);
+/** The fact-check hits whose article is fetched; switched-off publishers never take a slot. */
+export function articlePicks(records: SourceRecord[], isSwitchedOff?: (r: SourceRecord) => boolean): SourceRecord[] {
+  return records.filter((r) => r.tier === "factcheck" && !isSwitchedOff?.(r)).slice(0, LIMITS.factcheckArticlesPerClaim);
+}
+
+async function enrichWithArticles(
+  records: SourceRecord[],
+  signal: AbortSignal | undefined,
+  isSwitchedOff?: (r: SourceRecord) => boolean,
+): Promise<SourceRecord[]> {
+  const picks = articlePicks(records, isSwitchedOff);
   await Promise.all(picks.map(async (r) => {
     try {
       const deadline = AbortSignal.timeout(LIMITS.factcheckArticleTimeoutMs);

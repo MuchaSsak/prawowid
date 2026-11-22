@@ -1,0 +1,3371 @@
+{
+  "target": "local core",
+  "at": "2026-11-22T00:30:20.280Z",
+  "cases": "cases.json",
+  "results": [
+    {
+      "id": "A01",
+      "scenario": "A",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 887,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "accd2228-7210-48e1-a2e8-bfdf9e9ce8b3",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 886,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 1
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "A02",
+      "scenario": "A",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 890,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "c5e2db93-3239-4b82-9572-575eaf0e0222",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 890,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "A03",
+      "scenario": "A",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "6ce9a3c3-74ba-48b1-a672-7b4bce935525",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "A04",
+      "scenario": "A",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 917,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "26b165dd-e205-42b3-a125-8d2998cdc532",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 917,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "A05",
+      "scenario": "A",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1792,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "5e274780-bb88-402d-949a-8961a9a3daee",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1792,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "A06",
+      "scenario": "A",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1734,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "cc87129e-618c-40ca-bf58-e54ea64094ce",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1734,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "A07",
+      "scenario": "A",
+      "gold": "confirmed",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1822,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "759f3473-439e-4d61-90b1-320ac19f434d",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1822,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "A08",
+      "scenario": "A",
+      "gold": "confirmed",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1824,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "14970b32-ee9f-459f-b197-bb83582a9a5d",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1824,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "A09",
+      "scenario": "A",
+      "gold": "confirmed",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1706,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "1c8e61e8-b4b1-4fa2-ab31-fdde30c46bd0",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1706,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 1
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "A10",
+      "scenario": "A",
+      "gold": "confirmed",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 846,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "f6847675-64f3-4c81-b117-ed2d14bec82b",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 846,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "A11",
+      "scenario": "A",
+      "gold": "confirmed",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 859,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "aadb743b-0a49-4f1d-9974-5b62e399feb6",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 859,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 1
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "A12",
+      "scenario": "A",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1715,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "135fce27-068b-4bbe-9c8a-c041e863c9aa",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1715,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "A13",
+      "scenario": "A",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 2608,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "f31fcf8c-0594-4ff8-ad94-848403740477",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 2607,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "B01",
+      "scenario": "B",
+      "gold": "misleading",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1751,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "c01785a3-0073-4c23-a113-f6d19abb750b",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1750,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "B02",
+      "scenario": "B",
+      "gold": "misleading",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 883,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "6c1d31e0-bd69-4bca-9db5-028d0d49172d",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 884,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "B03",
+      "scenario": "B",
+      "gold": "misleading",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1757,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "1fa8cf57-60f0-4657-a8cd-787460e94d50",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1758,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "C01",
+      "scenario": "C",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1783,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "09e58a79-3859-4a32-998d-a804950eb7ce",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1783,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "D01",
+      "scenario": "D",
+      "gold": "insufficient_evidence",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1754,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "36920171-e261-4380-b6a9-3982db7f2479",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1754,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "D02",
+      "scenario": "D",
+      "gold": "insufficient_evidence",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1787,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "a15169fd-bcad-4e6a-b50f-b4159c5454a4",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1787,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "D03",
+      "scenario": "D",
+      "gold": "insufficient_evidence",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1873,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "2845d3fb-be6f-48ac-995b-42c67631e055",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1873,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "D04",
+      "scenario": "D",
+      "gold": "insufficient_evidence",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1879,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "bae75b8e-95cd-41b7-a614-a4e9edab4e9c",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1879,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "D05",
+      "scenario": "D",
+      "gold": "insufficient_evidence",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 2047,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "208f646d-b32e-4666-9128-2b7804bf734b",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 2047,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "E01",
+      "scenario": "E",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1000,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "ffeea9f6-7858-4589-bb53-6d5237637609",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1000,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "E02",
+      "scenario": "E",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 2026,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "cd32ab3c-5f87-4bf0-a541-460bde04c4e5",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 2026,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "E03",
+      "scenario": "E",
+      "gold": "confirmed",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1026,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "b52b6e8d-7740-4fd9-9391-92f4eef08a9d",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1026,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "E04",
+      "scenario": "E",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1051,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "623e331d-0f2f-461b-881c-691f6d0cd4a5",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1051,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "F01",
+      "scenario": "F",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 2,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "cce99ba2-4c9d-48e1-9b20-2aef350a9851",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Nie udało się odczytać obrazu. Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "image",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 2,
+          "stages_ms": {
+            "intake": 1
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "F02",
+      "scenario": "F",
+      "gold": "confirmed",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 2,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "b99b8f7b-235a-4cf7-a749-c3f66eb6feff",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Nie udało się odczytać obrazu. Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "image",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 2,
+          "stages_ms": {
+            "intake": 1
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "G01",
+      "scenario": "G",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "e12e7b85-0202-4bca-8070-167a7f0455b6",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      },
+      "consistency": {
+        "same": true,
+        "detail": "identical verdicts and citations"
+      }
+    },
+    {
+      "id": "G02",
+      "scenario": "G",
+      "gold": "confirmed",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 934,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "8917d273-0bf6-40ae-8a81-ee6c51c49c72",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 934,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      },
+      "consistency": {
+        "same": true,
+        "detail": "identical verdicts and citations"
+      }
+    },
+    {
+      "id": "I01",
+      "scenario": "I",
+      "gold": null,
+      "predicted": "status:technical_error",
+      "correct": null,
+      "status": "technical_error",
+      "latency_ms": 9554,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": false,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "e7e1e22b-2fd6-493e-9139-f96834c11da8",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Strona odpowiada zbyt wolno. To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "url",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 9554,
+          "stages_ms": {
+            "intake": 8622
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "I02",
+      "scenario": "I",
+      "gold": null,
+      "predicted": "status:technical_error",
+      "correct": null,
+      "status": "technical_error",
+      "latency_ms": 5149,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": false,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "05cd6502-94e0-431c-a546-ac84c0c78ba4",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "url",
+          "title": "Strona główna Rządowego Centrum Bezpieczeństwa - Rządowe Centrum Bezpieczeństwa - Portal Gov.pl",
+          "url": "https://www.gov.pl/web/rcb",
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 5149,
+          "stages_ms": {
+            "intake": 2310,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "J01",
+      "scenario": "J",
+      "gold": null,
+      "predicted": "status:technical_error",
+      "correct": null,
+      "status": "technical_error",
+      "latency_ms": 1,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "738f7696-5caf-4c3e-9c0b-6c62bdfa66ad",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "J02",
+      "scenario": "J",
+      "gold": null,
+      "predicted": "status:technical_error",
+      "correct": null,
+      "status": "technical_error",
+      "latency_ms": 0,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": false,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "613ac60e-3f46-44b7-8795-0ed2980167a8",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 0,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "K01",
+      "scenario": "A",
+      "gold": "confirmed",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1866,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "94d0101c-8136-4524-a428-c90b5548982e",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1866,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "K02",
+      "scenario": "B",
+      "gold": "misleading",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1828,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "545f9fc7-e991-42bc-b43b-1d0c589368b8",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1829,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "K03",
+      "scenario": "C",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1809,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "061eec12-bbb2-4de0-8a22-8fbbf23ed74d",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1810,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "K04",
+      "scenario": "D",
+      "gold": "insufficient_evidence",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1801,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "2635a528-d0c5-4f98-99a4-ea135b3bc2ba",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1801,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "K05",
+      "scenario": "D",
+      "gold": "insufficient_evidence",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1940,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "b1c08095-aceb-4800-826d-bc71cbcfa29b",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1939,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "N01",
+      "scenario": "A",
+      "gold": "not_verifiable",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 2131,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "6b1ac005-fbd8-436b-b90d-f23aff83611c",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 2130,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "N02",
+      "scenario": "A",
+      "gold": "not_verifiable",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 2084,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "46f1ac06-aee5-4d6c-920c-f513bd6bc68c",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 2084,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 1
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "N03",
+      "scenario": "A",
+      "gold": "not_verifiable",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1051,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "1025a8cd-e71b-4c2d-a5bc-dad79b3c87e2",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1050,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "O01",
+      "scenario": "G",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 869,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "89627592-da71-4380-8873-8e42b6fa595a",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 869,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      },
+      "consistency": {
+        "same": true,
+        "detail": "identical verdicts and citations"
+      }
+    },
+    {
+      "id": "O02",
+      "scenario": "A",
+      "gold": "insufficient_evidence",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 868,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "7aa1dab3-dd7d-449c-bbfc-c3d4eff251c5",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 868,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "O03",
+      "scenario": "D",
+      "gold": "insufficient_evidence",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 873,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "b32d6b50-23f2-496d-9a0d-bceaa4fab878",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 873,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "O04",
+      "scenario": "C",
+      "gold": "misleading",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 1825,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "ba280cc2-624b-42d3-bfc9-8331400a6b05",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1825,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "S01",
+      "scenario": "A",
+      "gold": "confirmed",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 0,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "60f33c7c-2428-4797-9f2d-c7034c4bc862",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 1,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "S02",
+      "scenario": "A",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 0,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "11439f11-1911-484a-9181-2c90cdc36ae0",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 0,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "S03",
+      "scenario": "A",
+      "gold": "false",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 857,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "f504568e-7282-4c94-9431-73088eace541",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 857,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "S04",
+      "scenario": "A",
+      "gold": "confirmed",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 4,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "9d17f771-6355-47b8-a0c7-09e66c7e57dd",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 4,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "S05",
+      "scenario": "A",
+      "gold": "confirmed",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 0,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "ff403798-b00a-491b-984e-4964bdaf5d97",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 0,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "S06",
+      "scenario": "A",
+      "gold": "confirmed",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 0,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "94bc7c5d-36de-48e5-ace8-7f7c6c771368",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 0,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "S07",
+      "scenario": "B",
+      "gold": "misleading",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 0,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "e6ab6489-a120-4aa2-8216-356025200a1e",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 0,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "S08",
+      "scenario": "A",
+      "gold": "not_verifiable",
+      "predicted": "status:technical_error",
+      "correct": false,
+      "status": "technical_error",
+      "latency_ms": 873,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": true,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "0af35763-6c46-4fdb-a0f5-e4bbdf57182f",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 873,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    },
+    {
+      "id": "S09",
+      "scenario": "A",
+      "gold": null,
+      "predicted": "status:technical_error",
+      "correct": null,
+      "status": "technical_error",
+      "latency_ms": 866,
+      "cached": false,
+      "cost_usd": 0,
+      "schema_valid": true,
+      "transport_error": null,
+      "expectation_met": false,
+      "injection_warned": false,
+      "response": {
+        "contract_version": "1.0",
+        "check_id": "a0505448-b330-4b65-9278-b8e48fefac0b",
+        "status": "technical_error",
+        "answer_language": "pl",
+        "system_message": {
+          "title": "Nie udało się zakończyć sprawdzania",
+          "text": "Usługa nie jest skonfigurowana (brak klucza OPENROUTER_API_KEY). To nie jest ocena treści."
+        },
+        "summary": {
+          "fact_claims": 0,
+          "opinions": 0,
+          "text": ""
+        },
+        "claims": [],
+        "warnings": [],
+        "limitations": [
+          "Nie oceniamy opinii, intencji ani prognoz.",
+          "Nie wykrywamy deepfake'ów i nie wyszukujemy obrazów wstecz.",
+          "Prywatne imiona i nazwiska nie są jeszcze automatycznie maskowane; nie wklejaj danych osobowych.",
+          "Szukamy tylko w zaufanych źródłach: weryfikacje certyfikowanych fact-checkerów (m.in. Demagog, AFP Sprawdzam, Reuters, AP) przez Google Fact Check, akty prawne Sejmu (ELI) oraz dane Eurostatu, NBP i GUS dla wybranych wskaźników. Głosowań Sejmu, komunikatów instytucji i danych regionalnych jeszcze nie sprawdzamy."
+        ],
+        "escalation": {
+          "state": "none",
+          "reason": null
+        },
+        "input": {
+          "type": "text",
+          "title": null,
+          "url": null,
+          "published_at": null,
+          "description": null
+        },
+        "meta": {
+          "latency_ms": 866,
+          "stages_ms": {
+            "intake": 0,
+            "extract": 0
+          },
+          "models": [],
+          "prompt_versions": [],
+          "cost_usd": 0,
+          "cached": false,
+          "mode": "live"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,338 @@
+[
+  {
+    "source": "rso_mazowieckie",
+    "source_url": "https://www.gov.pl/web/gov/ostrzezenia#/_/mazowieckie/wszystkie",
+    "external_id": "23325027",
+    "title": "Susza hydrologiczna",
+    "detail_url": "https://www.gov.pl/web/gov/ostrzezenia#/_/szczgoly/23325027",
+    "published_at": "2026-09-11 11:06:09",
+    "updated_at": "2026-09-11 12:13:23",
+    "valid_from": "2026-09-11 12:13:00",
+    "valid_to": "2026-12-31 11:10:00",
+    "content": "W związku z występującymi niskimi przepływami wody, w kolejnych dniach w zlewni Bzury spodziewane jest dalsze utrzymywanie się przepływów wody poniżej SNQ.",
+    "summary": "mazowieckie, Bzura, susza hydrologiczna",
+    "language": "pl",
+    "category": "wszystkie",
+    "location": [
+      "Mazowieckie"
+    ],
+    "raw": {
+      "list": {
+        "id": 23325027,
+        "title": "Susza hydrologiczna",
+        "shortcut": "mazowieckie, Bzura, susza hydrologiczna",
+        "content": "W związku z występującymi niskimi przepływami wody, w kolejnych dniach w zlewni Bzury spodziewane jest dalsze utrzymywanie się przepływów wody poniżej SNQ.",
+        "rso_alarm": "0",
+        "rso_icon": null,
+        "valid_from": "2026-09-11 12:13:00",
+        "0": "Y-m-d H:i:s",
+        "valid_to": "2026-12-31 11:10:00",
+        "1": "Y-m-d H:i:s",
+        "repetition": null,
+        "longitude": null,
+        "latitude": null,
+        "water_level_value": null,
+        "water_level_warning_status_value": null,
+        "water_level_alarm_status_value": null,
+        "water_level_trend": null,
+        "river_name": "",
+        "location_name": "",
+        "created_at": "2026-09-11 11:06:09",
+        "2": "Y-m-d H:i:s",
+        "updated_at": "2026-09-11 12:13:23",
+        "3": "Y-m-d H:i:s",
+        "provinces": {
+          "7": {
+            "id": "7",
+            "name": "Mazowieckie",
+            "city": "",
+            "slug_name": "mazowieckie"
+          }
+        }
+      }
+    },
+    "raw_sha256": "44d4b82636d901d298fbc79b8dd0c2624dfed92029ccb425f895d7ebc182089b",
+    "first_seen_at": "2026-11-21T20:09:28.488473+00:00",
+    "last_seen_at": "2026-11-21T20:09:28.488473+00:00"
+  },
+  {
+    "source": "rso_mazowieckie",
+    "source_url": "https://www.gov.pl/web/gov/ostrzezenia#/_/mazowieckie/wszystkie",
+    "external_id": "23152711",
+    "title": "Susza hydrologiczna",
+    "detail_url": "https://www.gov.pl/web/gov/ostrzezenia#/_/szczgoly/23152711",
+    "published_at": "2026-07-15 11:09:23",
+    "updated_at": "2026-07-15 14:14:02",
+    "valid_from": "2026-07-15 14:13:00",
+    "valid_to": "2026-12-31 11:10:00",
+    "content": "W związku z występującymi niskimi przepływami wody, w kolejnych dniach w zlewniach rzek Pisia i Utrata spodziewane jest dalsze utrzymywanie się przepływów wody poniżej SNQ.",
+    "summary": "mazowieckie, Pisia i Utrata, susza hydrologiczna",
+    "language": "pl",
+    "category": "wszystkie",
+    "location": [
+      "Mazowieckie"
+    ],
+    "raw": {
+      "list": {
+        "id": 23152711,
+        "title": "Susza hydrologiczna",
+        "shortcut": "mazowieckie, Pisia i Utrata, susza hydrologiczna",
+        "content": "W związku z występującymi niskimi przepływami wody, w kolejnych dniach w zlewniach rzek Pisia i Utrata spodziewane jest dalsze utrzymywanie się przepływów wody poniżej SNQ.",
+        "rso_alarm": "0",
+        "rso_icon": null,
+        "valid_from": "2026-07-15 14:13:00",
+        "0": "Y-m-d H:i:s",
+        "valid_to": "2026-12-31 11:10:00",
+        "1": "Y-m-d H:i:s",
+        "repetition": null,
+        "longitude": null,
+        "latitude": null,
+        "water_level_value": null,
+        "water_level_warning_status_value": null,
+        "water_level_alarm_status_value": null,
+        "water_level_trend": null,
+        "river_name": "",
+        "location_name": "",
+        "created_at": "2026-07-15 11:09:23",
+        "2": "Y-m-d H:i:s",
+        "updated_at": "2026-07-15 14:14:02",
+        "3": "Y-m-d H:i:s",
+        "provinces": {
+          "7": {
+            "id": "7",
+            "name": "Mazowieckie",
+            "city": "",
+            "slug_name": "mazowieckie"
+          }
+        }
+      }
+    },
+    "raw_sha256": "15a698833f48b091d4a9b7e619b99f1c435fbd87e850fd51c1a058474e78a9c9",
+    "first_seen_at": "2026-11-21T20:09:28.488473+00:00",
+    "last_seen_at": "2026-11-21T20:09:28.488473+00:00"
+  },
+  {
+    "source": "rso_mazowieckie",
+    "source_url": "https://www.gov.pl/web/gov/ostrzezenia#/_/mazowieckie/wszystkie",
+    "external_id": "23134911",
+    "title": "Susza hydrologiczna",
+    "detail_url": "https://www.gov.pl/web/gov/ostrzezenia#/_/szczgoly/23134911",
+    "published_at": "2026-07-09 08:47:33",
+    "updated_at": "2026-07-09 09:35:02",
+    "valid_from": "2026-07-09 09:34:00",
+    "valid_to": "2026-12-31 23:01:00",
+    "content": "W związku z występującymi niskimi przepływami wody, w kolejnych dniach na odcinku Wisły od ujścia Kamiennej do Dęblina spodziewane jest dalsze utrzymywanie się przepływów wody poniżej SNQ.",
+    "summary": "mazowieckie, Wisła od ujścia Kamiennej do Dęblina, susza hydrologiczna",
+    "language": "pl",
+    "category": "wszystkie",
+    "location": [
+      "Mazowieckie"
+    ],
+    "raw": {
+      "list": {
+        "id": 23134911,
+        "title": "Susza hydrologiczna",
+        "shortcut": "mazowieckie, Wisła od ujścia Kamiennej do Dęblina, susza hydrologiczna",
+        "content": "W związku z występującymi niskimi przepływami wody, w kolejnych dniach na odcinku Wisły od ujścia Kamiennej do Dęblina spodziewane jest dalsze utrzymywanie się przepływów wody poniżej SNQ.",
+        "rso_alarm": "0",
+        "rso_icon": null,
+        "valid_from": "2026-07-09 09:34:00",
+        "0": "Y-m-d H:i:s",
+        "valid_to": "2026-12-31 23:01:00",
+        "1": "Y-m-d H:i:s",
+        "repetition": null,
+        "longitude": null,
+        "latitude": null,
+        "water_level_value": null,
+        "water_level_warning_status_value": null,
+        "water_level_alarm_status_value": null,
+        "water_level_trend": null,
+        "river_name": "",
+        "location_name": "",
+        "created_at": "2026-07-09 08:47:33",
+        "2": "Y-m-d H:i:s",
+        "updated_at": "2026-07-09 09:35:02",
+        "3": "Y-m-d H:i:s",
+        "provinces": {
+          "7": {
+            "id": "7",
+            "name": "Mazowieckie",
+            "city": "",
+            "slug_name": "mazowieckie"
+          }
+        }
+      }
+    },
+    "raw_sha256": "728736e636ca5a2e4c156d9de66c3de5addc2d1fcf404cd985ab40bca54a9573",
+    "first_seen_at": "2026-11-21T20:09:28.488473+00:00",
+    "last_seen_at": "2026-11-21T20:09:28.488473+00:00"
+  },
+  {
+    "source": "rso_mazowieckie",
+    "source_url": "https://www.gov.pl/web/gov/ostrzezenia#/_/mazowieckie/wszystkie",
+    "external_id": "23018814",
+    "title": "Susza hydrologiczna",
+    "detail_url": "https://www.gov.pl/web/gov/ostrzezenia#/_/szczgoly/23018814",
+    "published_at": "2026-06-03 09:33:42",
+    "updated_at": "2026-06-10 14:30:54",
+    "valid_from": "2026-06-03 09:33:00",
+    "valid_to": "2026-12-31 23:59:00",
+    "content": "W związku z występującymi niskimi przepływami wody, w kolejnych dniach w zlewni Świdra spodziewane jest dalsze utrzymywanie się przepływów wody poniżej SNQ.",
+    "summary": "mazowieckie, Świder, susza hydrologiczna",
+    "language": "pl",
+    "category": "wszystkie",
+    "location": [
+      "Mazowieckie"
+    ],
+    "raw": {
+      "list": {
+        "id": 23018814,
+        "title": "Susza hydrologiczna",
+        "shortcut": "mazowieckie, Świder, susza hydrologiczna",
+        "content": "W związku z występującymi niskimi przepływami wody, w kolejnych dniach w zlewni Świdra spodziewane jest dalsze utrzymywanie się przepływów wody poniżej SNQ.",
+        "rso_alarm": "0",
+        "rso_icon": null,
+        "valid_from": "2026-06-03 09:33:00",
+        "0": "Y-m-d H:i:s",
+        "valid_to": "2026-12-31 23:59:00",
+        "1": "Y-m-d H:i:s",
+        "repetition": null,
+        "longitude": null,
+        "latitude": null,
+        "water_level_value": null,
+        "water_level_warning_status_value": null,
+        "water_level_alarm_status_value": null,
+        "water_level_trend": null,
+        "river_name": "",
+        "location_name": "",
+        "created_at": "2026-06-03 09:33:42",
+        "2": "Y-m-d H:i:s",
+        "updated_at": "2026-06-10 14:30:54",
+        "3": "Y-m-d H:i:s",
+        "provinces": {
+          "7": {
+            "id": "7",
+            "name": "Mazowieckie",
+            "city": "",
+            "slug_name": "mazowieckie"
+          }
+        }
+      }
+    },
+    "raw_sha256": "7d9955dc2cc19f230d6d159214b58ca4abaad373dffeb258f8d03197b8ba0c1c",
+    "first_seen_at": "2026-11-21T20:09:28.488473+00:00",
+    "last_seen_at": "2026-11-21T20:09:28.488473+00:00"
+  },
+  {
+    "source": "rso_mazowieckie",
+    "source_url": "https://www.gov.pl/web/gov/ostrzezenia#/_/mazowieckie/wszystkie",
+    "external_id": "22924650",
+    "title": "Susza hydrologiczna",
+    "detail_url": "https://www.gov.pl/web/gov/ostrzezenia#/_/szczgoly/22924650",
+    "published_at": "2026-05-04 13:33:28",
+    "updated_at": "2026-05-04 14:02:12",
+    "valid_from": "2026-05-04 13:33:00",
+    "valid_to": "2026-12-31 23:59:00",
+    "content": "W związku z występującymi niskimi przepływami wody, w kolejnych dniach w zlewni Jeziorki spodziewane jest dalsze utrzymywanie się przepływów wody poniżej SNQ.",
+    "summary": "mazowieckie, Jeziorka, susza hydrologiczna",
+    "language": "pl",
+    "category": "wszystkie",
+    "location": [
+      "Mazowieckie"
+    ],
+    "raw": {
+      "list": {
+        "id": 22924650,
+        "title": "Susza hydrologiczna",
+        "shortcut": "mazowieckie, Jeziorka, susza hydrologiczna",
+        "content": "W związku z występującymi niskimi przepływami wody, w kolejnych dniach w zlewni Jeziorki spodziewane jest dalsze utrzymywanie się przepływów wody poniżej SNQ.",
+        "rso_alarm": "0",
+        "rso_icon": null,
+        "valid_from": "2026-05-04 13:33:00",
+        "0": "Y-m-d H:i:s",
+        "valid_to": "2026-12-31 23:59:00",
+        "1": "Y-m-d H:i:s",
+        "repetition": null,
+        "longitude": null,
+        "latitude": null,
+        "water_level_value": null,
+        "water_level_warning_status_value": null,
+        "water_level_alarm_status_value": null,
+        "water_level_trend": null,
+        "river_name": "",
+        "location_name": "",
+        "created_at": "2026-05-04 13:33:28",
+        "2": "Y-m-d H:i:s",
+        "updated_at": "2026-05-04 14:02:12",
+        "3": "Y-m-d H:i:s",
+        "provinces": {
+          "7": {
+            "id": "7",
+            "name": "Mazowieckie",
+            "city": "",
+            "slug_name": "mazowieckie"
+          }
+        }
+      }
+    },
+    "raw_sha256": "622ef53268614502de8056c2767ee1923b75c7fb8e75ca39a285d246e9fbc003",
+    "first_seen_at": "2026-11-21T20:09:28.488473+00:00",
+    "last_seen_at": "2026-11-21T20:09:28.488473+00:00"
+  },
+  {
+    "source": "rso_mazowieckie",
+    "source_url": "https://www.gov.pl/web/gov/ostrzezenia#/_/mazowieckie/wszystkie",
+    "external_id": "22893069",
+    "title": "Susza hydrologiczna",
+    "detail_url": "https://www.gov.pl/web/gov/ostrzezenia#/_/szczgoly/22893069",
+    "published_at": "2026-04-24 09:25:05",
+    "updated_at": "2026-04-24 10:03:50",
+    "valid_from": "2026-04-24 09:25:00",
+    "valid_to": "2026-12-31 23:59:00",
+    "content": "W związku z występującymi niskimi przepływami wody, w kolejnych dniach w zlewni Radomki spodziewane jest dalsze utrzymywanie się przepływów wody poniżej SNQ.",
+    "summary": "mazowieckie, Radomka, susza hydrologiczna",
+    "language": "pl",
+    "category": "wszystkie",
+    "location": [
+      "Mazowieckie"
+    ],
+    "raw": {
+      "list": {
+        "id": 22893069,
+        "title": "Susza hydrologiczna",
+        "shortcut": "mazowieckie, Radomka, susza hydrologiczna",
+        "content": "W związku z występującymi niskimi przepływami wody, w kolejnych dniach w zlewni Radomki spodziewane jest dalsze utrzymywanie się przepływów wody poniżej SNQ.",
+        "rso_alarm": "0",
+        "rso_icon": null,
+        "valid_from": "2026-04-24 09:25:00",
+        "0": "Y-m-d H:i:s",
+        "valid_to": "2026-12-31 23:59:00",
+        "1": "Y-m-d H:i:s",
+        "repetition": null,
+        "longitude": null,
+        "latitude": null,
+        "water_level_value": null,
+        "water_level_warning_status_value": null,
+        "water_level_alarm_status_value": null,
+        "water_level_trend": null,
+        "river_name": "",
+        "location_name": "",
+        "created_at": "2026-04-24 09:25:05",
+        "2": "Y-m-d H:i:s",
+        "updated_at": "2026-04-24 10:03:50",
+        "3": "Y-m-d H:i:s",
+        "provinces": {
+          "7": {
+            "id": "7",
+            "name": "Mazowieckie",
+            "city": "",
+            "slug_name": "mazowieckie"
+          }
+        }
+      }
+    },
+    "raw_sha256": "2094482f2a7a82a72b55bd06785b8bf0aff2a89a06ce39b8c842fe5f8654a5de",
+    "first_seen_at": "2026-11-21T20:09:28.488473+00:00",
+    "last_seen_at": "2026-11-21T20:09:28.488473+00:00"
+  }
+]

@@ -6,7 +6,7 @@ import { containsVerbatim } from "../guard/normalize.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
 import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v4.ts";
 import type { Stance } from "../types.ts";
-import { factcheckFields, ratingStance } from "./factcheck.ts";
+import { factcheckFields, isFactcheckCard, ratingStance } from "./factcheck.ts";
 
 export const Assessment = z.strictObject({
   passages: z.array(z.strictObject({
@@ -98,7 +98,7 @@ export async function assessClaim(args: {
     };
     // A fact-check's checked statement is the claim under review, not evidence. A decisive stance
     // quoted only from it means the model read the statement instead of the rating: the rating decides.
-    if (ok && record.route === "google_factcheck" && DECISIVE.includes(verified.stance)) {
+    if (ok && isFactcheckCard(record) && DECISIVE.includes(verified.stance)) {
       const f = factcheckFields(record.text);
       const fromRating = f.rating ? ratingStance(f.rating) : null;
       if (f.claimLine && f.ratingLine && fromRating && containsVerbatim(f.claimLine, p.quote)) {

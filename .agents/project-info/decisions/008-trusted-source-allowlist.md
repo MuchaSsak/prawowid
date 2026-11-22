@@ -12,3 +12,5 @@ Decision:
 Rejected: trusting any Google Fact Check publisher (no control over who decides a verdict); scraping the four sites with a browser-like user agent (violates robots/terms and the task's no-bypass rule); giving PAP or Sprawdzam To the `factcheck` tier (no IFCN/EFCSN certification found).
 
 Affects: [architecture/codebase.md](../architecture/codebase.md), [architecture/api-reference.md](../architecture/api-reference.md), [architecture/verification-pipeline.md](../architecture/verification-pipeline.md) (source eligibility), [open-questions.md](../open-questions.md).
+
+Update 2026-11-22: an operator can switch a publisher, a corpus collection or a whole route off at runtime ([decision 013](013-source-controls.md)); the allowlist in code stays the upper bound. Also 2026-11-22: `kgsok` (Komenda Główna Straży Ochrony Kolei, on the organizer's list) added after 17 corpus passages were found off the allowlist, and `scripts/build_corpus_index.ts` now skips (and counts per collection) any record whose URL is not on the allowlist, so the corpus can't drift from it again.

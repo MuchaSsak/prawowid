@@ -17,7 +17,7 @@
  * Writes eval/results/<timestamp>.json, eval/results/latest.md and eval/results/citations-review.csv
  * (for the human citation-correctness review). Costs real money in live mode (~$0.1 per full run).
  */
-import { CheckResponseSchema, loadConfig, MemoryCheckStore, MemoryCorpusStore, runCheck } from "@prawdowid/core";
+import { CheckResponseSchema, loadConfig, MemoryCheckStore, IndexedCorpusStore, runCheck } from "@prawdowid/core";
 import type { CheckRequest, CheckResponse, Verdict } from "@prawdowid/core";
 
 interface Case {
@@ -81,7 +81,8 @@ const PRIORITY: Verdict[] = ["false", "misleading", "insufficient_evidence", "co
 
 // ── execution ────────────────────────────────────────────────────────────────
 const store = new MemoryCheckStore();
-const corpus = new MemoryCorpusStore();
+const corpus = new IndexedCorpusStore();
+await corpus.loadIndex(new URL("../data/corpus/alert-corpus-index.json", import.meta.url));
 
 async function resolveHost(h: string): Promise<string[]> {
   const r = await Promise.allSettled([Deno.resolveDns(h, "A"), Deno.resolveDns(h, "AAAA")]);
