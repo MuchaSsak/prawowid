@@ -308,7 +308,8 @@ export function initSources() {
 
   // ── toggles: optimistic, reverted with an inline error when the save fails ──
   async function toggle(key: string) {
-    if (!state) return;
+    // One save per switch at a time: a double click must not send two opposite POSTs.
+    if (!state || pending.has(key)) return;
     const src = state.sources.find((s) => s.key === key);
     if (!src) return;
     const want = !src.enabled;
@@ -318,7 +319,8 @@ export function initSources() {
     try {
       const next = sample ? await sampleToggle(key, want) : await call<SourcesState>("/api/v1/admin/sources", { method: "POST", body: JSON.stringify({ key, enabled: want }) });
       pending.delete(key);
-      render(next);
+      // Two switches saved at once can answer out of order: never render an older revision.
+      render(state && next.revision < state.revision ? state : next);
       if (lastQuery) runSearch(lastQuery, true);
     } catch (e) {
       pending.delete(key);
