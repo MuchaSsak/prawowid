@@ -89,6 +89,7 @@ Return only JSON matching the schema. "source_span" must be copied exactly from 
 
 ## Code checks after the call
 - Every `source_span` must be found in the material (whitespace and quote normalisation, **case-insensitive and Polish letters ignored, a trailing `.`/`?`/`!` ignored**, since 2026-11-22: people type "robert lewandowski" or "odbyl sie", the model copies "Robert Lewandowski." or "odbył się", and the claim used to be dropped as invented → `technical_error`; `foldTyping` in `guard/normalize.ts`). The words must all be there. If it isn't, drop the claim: the model may not invent claims. Quotes from sources stay exact.
+- **Opinion paraphrase guard** (2026-11-22, hard constraint 21): a fact claim with the same span as an opinion claim and no number in its text is dropped ("Rząd kłamie w sprawie długu" was also extracted as the fact "Rząd przedstawia informacje o długu" and confirmed, on production too). A fact with a figure stays. If only such paraphrases were facts, `input_kind` becomes `opinion_only`.
 - More than 8 fact claims → keep the 8 by `risk`, then by order.
 - `injection_signals` non-empty → log an `injection_detected` row to `check_events` and add the warning to the answer. The pipeline continues (scenario E).
 - Every `assumptions[].source_span` must be found in the material too. If it isn't, drop the claim (an unsupported resolution counts as an invented claim).

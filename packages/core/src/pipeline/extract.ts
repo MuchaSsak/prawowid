@@ -104,6 +104,16 @@ export async function extractClaims(args: {
     }
     return true;
   });
+  // Hard constraint 21: the same words cannot be both an opinion and a fact. When the model files a
+  // sentence as an opinion ("Rząd kłamie w sprawie X") and also rewrites it into a neutral "fact" with
+  // the very same span ("Rząd przedstawia informacje o X"), the opinion wins. A fact that states a
+  // number keeps its place: that figure is the checkable core ("…podniósł VAT do 25%").
+  const opinionSpans = new Set(kept.filter((c) => c.class !== "fact").map((c) => lower(c.source_span).replace(/[.!?]+$/, "")));
+  const paraphrases = kept.filter((c) =>
+    c.class === "fact" && !/\d/.test(c.text) && opinionSpans.has(lower(c.source_span).replace(/[.!?]+$/, ""))
+  );
+  for (const c of paraphrases) rejectedSpans.push(c.source_span.slice(0, 200));
+  if (paraphrases.length) kept.splice(0, kept.length, ...kept.filter((c) => !paraphrases.includes(c)));
 
   // Span order, then cap fact claims: high risk first, then original order.
   const pos = (c: ExtractedClaim) => {
@@ -121,5 +131,10 @@ export async function extractClaims(args: {
     .slice(0, LIMITS.maxFactClaims + 6)
     .map((c, i) => ({ ...c, id: `c${i + 1}` }));
 
-  return { extraction: { ...data, claims }, rejectedSpans, capped, usage };
+  // Only opinion paraphrases were facts: the input is opinion-only (one-liners), not a failed extraction.
+  const inputKind = paraphrases.length && data.input_kind === "checkable" && !claims.some((c) => c.class === "fact") &&
+      claims.some((c) => c.class !== "fact")
+    ? "opinion_only" as const
+    : data.input_kind;
+  return { extraction: { ...data, input_kind: inputKind, claims }, rejectedSpans, capped, usage };
 }

@@ -353,3 +353,22 @@ Deno.test({ ...T, name: "'too vague' from the small model → the stronger model
   assertEquals(vague.calls, 2);
   assertEquals(vague.r.status, "needs_clarification");
 } });
+
+Deno.test({ ...T, name: "hard constraint 21: a fact with the same span as an opinion and no number is dropped; a figure stays", async fn() {
+  const run = async (factText: string) => {
+    const sentence = "Zarząd Przykładowa kłamie w sprawie budżetu.";
+    const s = stubFetch({
+      extraction: () => extraction([{ text: factText, span: sentence }, { text: sentence, class: "opinion" }]),
+      assessment: assess({}, "insufficient_evidence"),
+    });
+    try {
+      return await runCheck({ input: { type: "text", value: sentence }, channel: "web", session_id: `t-hc21-${factText.length}` }, deps());
+    } finally { s.restore(); }
+  };
+  const paraphrase = await run("Zarząd Przykładowa przedstawia informacje o budżecie.");
+  assertEquals(paraphrase.status, "ok");
+  assertEquals(paraphrase.claims.map((c) => c.class), ["opinion"]);
+  assertEquals(paraphrase.claims[0].verdict, "not_verifiable");
+  const figure = await run("Budżet Przykładowa wynosi 5 mln zł.");
+  assertEquals(figure.claims.map((c) => c.class), ["fact", "opinion"]);
+} });
