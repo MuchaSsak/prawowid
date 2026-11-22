@@ -314,10 +314,10 @@ export function initApp() {
   const refreshHint = () => {
     const chat = document.body.classList.contains("is-chat");
     text.placeholder = attachment
-      ? pick("Co sprawdzić w tym pliku? Możesz zostawić puste", "Pytanie (opcjonalnie)")
+      ? pick("Dopisz, co sprawdzić w pliku (opcjonalnie)", "Opis (opcjonalnie)")
       : chat
-      ? pick("Kolejne pytanie lub link", "Kolejne pytanie")
-      : pick("Spróbuj: „Czy płaca minimalna wzrosła w 2025 roku?”", "Wklej tekst lub link");
+      ? pick("Wklej kolejne zdanie lub link", "Kolejne zdanie")
+      : pick("Spróbuj: „Płaca minimalna w 2025 roku wynosi 4666 zł”", "Wklej tekst lub link");
   };
   /** The line under the input is used only by the recorder; otherwise only the placeholder changes. */
   const refreshSendAs = () => {

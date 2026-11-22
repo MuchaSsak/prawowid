@@ -261,3 +261,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | clean for Git integration update; routing, index, source citations and skill parity checked
 ## [2026-11-22] update | admin panel: analytics missing on Vercel = trailing slash in PUBLIC_API_URL (now stripped at build, redeployed); lag = Intl.formatToParts per row in buildAnalytics (cached offset, ~3x faster) + sample report cache; architecture/codebase.md
 ## [2026-11-22] lint | clean for admin speed and API URL update; routing, index, source citations, links and skill parity checked
+## [2026-11-22] update | web input hints are statements, not questions; example is the true claim on the 2025 minimum wage (4666 zł); architecture/codebase.md
+## [2026-11-22] lint | clean for input hint update; one-line change, links and index unaffected
