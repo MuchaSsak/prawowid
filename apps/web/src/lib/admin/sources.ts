@@ -122,7 +122,12 @@ export function initSources() {
   let filter = "";
   let lastQuery = "";
   /** Toggles still waiting for the server: key → wanted value, laid over every state we receive. */
-  const pending = new Map<string, boolean>();
+  // In-flight saves per mode: a live save never shows on a sample row, nor the reverse.
+  const pendingByMode = { live: new Map<string, boolean>(), sample: new Map<string, boolean>() };
+  const pending = () => (sample ? pendingByMode.sample : pendingByMode.live);
+  // Bumped when a live save starts or ends: a refresh may drop the revision guard only if no save
+  // overlapped it (O10/S9).
+  let saveEpoch = 0;
   const rowErrors = new Map<string, string>();
 
   const content = $("content");
@@ -175,47 +180,65 @@ export function initSources() {
       ...init,
       headers: { Authorization: `Bearer ${token}`, ...(init.body ? { "Content-Type": "application/json" } : {}) },
     });
-    if (res.status === 401) forgetToken("Nieprawidłowy klucz.");
-    if (res.status === 429) forgetToken("Za dużo nieudanych prób. Spróbuj za kilka minut.");
+    // Only live mode talks to the API: a late answer must not lock a page that switched to sample data.
+    if (res.status === 401 && !sample) forgetToken("Nieprawidłowy klucz.");
+    if (res.status === 429 && !sample) forgetToken("Za dużo nieudanych prób. Spróbuj za kilka minut.");
     if (!res.ok) throw new HttpError(res.status);
     return await res.json() as T;
   }
 
-  async function load() {
+  // Server snapshots (refresh GET, save POST) can arrive out of order: never go back a revision.
+  let serverState: SourcesState | null = null;
+  function newest(s: SourcesState): SourcesState {
+    if (!serverState || s.revision >= serverState.revision) serverState = s;
+    return serverState;
+  }
+
+  /** Loads the list; true when the server state was shown. */
+  async function load(): Promise<boolean> {
     syncControls();
     const id = ++request;
     notice.hidden = true;
-    pending.clear();
+    // In-flight saves stay pending across a refresh, so a second click can't send a second POST.
     rowErrors.clear();
     if (sample) {
       sampleState ??= sampleSources();
       lock(false);
-      return render(sampleState, true);
+      render(sampleState, true);
+      return false;
     }
     if (!token) {
       lock(true);
       gateError.hidden = true;
-      return;
+      return false;
     }
     content.classList.add("is-loading");
+    // A GET that no save overlapped is the truth, even at a lower revision (a server without KV
+    // restarts at revision 0); one that overlapped a save may be older than that save's answer.
+    const quiet = pendingByMode.live.size === 0;
+    const epoch = saveEpoch;
     try {
       const s = await call<SourcesState>("/api/v1/admin/sources");
-      if (id !== request) return;
+      if (id !== request) return false;
       lock(false);
-      render(s, true);
+      if (quiet && epoch === saveEpoch) serverState = null;
+      render(newest(s), true);
+      return true;
     } catch (e) {
-      if (id !== request) return;
+      if (id !== request) return false;
       if (e instanceof HttpError) {
         if (e.status === 404) showNotice("Panel jest wyłączony na serwerze: ustaw ADMIN_TOKEN w API.");
         else if (e.status !== 401 && e.status !== 429) showNotice(`API zwróciło błąd ${e.status}.`);
       } else showNotice("Nie udało się połączyć z API. Możesz włączyć dane przykładowe.");
+      return false;
     } finally {
       if (id === request) content.classList.remove("is-loading");
     }
   }
 
   function render(s: SourcesState, entering = false) {
-    state = { ...s, sources: s.sources.map((x) => (pending.has(x.key) ? { ...x, enabled: pending.get(x.key)! } : x)) };
+    const p = pending();
+    state = { ...s, sources: s.sources.map((x) => (p.has(x.key) ? { ...x, enabled: p.get(x.key)! } : x)) };
     if (entering) {
       content.classList.remove("is-entering");
       void content.offsetWidth;
@@ -247,6 +270,8 @@ export function initSources() {
     const labelId = `src-${s.key.replace(/[^a-z0-9]/gi, "-")}`;
     const meta: string[] = [];
     if (s.kind === "corpus") {
+      // Several collections share one publisher label, so the id is what tells the rows apart.
+      meta.push(s.id);
       if (typeof s.records === "number") meta.push(`${nf.format(s.records)} ${plural(s.records, "fragment", "fragmenty", "fragmentów")}`);
       meta.push(s.latest ? `do ${fmtDate(s.latest)}` : "bez dat");
     }
@@ -272,7 +297,7 @@ export function initSources() {
           role: "switch",
           "aria-checked": String(s.enabled),
           "aria-labelledby": labelId,
-          "aria-busy": pending.has(s.key) ? "true" : undefined,
+          "aria-busy": pending().has(s.key) ? "true" : undefined,
           "data-key": s.key,
         },
         h("span", { class: "switch-track", "aria-hidden": "true" }, h("span", { class: "switch-thumb" })),
@@ -306,21 +331,47 @@ export function initSources() {
 
   // ── toggles: optimistic, reverted with an inline error when the save fails ──
   async function toggle(key: string) {
-    if (!state) return;
+    // One save per switch at a time: a double click must not send two opposite POSTs.
+    const p = pending();
+    if (!state || p.has(key)) return;
     const src = state.sources.find((s) => s.key === key);
     if (!src) return;
     const want = !src.enabled;
-    pending.set(key, want);
+    // A save answers into the mode it started in: switching to sample data mid-save must not show live rows.
+    const startedInSample = sample;
+    p.set(key, want);
+    if (!startedInSample) saveEpoch++;
     rowErrors.delete(key);
     render(state);
+    const settle = () => {
+      p.delete(key);
+      if (!startedInSample) saveEpoch++;
+    };
     try {
-      const next = sample ? await sampleToggle(key, want) : await call<SourcesState>("/api/v1/admin/sources", { method: "POST", body: JSON.stringify({ key, enabled: want }) });
-      pending.delete(key);
-      render(next);
+      const next = startedInSample ? await sampleToggle(key, want) : await call<SourcesState>("/api/v1/admin/sources", { method: "POST", body: JSON.stringify({ key, enabled: want }) });
+      settle();
+      if (sample !== startedInSample) return;
+      render(startedInSample ? next : newest(next));
       if (lastQuery) runSearch(lastQuery, true);
     } catch (e) {
-      pending.delete(key);
+      settle();
+      if (sample !== startedInSample) return;
       if (e instanceof HttpError && (e.status === 401 || e.status === 429)) return;
+      if (e instanceof HttpError && e.status === 503) {
+        // The server could not confirm the save, and the write may still land: re-read, and say the
+        // outcome is unknown either way (other rows keep their messages).
+        const kept = new Map(rowErrors);
+        const shown = await load();
+        for (const [k, v] of kept) rowErrors.set(k, v);
+        rowErrors.set(
+          key,
+          shown
+            ? "Nie wiadomo, czy zapisano: zapis mógł jeszcze nie dotrzeć. Odśwież za chwilę, żeby sprawdzić."
+            : "Nie wiadomo, czy zapisano. Odśwież stronę za chwilę.",
+        );
+        if (state) render(state);
+        return;
+      }
       rowErrors.set(key, e instanceof HttpError ? (e.status === 400 ? "Serwer nie zna tego źródła." : `Nie zapisano (błąd ${e.status}).`) : "Nie zapisano: brak połączenia z API.");
       // Revert: the server state did not change, so put the old value back.
       render({ ...state, sources: state.sources.map((s) => (s.key === key ? { ...s, enabled: !want } : s)) });

@@ -139,3 +139,97 @@ Deno.test("applySourceControls: switched-off publishers leave the allowlist; lis
   assertEquals(list.find((s) => s.id === id)?.enabled, false);
   assertEquals(list.filter((s) => !s.enabled).length, 1);
 });
+
+Deno.test("applySourceControls: gov.pl off keeps Sejm and GUS records (most specific domain wins)", async () => {
+  const sejm = rec("x", 1, "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20180001560", "Ustawa o krajowym systemie cyberbezpieczeństwa.");
+  const rcb = rec("x", 2, "https://www.gov.pl/web/rcb/alert", "RCB: alert o silnym wietrze.");
+  const route = (id: string, records: SourceRecord[], required = true): Connector => ({
+    id,
+    label: id,
+    required,
+    appliesTo: () => true,
+    unavailableReason: () => null,
+    search: () => Promise.resolve(records.map((r) => ({ ...r, route: id }))),
+  });
+  const live = applySourceControls(
+    { connectors: [route("sejm_eli", [sejm]), route("rcb_like", [rcb], false)], corpus: new IndexedCorpusStore([]), trustedSources: TRUSTED_SOURCES },
+    ["publisher:gov_pl"],
+  );
+  const ctx: ConnectorContext = { config: loadConfig({ get: () => undefined }), signal: new AbortController().signal, corpus: live.corpus };
+  const r = await retrieve(claim, live.connectors, ctx);
+  assertEquals(r.routes.find((x) => x.route === "sejm_eli")?.status, "hits");
+  assertEquals(r.records.map((x) => x.route), ["sejm_eli"]);
+  assertEquals(r.requiredFailure, null);
+});
+
+Deno.test("applySourceControls: the only publisher of a required route switched off → system state, not 'no hits'", async () => {
+  const eurostatRecord = rec("x", 1, "https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_aind", "Inflacja HICP: Polska 2023: 10,9%.");
+  const eurostat: Connector = {
+    id: "eurostat",
+    label: "Eurostat",
+    required: true,
+    appliesTo: () => true,
+    unavailableReason: () => null,
+    search: () => Promise.resolve([{ ...eurostatRecord, route: "eurostat" }]),
+  };
+  const live = applySourceControls(
+    { connectors: [eurostat], corpus: new IndexedCorpusStore([]), trustedSources: TRUSTED_SOURCES },
+    ["publisher:eurostat"],
+  );
+  const ctx: ConnectorContext = { config: loadConfig({ get: () => undefined }), signal: new AbortController().signal, corpus: live.corpus };
+  const r = await retrieve(claim, live.connectors, ctx);
+  assertEquals(r.routes[0].status, "unavailable");
+  assertEquals(r.routes[0].detail, SOURCE_DISABLED_DETAIL);
+  assertEquals(r.requiredFailure?.route, "eurostat");
+});
+
+Deno.test("applySourceControls: corpus route off hides the corpus for every reader (dates included)", async () => {
+  const store = new IndexedCorpusStore(RECORDS);
+  const live = applySourceControls({ connectors: [], corpus: store, trustedSources: TRUSTED_SOURCES }, ["route:corpus"]);
+  assertEquals(await live.corpus.search(["SMS paczka"], 5), []);
+});
+
+Deno.test("applySourceControls: a connector that filters by the allowlist itself (Google Fact Check) still yields a system state", async () => {
+  const demagogId = TRUSTED_SOURCES.find((s) => s.domains.includes("demagog.org.pl"))?.id;
+  assert(demagogId, "demagog.org.pl must be on the allowlist");
+  const review = rec("x", 1, "https://demagog.org.pl/wypowiedzi/x", "Fałsz: SMS o paczce nie pochodzi od Poczty Polskiej.", "factcheck");
+  // Like google-factcheck.ts: drops URLs not on ctx.config.trustedSources.
+  const gfc = (required: boolean): Connector => ({
+    id: required ? "google_factcheck" : "optional_aggregator",
+    label: "GFC",
+    required,
+    appliesTo: () => true,
+    unavailableReason: () => null,
+    search: (_q, ctx) =>
+      Promise.resolve(
+        [{ ...review, route: "google_factcheck" }].filter((r) => ctx.config.trustedSources.some((s) => r.url.includes(s.domains[0]))),
+      ),
+  });
+  const base = loadConfig({ get: () => undefined });
+  const live = applySourceControls(
+    { connectors: [gfc(true), gfc(false)], corpus: new IndexedCorpusStore([]), trustedSources: TRUSTED_SOURCES },
+    [`publisher:${demagogId}`],
+  );
+  // The API passes the shrunk allowlist in config, exactly as main.ts does.
+  const ctx: ConnectorContext = {
+    config: { ...base, trustedSources: live.trustedSources },
+    signal: new AbortController().signal,
+    corpus: live.corpus,
+  };
+  const r = await retrieve(claim, live.connectors, ctx);
+  assertEquals(r.routes.find((x) => x.route === "google_factcheck")?.status, "unavailable");
+  assertEquals(r.requiredFailure?.route, "google_factcheck");
+  // An optional route whose records were all filtered is not a failure: it simply found nothing usable.
+  assertEquals(r.routes.find((x) => x.route === "optional_aggregator")?.status, "no_hits");
+  assertEquals(r.records, []);
+});
+
+Deno.test("articlePicks: a switched-off fact-checker never takes an article slot", async () => {
+  const { articlePicks } = await import("../src/connectors/google-factcheck.ts");
+  const ap = (n: number) => rec("x", n, `https://apnews.com/article/${n}`, "AP fact check", "factcheck");
+  const demagog = rec("x", 9, "https://demagog.org.pl/wypowiedzi/9", "Demagog", "factcheck");
+  const records = [ap(1), ap(2), ap(3), demagog];
+  const off = (r: SourceRecord) => r.url.includes("apnews.com");
+  assertEquals(articlePicks(records, off).map((r) => r.url), [demagog.url]);
+  assert(articlePicks(records).length > 0 && articlePicks(records)[0].url.includes("apnews.com"));
+});

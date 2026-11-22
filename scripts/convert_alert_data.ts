@@ -1,10 +1,16 @@
+// Real HTML tags only: a literal "<" ("<50% normy", "<= 2025.12.5") must survive.
+// Real HTML only: a known element name, then whitespace, "/" or ">"; quoted attributes may hold
+// ">" but never a newline or "<". Plus comments and doctype. Literal text such as "<50% normy",
+// "<x+2 >", "<= 2025" or "<LOD i >LOQ" stays.
+const htmlTagPattern =
+  /<!--[\s\S]*?-->|<!doctype[^>]*>|<\/?(?:a|abbr|address|area|article|aside|audio|b|base|bdi|bdo|blockquote|body|br|button|canvas|caption|center|cite|code|col|colgroup|dd|del|details|dfn|dialog|div|dl|dt|em|embed|fieldset|figcaption|figure|font|footer|form|h[1-6]|head|header|hgroup|hr|html|i|iframe|img|input|ins|kbd|label|legend|li|link|main|map|mark|menu|meta|meter|nav|noscript|object|ol|optgroup|option|output|p|param|path|picture|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|source|span|strong|style|sub|summary|sup|svg|table|tbody|td|template|textarea|tfoot|th|thead|time|title|tr|track|u|ul|video|wbr)(?=[\s/>])(?:\s(?:[^<>"']|"[^"<\n]*"|'[^'<\n]*')*)?\/?>/gi;
 const base64Pattern = /(?:data:[^;]+;base64,[A-Za-z0-9+/=]+|[A-Za-z0-9+/]{80,}={0,2})/g;
 
 function cleanText(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const text = value
     .replace(base64Pattern, "")
-    .replace(/<[^>]+>/g, " ")
+    .replace(htmlTagPattern, " ")
     .replace(/\\u[a-fA-F0-9]{4}/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -246,7 +252,7 @@ for (const file of files) {
     const structured = content || summary ? null : structuredContent(record);
     // Titles are often short ("S6 - Wypadki", "Pomoc za granicą"); keep any real one instead of
     // letting the 20-character body-text threshold drop it (a citation without a title shows a hostname).
-    const rawTitle = typeof record.title === "string" ? record.title.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : "";
+    const rawTitle = typeof record.title === "string" ? record.title.replace(htmlTagPattern, " ").replace(/\s+/g, " ").trim() : "";
     const title = cleanText(record.title) ??
       (rawTitle && rawTitle !== "None" && /[\p{L}\p{N}]/u.test(rawTitle) ? rawTitle : null);
     if (!title && !content && !summary && !structured) continue;

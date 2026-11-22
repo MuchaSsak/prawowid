@@ -9,9 +9,9 @@
  * the state once at check start and passes the result into runCheck, so a change made mid-check
  * never mixes two states in one answer.
  */
-import type { Connector, SourceRecord } from "../connectors/types.ts";
+import { type Connector, ConnectorError, type SourceRecord } from "../connectors/types.ts";
 import type { CorpusStore } from "../store/types.ts";
-import { type TrustedSource, trustedSourceFor } from "./catalog.ts";
+import type { TrustedSource } from "./catalog.ts";
 
 export type SourceControlKind = "route" | "corpus" | "publisher";
 
@@ -35,6 +35,9 @@ export const EMPTY_SOURCE_CONTROLS: SourceControlState = { revision: 0, updated_
 export const SOURCE_CONTROL_AUDIT_MAX = 50;
 /** Route detail shown when an operator switched the route off. */
 export const SOURCE_DISABLED_DETAIL = "wyłączone przez administratora";
+
+/** Connector id of our own corpus route (connectors/corpus.ts). */
+export const CORPUS_ROUTE_ID = "corpus";
 
 export const sourceKey = (kind: SourceControlKind, id: string) => `${kind}:${id}`;
 
@@ -121,6 +124,30 @@ export function setSourceEnabled(
   };
 }
 
+/**
+ * The allowlist publisher a URL belongs to: the most specific domain wins, so isap.sejm.gov.pl is
+ * Sejm (sejm.gov.pl), not the gov.pl portal, whatever the catalog order.
+ */
+export function publisherOf(url: string, catalog: TrustedSource[]): TrustedSource | null {
+  let host: string;
+  try {
+    host = new URL(url).hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return null;
+  }
+  let best: TrustedSource | null = null;
+  let bestLength = 0;
+  for (const source of catalog) {
+    for (const d of source.domains) {
+      if ((host === d || host.endsWith(`.${d}`)) && d.length > bestLength) {
+        best = source;
+        bestLength = d.length;
+      }
+    }
+  }
+  return best;
+}
+
 type ViewableCorpus = CorpusStore & { view?: (exclude: (r: SourceRecord) => boolean) => CorpusStore };
 
 export interface ControlledSources {
@@ -141,18 +168,50 @@ export function applySourceControls(
 ): ControlledSources {
   const off = new Set(disabled);
   if (off.size === 0) return { ...base, allows: () => true };
-  const offPublishers = base.trustedSources.filter((s) => off.has(sourceKey("publisher", s.id)));
+  const anyPublisherOff = base.trustedSources.some((s) => off.has(sourceKey("publisher", s.id)));
+  // Publisher of each URL, resolved once against the whole catalog (most specific domain).
+  const publisherCache = new Map<string, string | null>();
+  const publisherIdOf = (url: string): string | null => {
+    if (!publisherCache.has(url)) publisherCache.set(url, publisherOf(url, base.trustedSources)?.id ?? null);
+    return publisherCache.get(url)!;
+  };
   const allows = (record: SourceRecord): boolean => {
     const collection = collectionOf(record);
     if (collection && off.has(sourceKey("corpus", collection))) return false;
-    return !offPublishers.length || trustedSourceFor(record.url, offPublishers) === null;
+    if (!anyPublisherOff) return true;
+    const id = publisherIdOf(record.url);
+    return !id || !off.has(sourceKey("publisher", id));
   };
-  const corpus: CorpusStore = base.corpus.view ? base.corpus.view((r) => !allows(r)) : filteredCorpus(base.corpus, allows);
+  // The corpus route switched off hides the corpus everywhere it is read (evidence and date lookup).
+  const corpusOff = off.has(sourceKey("route", CORPUS_ROUTE_ID));
+  const corpus: CorpusStore = corpusOff
+    ? EMPTY_CORPUS
+    : base.corpus.view
+    ? base.corpus.view((r) => !allows(r))
+    : filteredCorpus(base.corpus, allows);
   const connectors = base.connectors.map((c): Connector => {
     if (off.has(sourceKey("route", c.id))) {
       return { ...c, unavailableReason: () => SOURCE_DISABLED_DETAIL, search: () => Promise.resolve([]) };
     }
-    return { ...c, search: async (claim, ctx) => (await c.search(claim, ctx)).filter(allows) };
+    return {
+      ...c,
+      search: async (claim, ctx) => {
+        // The full catalog, so a connector that filters by the allowlist itself (Google Fact Check)
+        // still hands back records from switched-off publishers, and `allows` alone decides.
+        const found = await c.search(claim, {
+          ...ctx,
+          config: { ...ctx.config, trustedSources: base.trustedSources },
+          isSwitchedOff: (r) => !allows(r),
+        });
+        const kept = found.filter(allows);
+        // A required route whose every record is from switched-off publishers has not found
+        // "nothing": it is unavailable, so the claim gets a system state, never a verdict.
+        if (c.required && found.length > 0 && kept.length === 0) {
+          throw new ConnectorError("unavailable", SOURCE_DISABLED_DETAIL);
+        }
+        return kept;
+      },
+    };
   });
   return {
     connectors,
@@ -161,6 +220,13 @@ export function applySourceControls(
     allows,
   };
 }
+
+/** The corpus with the corpus route switched off: nothing to search, for any reader. */
+const EMPTY_CORPUS: CorpusStore = {
+  size: () => 0,
+  upsert: () => Promise.resolve(),
+  search: () => Promise.resolve([]),
+};
 
 /** Fallback for a corpus store without a cheap filtered view: over-fetch, then filter. */
 function filteredCorpus(corpus: CorpusStore, allows: (r: SourceRecord) => boolean): CorpusStore {

@@ -1,5 +1,6 @@
 import type { SourceRecord } from "../packages/core/src/connectors/types.ts";
 import { ARTICLE_LABEL } from "../packages/core/src/connectors/google-factcheck.ts";
+import { trustedSourceFor } from "../packages/core/src/sources/catalog.ts";
 // Passages of ~800 characters on sentence boundaries, one sentence of overlap (tested in core).
 import { passages } from "../packages/core/src/store/passages.ts";
 
@@ -66,11 +67,17 @@ const lines = (await Deno.readTextFile("data/corpus/alert-corpus.jsonl"))
   .split(/\r?\n/)
   .filter((line) => line.trim());
 const records: SourceRecord[] = [];
+const skippedByCollection = new Map<string, number>();
 const builtAt = new Date().toISOString();
 
 for (const line of lines) {
   const item = JSON.parse(line) as AlertLine;
   if (!item.url || !item.content) continue;
+  // Decision 008: evidence only from the allowlist. Never index a record whose URL is not on it.
+  if (!trustedSourceFor(item.url)) {
+    skippedByCollection.set(item.source, (skippedByCollection.get(item.source) ?? 0) + 1);
+    continue;
+  }
   const baseUrl = item.url;
   let publisher = item.publisher ?? publisherNames[item.source] ?? item.source;
   if (!item.publisher && !publisherNames[item.source]) {
@@ -134,4 +141,8 @@ await Deno.writeTextFile(
   "data/corpus/alert-corpus-index.json",
   JSON.stringify({ version: 1, generated_at: builtAt, records }),
 );
+if (skippedByCollection.size) {
+  console.warn("POMINIĘTO rekordy spoza listy zaufanych źródeł (decyzja 008), kolekcja: liczba");
+  for (const [source, count] of [...skippedByCollection].sort()) console.warn(`  ${source}: ${count}`);
+}
 console.log(`Zbudowano indeks ${records.length} fragmentów z ${lines.length} rekordów`);
