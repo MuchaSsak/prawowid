@@ -3,7 +3,8 @@ import "@fontsource-variable/inter-tight";
 import "../../styles/global.css";
 import "../../styles/admin.css";
 
-const apiUrl = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
+// Trailing slash stripped: "https://host/" + "/api/…" would hit "//api/…", a 404 (Vercel env, 2026-11-22).
+const apiUrl = (import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787").replace(/\/+$/, "");
 const ranges = [
   ["24h", "24 h"],
   ["7d", "7 dni"],

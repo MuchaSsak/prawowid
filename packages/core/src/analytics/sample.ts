@@ -24,6 +24,7 @@ type Topic = ClaimType | "opinion";
 const TOPIC_WEIGHT: Record<Topic, number> = {
   numeric: .24, legal: .17, event: .16, narrative: .14, official_statement: .1, parliamentary: .08, opinion: .11,
 };
+const TOPIC_ENTRIES = Object.entries(TOPIC_WEIGHT) as [Topic, number][];
 // Shares of each verdict per topic, plus "state" = a system state (source unavailable etc.).
 type Outcome = Verdict | "state";
 const PROFILE: Record<Topic, [Outcome, number][]> = {
@@ -122,7 +123,7 @@ export function sampleLogs(range: AnalyticsRange, now = new Date()): { checks: A
       const at = hour + Math.floor(r() * HOUR);
       if (at > end) continue;
       const narrativeRise = 1 + Math.max(0, 1 - (end - at) / (10 * DAY)) * 1.4;
-      const topicWeights = (Object.entries(TOPIC_WEIGHT) as [Topic, number][]).map(([t, w]): [Topic, number] => [
+      const topicWeights = TOPIC_ENTRIES.map(([t, w]): [Topic, number] => [
         t,
         w * (t === "event" && viral ? 5 : 1) * (t === "narrative" ? narrativeRise : 1),
       ]);

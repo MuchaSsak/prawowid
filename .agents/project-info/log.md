@@ -261,3 +261,11 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | clean (scope: hackathon/deliverables.md cost line; matches the sheet, no new links)
 ## [2026-11-22] update | Fact checker too eager to ask (user report): claim-extraction@6 (named subject + predicate always checkable, open questions only, joined clarification reply), case-insensitive claim spans, evidence-assessment@6 (same person ≠ same subject), web joins a reply to the clarified question; eval Q01-Q03; full run 0.71 / 89% / $0.189 per 100 / 8.2 s; cost sheet B12, C12, B18 + deliverables synced; prompts/*, product/response-contract.md, evaluation/benchmark.md, index
 ## [2026-11-22] lint | 2 findings: architecture/codebase.md and hackathon/compliance-matrix.md named claim-extraction@3 -> fixed to @6; links in changed pages resolve, skill parity untouched
+## [2026-11-22] update | deployed the static web app to Vercel project rocketplns-projects/prawdomat, verified HTTP 200 and Deno API CORS, left production env setup to the user
+## [2026-11-22] lint | 2 findings fixed: compliance matrix and bot runbook now refer to the current web deployment; routing, index, source citations and skill parity checked
+## [2026-11-22] update | Vercel CLI rejected GitHub connection for the frontend; recorded owner access and main-branch build fix requirements in architecture/codebase.md
+## [2026-11-22] lint | clean for Git integration update; routing, index, source citations and skill parity checked
+## [2026-11-22] update | admin panel: analytics missing on Vercel = trailing slash in PUBLIC_API_URL (now stripped at build, redeployed); lag = Intl.formatToParts per row in buildAnalytics (cached offset, ~3x faster) + sample report cache; architecture/codebase.md
+## [2026-11-22] lint | clean for admin speed and API URL update; routing, index, source citations, links and skill parity checked
+## [2026-11-22] update | web input hints are statements, not questions; example is the true claim on the 2025 minimum wage (4666 zł); architecture/codebase.md
+## [2026-11-22] lint | clean for input hint update; one-line change, links and index unaffected
