@@ -22,7 +22,7 @@ Format: `- [path](path): one-line summary`
 - [hackathon/deliverables.md](hackathon/deliverables.md): submission checklist
 - [hackathon/regulamin.md](hackathon/regulamin.md): prize 30k PLN, jury rules, copyright transfer to MSZ
 - [hackathon/resources.md](hackathon/resources.md): organizer resources, the Discord source list, mentors
-- [hackathon/compliance-matrix.md](hackathon/compliance-matrix.md): **every task requirement vs our design**: covered, risks and gaps (corpus archiving policy, eval set, deliverables)
+- [hackathon/compliance-matrix.md](hackathon/compliance-matrix.md): **task requirements and base-readiness audit**: live smoke tests, citation and channel gaps, corpus compliance, submission checklist
 - [hackathon/organizer-sample-answers.md](hackathon/organizer-sample-answers.md): **organizer sample questions and model answers for A-J** (Demagog via Google index as backbone, abstain with what source is needed, links in chat, screenshot dates, Odyseusz) and what we changed
 - [hackathon/event-and-jury.md](hackathon/event-and-jury.md): HackNation timeline and deadlines (draft Sat 20:00, final Sun 11:00), two-stage judging, past editions, mentors
 
@@ -50,7 +50,7 @@ Format: `- [path](path): one-line summary`
 - [architecture/euvsdisinfo-mcp.md](architecture/euvsdisinfo-mcp.md): EUvsDisinfo MCP: host mcp.euvsd.info, auth, stateless mode, tools cases/articles/search/narratives, data shape
 - [architecture/messaging-bot.md](architecture/messaging-bot.md): **the bot channel**: Discord + Messenger on the Vercel Chat SDK: Mermaid diagram, components, message flow, platforms, security and privacy, milestones and cut line, implementation status (M1 code in apps/bot, deployed as Vercel project prawdomat-bot), prototype findings
 - [architecture/messaging-bot-runbook.md](architecture/messaging-bot-runbook.md): bot setup checklists per platform, env vars, acceptance tests (A1-A11), demo-day steps, post-event shutdown
-- [architecture/api-reference.md](architecture/api-reference.md): **for channel builders**: every endpoint, header, request field, env var (incl. `MOCK_CLIENTS`), mock scenario, Deno Deploy setup, versioning rules
+- [architecture/api-reference.md](architecture/api-reference.md): **for channel builders**: every endpoint, header, request field, env var (incl. `MOCK_CLIENTS`), mock scenario, Deno Deploy setup, moderator DM setup, versioning rules
 - [architecture/extensibility.md](architecture/extensibility.md): **bonus: swappable channels, models and sources**: the seams (API, MODEL_<STEP>, `deps.connectors`, `deps.narrativeMatchers`), step-by-step recipes, the proving tests, swapping storage behind the route
 - [architecture/codebase.md](architecture/codebase.md): **what is built**: web production deployment, code layout, evidence routes (Google Fact Check, ELI, Eurostat, NBP, GUS), the number check, interim verdict choices, measured latency/cost, next steps
 - [architecture/web-performance.md](architecture/web-performance.md): Lighthouse scores before/after for every web page, why PageSpeed (no GPU) scored the old deploy 69 and the GPU verdict that fixes it, what changed and why (inlined CSS, poster preload, video/grain after load, WebGL backdrop in a worker, pinned and Polish-subset fonts, CLS/LCP fixes, SEO files), deliberate ceilings, how to re-check

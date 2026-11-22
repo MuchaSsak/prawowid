@@ -105,6 +105,14 @@ Pick a scenario (first match wins):
 ## Deno Deploy setup
 App directory `apps/api`, entrypoint `main.ts`, working directory empty, no build command. Production builds from GitHub `main`; every pushed branch commit also gets its own build at `https://prawowid-<build id>.mateusz.deno.net` (build id from the commit's `deploy/mateusz/prawowid` status; same env vars, live; seen 2026-11-22). Unpushed commits are not deployed. Set the env vars above in the app settings, and pick the EU region if offered. Storage is in memory per instance, so logs and the 5-min cache reset on redeploy or cold start until Supabase lands.
 
+## Moderator DMs
+
+The live check route can send a Discord DM after the check is saved. Set `MODERATOR_DISCORD_USER_ID` to the designated moderator's Discord ID and `DISCORD_BOT_TOKEN` in the **Deno API** environment. The Vercel bot's environment is separate. Verify that the designated account accepts a message from the bot before relying on delivery. Alerts are off when either setting is absent.
+
+A high-risk factual claim with insufficient evidence qualifies. Other unresolved factual claims qualify after a match in a distinct saved session, using normalized claim text and up to 200 recent checks from the past 24 hours. The message contains the reason and check ID. Discord delivery runs in the background and leaves the check response independent of delivery. KV suppresses concurrent duplicates and repeats for 24 hours after a successful send. A failed send can be tried again on a later eligible check after the 30-second lease expires. This is best-effort delivery without a durable retry queue. The response continues to use the existing escalation states.
+
+The implementation is local and the Discord requests have been tested against a stub. Live activation requires API deployment and configuration.
+
 ## Versioning rules
 - v1 changes are **additive only**: a new optional request field, a new response field, a new enum value. Clients must ignore unknown fields and treat an unknown `status`/`system_state`/warning `type` as a generic system message.
 - Breaking changes (removing or renaming a field, changing a type) need `/api/v2` and `contract_version: "2.0"`.

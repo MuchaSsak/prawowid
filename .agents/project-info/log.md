@@ -305,3 +305,7 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] update | opinion paraphrase guard in extract.ts (same span as an opinion, no number → dropped); prompts/claim-extraction.md
 ## [2026-11-22] update | branch full remote runs recorded (main 0.75-0.78, organizer 0.88 final, $0.27/100); cost sheet to update on merge; evaluation/benchmark.md
 ## [2026-11-22] update | edge-case swarm results; negated questions get no leading word; "planowany" is an announcement word; product/response-contract.md, evaluation/benchmark.md, decisions/016
+## [2026-11-22] update | Base task audited against the MSZ PDF, checkout 319d416 and live endpoints. See hackathon/compliance-matrix.md for evidence, channel consistency, corpus and submission gaps.
+## [2026-11-22] lint | Base-audit pages checked. Updated the stale web deployment and check-store notes, corrected the corpus archiving description, and removed the answered source-controls KV question. Routing, index, source references, links and skill parity checked.
+## [2026-11-22] update | Added locally tested, opt-in Discord moderator DMs to the API. Setup and delivery limits are in architecture/api-reference.md.
+## [2026-11-22] lint | Moderator DM setup and compliance status agree. Routing, index, source references, links and skill parity passed.
