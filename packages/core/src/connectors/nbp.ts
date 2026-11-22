@@ -169,7 +169,7 @@ export const nbp: Connector = {
         url: RATES_ARCHIVE,
         published_at: latest.period,
         text: lines.join("\n"),
-        data: { indicator: ind.key, unit: "%", kind: "percent", points: all, target_periods: [...new Set(target)] },
+        data: { indicator: ind.key, unit: "%", kind: "percent", points: all, target_periods: [...new Set(target)], exact: true },
       }];
     }
 
@@ -220,6 +220,6 @@ function record(
     url,
     published_at: points[points.length - 1].period,
     text: lines.join("\n"),
-    data: { indicator, unit, kind: "number", points, target_periods: targetPeriods(points, w) },
+    data: { indicator, unit, kind: "number", points, target_periods: targetPeriods(points, w), exact: true },
   };
 }

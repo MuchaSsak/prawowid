@@ -4,7 +4,7 @@ import { LIMITS } from "../config.ts";
 import type { SourceRecord } from "../connectors/types.ts";
 import { containsVerbatim } from "../guard/normalize.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
-import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v4.ts";
+import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v5.ts";
 import type { Stance } from "../types.ts";
 import { factcheckFields, isFactcheckCard, oppositePolarity, ratingStance } from "./factcheck.ts";
 
@@ -47,7 +47,7 @@ export interface AssessmentResult {
 }
 
 export async function assessClaim(args: {
-  claim: { text: string; time: string; place: string | null };
+  claim: { text: string; time: string; place: string | null; entities?: string[] };
   records: SourceRecord[];
   apiKey?: string;
   model: string;
@@ -102,7 +102,11 @@ export async function assessClaim(args: {
     // negation of the user's claim. Otherwise the card is context (abstain), never an inverted verdict.
     if (ok && isFactcheckCard(record) && DECISIVE.includes(verified.stance)) {
       const f = factcheckFields(record.text);
-      if (f.claimLine && f.ratingLine && containsVerbatim(f.claimLine, p.quote)) {
+      // Quoting the rating line itself with another stance ("Ocena: Częściowa prawda" read as supports,
+      // "Ocena: Fałsz" read as misleading): the rating's own stance applies.
+      const fromHeader = (f.claimLine && containsVerbatim(f.claimLine, p.quote)) ||
+        (f.ratingLine && containsVerbatim(f.ratingLine, p.quote) && f.rating && ratingStance(f.rating) !== verified.stance);
+      if (f.claimLine && f.ratingLine && fromHeader) {
         const fromRating = f.rating ? ratingStance(f.rating) : null;
         const statement = f.claimLine.replace(/^Sprawdzane twierdzenie:\s*/, "");
         if (!fromRating || oppositePolarity(args.claim.text, statement)) {
@@ -116,9 +120,54 @@ export async function assessClaim(args: {
         }
       }
     }
+    // Announced is not happened (evidence-assessment rule, enforced here because models skip it):
+    // a passage that only announces or schedules an event cannot confirm a claim that it took place.
+    // The quote, the text right around it and other chunks of the same document count: a notice says
+    // "X was announced for Monday. X is nationwide.", and the second sentence alone reads like support.
+    if (verified.stance === "supports" && !ANNOUNCED.test(args.claim.text)) {
+      const siblings = args.records.filter((r) => r !== record && r.url === record.url).map((r) => r.text).join("\n");
+      if (ANNOUNCED.test(around(record.text, verified.quote)) || ANNOUNCED.test(siblings)) verified.stance = "context";
+    }
+    // A local claim is decided only by a passage about that place: a refutation about another city
+    // never settles a claim about this one. Official data records (routed by country) and acts of
+    // law (national) are exempt, and so are country-wide places.
+    if (DECISIVE.includes(verified.stance) && !record.data && record.route !== "sejm_eli" && !aboutPlace(args.claim.place, record.text)) {
+      verified.stance = "context";
+    }
+    // A refutation or "misleading" reading must be about the claim's subject: a passage that names
+    // none of the claim's entities (another law, another product) cannot make it false.
+    if ((verified.stance === "refutes" || verified.stance === "misleading") && !record.data &&
+      !aboutSubject(args.claim.entities ?? [], record.text)) {
+      verified.stance = "context";
+    }
     return verified;
   });
   return { passages, assessment: data, usage, ratingOverrides };
 }
 
 const DECISIVE: Stance[] = ["supports", "refutes", "misleading"];
+const COUNTRY_WIDE = /^(polsk|pl$|rp$|rzeczpospolit|kraj|ue$|uni|europ|świat|swiat|internet)/i;
+const foldPl = (x: string) => x.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/ł/g, "l");
+/** True when the claim names no specific place, or the passage mentions it (5-letter stems absorb Polish case endings). */
+function aboutPlace(place: string | null | undefined, text: string): boolean {
+  const words = (place ?? "").split(/[^\p{L}]+/u).filter((w) => w.length >= 4 && !COUNTRY_WIDE.test(w));
+  if (!words.length || COUNTRY_WIDE.test((place ?? "").trim())) return true;
+  const t = foldPl(text);
+  return words.some((w) => t.includes(foldPl(w).slice(0, 5)));
+}
+
+/** True when the claim lists no usable entity, or the passage names one (5-letter stems of its longer words). */
+function aboutSubject(entities: string[], text: string): boolean {
+  const words = entities.flatMap((e) => e.split(/[^\p{L}\p{N}]+/u)).filter((w) => w.length >= 5 && !COUNTRY_WIDE.test(w));
+  if (!words.length) return true;
+  const t = foldPl(text);
+  return words.some((w) => t.includes(foldPl(w).slice(0, 5)));
+}
+
+/** The quote with up to 200 characters on each side (the quote alone when it is not found). */
+function around(text: string, quote: string): string {
+  const i = text.indexOf(quote);
+  return i < 0 ? quote : text.slice(Math.max(0, i - 200), i + quote.length + 200);
+}
+const ANNOUNCED =
+  /\b(?:zapowiedzia\p{L}*|zapowiada\p{L}*|zaplanowan\p{L}*|ma się odbyć|mają się odbyć|odbędzie się|odbędą się|announced|scheduled|will take place)/iu;

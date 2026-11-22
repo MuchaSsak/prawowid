@@ -1,9 +1,10 @@
 /**
  * Code-side number check for official data records (connectors with `data`). The model labels the
  * passage; this compares the claimed number with the official value for the claim's period and
- * only ever DOWNGRADES a stance that the numbers contradict (to "context"). It never upgrades a
- * stance: a different statistic with the same name (registered vs survey unemployment, CPI vs HICP)
- * must not turn into a confident "false" without the model's quoted reading.
+ * DOWNGRADES a stance that the numbers contradict (to "context"). It upgrades a stance only for an
+ * `exact` record (one official definition, e.g. an NBP mid rate on a date): a different statistic
+ * with the same name (registered vs survey unemployment, CPI vs HICP) must never turn into a
+ * confident verdict without the model's quoted reading.
  */
 import type { RecordData } from "../connectors/types.ts";
 import type { Warning } from "../types.ts";
@@ -42,14 +43,29 @@ export interface NumericGuardResult {
   warnings: Warning[];
   /** For the event log: what was downgraded and why. */
   downgrades: { source_id: string; from: string; match: NumberMatch }[];
+  /** Exact records only: background passages the number settled. */
+  upgrades: { source_id: string; to: string }[];
 }
 
 export function numericGuard(claimed: number | null, passages: VerifiedPassage[]): NumericGuardResult {
   const warnings: Warning[] = [];
   const downgrades: NumericGuardResult["downgrades"] = [];
+  const upgrades: NumericGuardResult["upgrades"] = [];
   const out = passages.map((p) => {
     const data = p.record.data;
-    if (!data || p.stance === "irrelevant" || p.stance === "context") return p;
+    if (!data || p.stance === "irrelevant") return p;
+    if (data.exact) {
+      // An exact record (one official definition): the value for the claim's period settles the
+      // number, whatever the model read (models call 4,2578 vs "4,26" a refutation).
+      const { match } = compareNumber(claimed, data);
+      const stance = match === "matches" ? "supports" : match === "differs" ? "refutes" : null;
+      const line = stance ? periodLine(p.record.text, data.target_periods) : null;
+      if (stance && line) {
+        if (stance !== p.stance) upgrades.push({ source_id: p.record.source_id, to: stance });
+        return { ...p, stance, quote: line } as VerifiedPassage;
+      }
+    }
+    if (p.stance === "context") return p;
     const { match, period } = compareNumber(claimed, data);
     let downgrade = false;
     // The number agrees with the official value, so a "refutes" reading is about something else.
@@ -64,5 +80,22 @@ export function numericGuard(claimed: number | null, passages: VerifiedPassage[]
     downgrades.push({ source_id: p.record.source_id, from: p.stance, match });
     return { ...p, stance: "context" as const };
   });
-  return { passages: out, warnings, downgrades };
+  // An exact record settled the number for the claim's period: no other passage can contradict a
+  // fixed official value for that date, so their decisive readings become context.
+  const settled = out.some((p) => p.record.data?.exact && (p.stance === "supports" || p.stance === "refutes"));
+  const final = settled
+    ? out.map((p) => {
+      if (p.record.data?.exact || !["supports", "refutes", "misleading"].includes(p.stance)) return p;
+      downgrades.push({ source_id: p.record.source_id, from: p.stance, match: "no_check" });
+      return { ...p, stance: "context" as const };
+    })
+    : out;
+  return { passages: final, warnings, downgrades, upgrades };
+}
+
+/** The record's line for the claim's period (a single target period only), quoted as the evidence. */
+function periodLine(text: string, periods: string[]): string | null {
+  if (periods.length !== 1) return null;
+  const lines = text.split("\n").filter((l) => l.includes(periods[0]));
+  return lines.length ? lines[lines.length - 1].trim() : null;
 }

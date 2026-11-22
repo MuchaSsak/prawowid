@@ -709,7 +709,7 @@ async function leadFor(input: string, stance: string, proposed: string, plain: s
       extraction: () => extraction([{ text: DEBT, span: "publiczny Przykładowa wynosi 276 proc. PKB" }]),
       assessment: assess({ Demagog: { stance, needle: "Ocena" } }, proposed, { plain_answer: plain, explanation: "Nie. Według Demagoga to fałsz." }),
     },
-    { googleFactCheck: () => factCheck("Demagog", stance === "supports" ? "Prawda" : "Fałsz", DEBT) },
+    { googleFactCheck: () => factCheck("Demagog", stance === "supports" ? "Prawda" : stance === "misleading" ? "Manipulacja" : "Fałsz", DEBT) },
   );
   try {
     const r = await runCheck(text(input), deps());

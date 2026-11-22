@@ -91,8 +91,12 @@ Deno.test("asked checker: a decisive corpus Demagog card answers 'Tak', never 'n
   assert(a.found);
   assertStringIncludes(a.lead, "Tak. Demagog sprawdził to twierdzenie i ocenił je jako „Fałsz”.");
   assert(!a.lead.includes("Nie znaleźliśmy"));
-  // An article passage alone is not a found verification card.
-  assertEquals(askedCheckerAnswer("Demagog", [{ ...passage, record: corpusArticle() }]).found, false);
+  // A decisive passage from that checker's own article also means it checked the claim (no rating to quote);
+  // a context-only passage does not.
+  const article = askedCheckerAnswer("Demagog", [{ ...passage, record: corpusArticle() }]);
+  assert(article.found);
+  assertStringIncludes(article.lead, "Tak. Demagog sprawdził to twierdzenie.");
+  assertEquals(askedCheckerAnswer("Demagog", [{ ...passage, stance: "context", record: corpusArticle() }]).found, false);
 });
 
 Deno.test("PII: a currency code before an amount is not an ID card; a real ID number still is", () => {
