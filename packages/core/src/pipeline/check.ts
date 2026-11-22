@@ -29,7 +29,7 @@ import {
   VERDICT_LABEL_PL,
   type Warning,
 } from "../types.ts";
-import { assessClaim } from "./assess.ts";
+import { assessClaim, type VerifiedPassage } from "./assess.ts";
 import { periodNote, referenceDate, resolveTime } from "./dates.ts";
 import { type ExtractedClaim, extractClaims, type Material } from "./extract.ts";
 import {
@@ -49,7 +49,7 @@ import {
   withAbsenceNote,
   withLead,
 } from "./render.ts";
-import { oppositePolarity } from "./factcheck.ts";
+import { negatedNear, oppositePolarity } from "./factcheck.ts";
 import { numericGuard } from "./numeric.ts";
 import { retrieve } from "./retrieve.ts";
 import { type ContextResult, findContextMatches, NARRATIVE_MATCHERS } from "../narratives/mod.ts";
@@ -110,6 +110,25 @@ function addContext(x: ClaimResult, known: ContextResult): ClaimResult {
 }
 
 /** Confirmed vs false/misleading: the two readings cannot both be right. */
+/** See the call site: reverse supports/refutes for a negated claim when that makes code and model agree. */
+function negationRepair(
+  claimText: string,
+  proposed: string,
+  first: ReturnType<typeof decideVerdict>,
+  passages: VerifiedPassage[],
+  optionalRouteMissing: boolean,
+): { d: ReturnType<typeof decideVerdict>; passages: VerifiedPassage[] } | null {
+  const negatedClaim = /(?<![\p{L}])(nie|nigdy|żaden|żadna|żadne|żadnego|żadnej|żadnych|brak)(?![\p{L}])/iu.test(claimText);
+  if (!negatedClaim || !opposite(first.verdict, proposed)) return null;
+  const decisive = passages.filter((p) => p.stance === "supports" || p.stance === "refutes");
+  if (!decisive.length || decisive.some((p) => negatedNear(claimText, p.quote) || p.ratingOverride || p.record.data)) return null;
+  const flippedPassages = passages.map((p): VerifiedPassage =>
+    p.stance === "supports" ? { ...p, stance: "refutes" } : p.stance === "refutes" ? { ...p, stance: "supports" } : p
+  );
+  const d = decideVerdict(flippedPassages, { optionalRouteMissing });
+  return d.verdict === proposed ? { d, passages: flippedPassages } : null;
+}
+
 const capitalize = (s: string) => s.charAt(0).toLocaleUpperCase("pl") + s.slice(1);
 
 /** The span with a denial right before it ("Nieprawda, że " + span) when the input has one. */
@@ -592,10 +611,19 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     const guard = numericGuard(c.claimed_value, assessed.passages);
     for (const g of guard.downgrades) event("number_check", { claim: c.id, ...g });
     for (const g of guard.upgrades) event("number_check", { claim: c.id, ...g, match: "exact_record" });
-    const d = decideVerdict(guard.passages, { optionalRouteMissing });
+    // Negation (NLI): for a claim with "nie", the model often labels passages against the positive
+    // statement ("Konstytucja została uchwalona w 1997" → supports) while its own verdict on the claim
+    // is right ("false"). When its verdict is the exact opposite of what the labels give and every
+    // decisive quote states the positive version, the labels are reversed; the result counts only if it
+    // then agrees with the model's verdict (2026-11-22, "Konstytucja RP nie została uchwalona w 1997 roku.").
+    const first = decideVerdict(guard.passages, { optionalRouteMissing });
+    const repaired = negationRepair(c.text, assessed.assessment.proposed_verdict, first, guard.passages, optionalRouteMissing);
+    if (repaired) event("negation_repaired", { claim: c.id, from: first.verdict, to: repaired.d.verdict });
+    const passages = repaired?.passages ?? guard.passages;
+    const d = repaired?.d ?? first;
     d.warnings.push(...guard.warnings);
     // Only passages the user sees as citations count; an old irrelevant hit is not "the material".
-    const archival = guard.passages
+    const archival = passages
       .filter((p) => p.stance !== "irrelevant")
       .map((p) => p.record.published_at)
       .filter((date): date is string => Boolean(date))
@@ -630,7 +658,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       } else if (d.verdict === "insufficient_evidence") {
         // The model read an announcement as proof and code made it context: keep the fact we have
         // (announced, by whom, when) instead of the generic "nothing found" template.
-        const announced = announcementExplanation(guard.passages);
+        const announced = announcementExplanation(passages);
         if (announced) {
           explanation = announced.explanation;
           missingOverride = announced.missing;
@@ -667,10 +695,10 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     if (flippedStatement) event("polarity_flipped", { claim: c.id, checked: d.verdict, shown: shownVerdict });
     explanation = c.asked_checker
       // "Did <checker> check X?": answer that question first; the verdict on X follows.
-      ? `${askedCheckerAnswer(c.asked_checker, guard.passages).lead} ${withLead(explanation, null)}`
+      ? `${askedCheckerAnswer(c.asked_checker, passages).lead} ${withLead(explanation, null)}`
       : withLead(explanation, lead);
     const order = new Map(d.decisive.map((p, i) => [p.record.source_id, i]));
-    const citations: Citation[] = guard.passages
+    const citations: Citation[] = passages
       .filter((p) => p.stance !== "irrelevant")
       .sort((a, b) => (order.get(a.record.source_id) ?? 99) - (order.get(b.record.source_id) ?? 99))
       .map((p) => ({

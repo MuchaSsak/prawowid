@@ -428,3 +428,57 @@ Deno.test({ ...T, name: "a quoted rating of a checked statement with the opposit
     assertEquals(r.passages[0].stance, "context");
   } finally { s.restore(); }
 } });
+
+Deno.test({ ...T, name: "negation (NLI): labels given against the positive statement are reversed when that matches the model's verdict", async fn() {
+  const run = async (claim: string, proposed: string, quoteText: string) => {
+    const s = stubFetch(
+      {
+        extraction: () => extraction([{ text: claim }]),
+        assessment: assess({ "Urząd Testowy": { stance: "supports", needle: "otwarto" } }, proposed),
+      },
+    );
+    const d = deps();
+    await d.corpus.upsert([{ ...OFFICIAL_NOTICE, source_id: "corpus:neg:1", url: "https://u.example/neg", text: quoteText }]);
+    try {
+      return (await runCheck({ input: { type: "text", value: claim }, channel: "web", session_id: `t-nli-${proposed}-${claim.length}` }, d)).claims[0];
+    } finally { s.restore(); }
+  };
+  // Negated claim, positive passage labelled "supports", model says false → false.
+  const c = await run("Most w Przykładowie nie został otwarty w 2025 roku.", "false", "Most w Przykładowie otwarto w 2025 roku po dwóch latach budowy.");
+  assertEquals(c.verdict, "false");
+  assertEquals(c.citations[0].stance, "refutes");
+  // A passage that itself says "nie" is not reversed: model and labels disagree → abstain.
+  const n = await run("Most w Przykładowie nie został otwarty w 2025 roku.", "false", "Most w Przykładowie nie został otwarty, otwarto go dopiero w 2026 roku.");
+  assertEquals(n.verdict, "insufficient_evidence");
+  // A positive claim is never touched.
+  const p = await run("Most w Przykładowie został otwarty w 2025 roku.", "false", "Most w Przykładowie otwarto w 2025 roku po dwóch latach budowy.");
+  assertEquals(p.verdict, "insufficient_evidence");
+} });
+
+Deno.test({ ...T, name: "negation (NLI): a clear rating the model applied the other way round to a denying claim is kept", async fn() {
+  const rec: SourceRecord = { ...card("Fałsz"), source_id: "gfc:x:inv", text: ['Sprawdzane twierdzenie: "Most w Przykładowie zamknięto na stałe."', "Ocena (Demagog): Fałsz."].join("\n") };
+  const run = async (stance: string) => {
+    const s = stubFetch({ assessment: assess({ Demagog: { stance, needle: "Ocena" } }, "confirmed") });
+    try {
+      return (await assessClaim({ claim: { text: "Mostu w Przykładowie nie zamknięto na stałe.", time: "unknown", place: null }, records: [rec], apiKey: "k", model: "m" })).passages[0].stance;
+    } finally { s.restore(); }
+  };
+  assertEquals(await run("supports"), "supports");
+  assertEquals(await run("refutes"), "context", "the rating copied as it stands for a denying claim stays context");
+} });
+
+Deno.test({ ...T, name: "negation (NLI): a passage stating the claim's words without its 'nie' refutes, never supports", async fn() {
+  const rec: SourceRecord = { ...card("Prawda"), source_id: "corpus:nli:2", tier: "media", publisher: "Gazeta Testowa", origin_key: "g:t",
+    text: "Od otwarcia mostu w Przykładowie w 2025 roku nikt nie zgłosił usterek." };
+  const run = async (claim: string, text = rec.text) => {
+    const s = stubFetch({ assessment: assess({ "Gazeta Testowa": { stance: "supports", needle: "otwarcia" } }, "confirmed") });
+    try {
+      return (await assessClaim({ claim: { text: claim, time: "unknown", place: null }, records: [{ ...rec, text }], apiKey: "k", model: "m" })).passages[0].stance;
+    } finally { s.restore(); }
+  };
+  assertEquals(await run("Mostu w Przykładowie nie otwarto w 2025 roku."), "refutes");
+  // The quote itself negates the claim's words: support stands.
+  assertEquals(await run("Mostu w Przykładowie nie otwarto w 2025 roku.", "Do otwarcia mostu w Przykładowie nie doszło w 2025 roku."), "supports");
+  // Only one claim word in the quote: no judgement, label stands.
+  assertEquals(await run("Nikt nie zginął w pożarze w Testowie.", "Od otwarcia mostu w Przykładowie w 2025 roku nikt nie zgłosił usterek."), "supports");
+} });

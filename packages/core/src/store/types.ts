@@ -47,6 +47,8 @@ export type CheckEventType =
   | "announced_passed"
   /** A negated statement was checked as the positive claim; the shown verdict was turned round. */
   | "polarity_flipped"
+  /** A negated claim: passage labels reversed because the model judged them against the positive statement. */
+  | "negation_repaired"
   | "extraction_escalated"
   /** Known-incident context shown next to a claim (EUvsDisinfo); never evidence. */
   | "context_match"

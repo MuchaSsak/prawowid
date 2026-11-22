@@ -7,7 +7,7 @@ import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
 import { eventDateIn } from "./dates.ts";
 import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v7.ts";
 import type { Stance } from "../types.ts";
-import { factcheckFields, isFactcheckCard, oppositePolarity, ratingStance } from "./factcheck.ts";
+import { factcheckFields, isFactcheckCard, isNegatedClaim, negatedNear, oppositePolarity, ratingStance } from "./factcheck.ts";
 
 export const Assessment = z.strictObject({
   passages: z.array(z.strictObject({
@@ -133,7 +133,14 @@ export async function assessClaim(args: {
       if (f.claimLine && f.ratingLine && fromHeader) {
         const fromRating = f.rating ? ratingStance(f.rating) : null;
         const statement = f.claimLine.replace(/^Sprawdzane twierdzenie:\s*/, "");
-        if (!fromRating || oppositePolarity(args.claim.text, statement)) {
+        const reversed = fromRating === "refutes" ? "supports" : fromRating === "supports" ? "refutes" : null;
+        const quotedRating = f.ratingLine && containsVerbatim(f.ratingLine, p.quote);
+        if (fromRating && oppositePolarity(args.claim.text, statement) && quotedRating && reversed && verified.stance === reversed) {
+          // Negation (NLI): the claim denies the checked statement and the model applied a clear rating the
+          // other way round, as the prompt asks ("mRNA nie zmieniają DNA" vs "Fałsz" on "…zmieniają DNA").
+          // Code agrees: keep the reversed stance, quote the rating line (2026-11-22).
+          verified.quote = f.ratingLine!;
+        } else if (!fromRating || oppositePolarity(args.claim.text, statement)) {
           verified.stance = "context";
         } else {
           ratingOverrides++;
@@ -170,6 +177,14 @@ export async function assessClaim(args: {
     if ((verified.stance === "refutes" || verified.stance === "misleading") && !record.data &&
       !aboutSubject(args.claim.entities ?? [], record.text)) {
       verified.stance = "context";
+    }
+    // Negation (NLI), code-enforced: a claim with "nie" is never supported by a passage stating the same
+    // words without it ("Konstytucja RP nie została uchwalona w 1997" vs "od uchwalenia Konstytucji RP w
+    // 1997 roku"): that passage contradicts it. Only when ≥ 2 claim words appear in the quote with no
+    // negation between them (negatedNear); otherwise the model's label stands (2026-11-22 live probe).
+    if (ok && verified.stance === "supports" && !record.data && !verified.ratingOverride &&
+      isNegatedClaim(args.claim.text) && !negatedNear(args.claim.text, verified.quote)) {
+      verified.stance = "refutes";
     }
     // Decision 016 (user, 2026-11-22): an official announcement of exactly this event, for a day that
     // has already passed, with no cancellation in the same document, supports a claim that it took place.
