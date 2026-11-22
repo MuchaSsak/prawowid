@@ -1,5 +1,5 @@
 # Cost sheet: keep it current, real numbers only
-The user's rule (2026-11-21): the cost sheet must always be up to date and hold real numbers. It is the deliverable "cost of 1,000 queries, channel maintenance cost, behaviour under load" ([deliverables.md](../hackathon/deliverables.md)) and is shown on `/admin/dokumenty` ([decision 011](../decisions/011-admin-analytics.md)).
+The user's rule (2026-11-21): the cost sheet must always be up to date and hold real numbers. It is one case of [documents-current.md](documents-current.md). It is the deliverable "cost of 1,000 queries, channel maintenance cost, behaviour under load" ([deliverables.md](../hackathon/deliverables.md)) and is shown on `/admin/dokumenty` ([decision 011](../decisions/011-admin-analytics.md)).
 
 **Where:** Google Sheet https://docs.google.com/spreadsheets/d/1D6go2MeyFnhprEzkjBkmr-XGPP7ujAMxQzEeebbAml0/edit?gid=2131606200, tab `Koszty`. Edit it in place with the Google Sheets connector (same file, same link). If the connector is missing, tell the user and ask; never make a new file or a local copy instead.
 
