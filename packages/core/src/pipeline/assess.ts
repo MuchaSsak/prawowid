@@ -6,7 +6,7 @@ import { containsVerbatim } from "../guard/normalize.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
 import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v4.ts";
 import type { Stance } from "../types.ts";
-import { factcheckFields, isFactcheckCard, ratingStance } from "./factcheck.ts";
+import { factcheckFields, isFactcheckCard, oppositePolarity, ratingStance } from "./factcheck.ts";
 
 export const Assessment = z.strictObject({
   passages: z.array(z.strictObject({
@@ -97,16 +97,23 @@ export async function assessClaim(args: {
       data_period: p.data_period,
     };
     // A fact-check's checked statement is the claim under review, not evidence. A decisive stance
-    // quoted only from it means the model read the statement instead of the rating: the rating decides.
+    // quoted only from it means the model read the statement instead of the rating: the rating decides,
+    // but only when it can be applied: a known rating, and a checked statement that is not the
+    // negation of the user's claim. Otherwise the card is context (abstain), never an inverted verdict.
     if (ok && isFactcheckCard(record) && DECISIVE.includes(verified.stance)) {
       const f = factcheckFields(record.text);
-      const fromRating = f.rating ? ratingStance(f.rating) : null;
-      if (f.claimLine && f.ratingLine && fromRating && containsVerbatim(f.claimLine, p.quote)) {
-        ratingOverrides++;
-        verified.stance = fromRating;
-        verified.quote = f.ratingLine;
-        verified.ratingOverride = true;
-        if (fromRating === "misleading" && !verified.difference) verified.difference = `ocena weryfikatora: ${f.rating}`;
+      if (f.claimLine && f.ratingLine && containsVerbatim(f.claimLine, p.quote)) {
+        const fromRating = f.rating ? ratingStance(f.rating) : null;
+        const statement = f.claimLine.replace(/^Sprawdzane twierdzenie:\s*/, "");
+        if (!fromRating || oppositePolarity(args.claim.text, statement)) {
+          verified.stance = "context";
+        } else {
+          ratingOverrides++;
+          verified.stance = fromRating;
+          verified.quote = f.ratingLine;
+          verified.ratingOverride = true;
+          if (fromRating === "misleading" && !verified.difference) verified.difference = `ocena weryfikatora: ${f.rating}`;
+        }
       }
     }
     return verified;

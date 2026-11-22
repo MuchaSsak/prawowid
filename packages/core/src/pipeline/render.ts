@@ -137,7 +137,7 @@ export function askedCheckerAnswer(asked: string, passages: VerifiedPassage[]): 
   }
   return {
     found: false,
-    lead: `Nie znaleźliśmy weryfikacji ${asked.trim()} na ten temat w indeksie Google Fact Check ani w naszym korpusie (to nie znaczy, że jej nie ma).`,
+    lead: `Nie znaleźliśmy weryfikacji ${asked.trim()} na ten temat w przeszukanych źródłach (to nie znaczy, że jej nie ma).`,
   };
 }
 

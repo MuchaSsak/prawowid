@@ -110,3 +110,69 @@ Deno.test("ratingStance: every Demagog label in the corpus gets a stance (or non
   ];
   for (const [rating, want] of cases) assertEquals(ratingStance(rating), want, rating);
 });
+
+// ── Final review (GPT Sol + Claude Opus) regressions ─────────────────────────
+import { assess as scriptedAssess, factCheck } from "./harness.ts";
+
+Deno.test({ ...T, name: "rating override: a card checking the NEGATION of the user's claim never inverts the verdict", async fn() {
+  const claim = "Szczepionki nie powodują autyzmu u dzieci.";
+  const s = stubFetch(
+    // The model (wrongly) quotes the checked statement as support.
+    { extraction: () => extraction([{ text: claim }]), assessment: scriptedAssess({ Demagog: { stance: "supports", needle: "Sprawdzane twierdzenie" } }, "confirmed") },
+    { googleFactCheck: () => factCheck("Demagog", "Fałsz", "Szczepionki powodują autyzm u dzieci.") },
+  );
+  try {
+    const r = await runCheck(text(claim), deps());
+    assert(r.claims[0].verdict !== "false", `inverted verdict: ${r.claims[0].verdict}`);
+    assert(r.claims[0].verdict !== "confirmed", "the checked statement must not be evidence");
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "rating override: the same claim rated Fałsz still becomes fałszywe (main Demagog case kept)", async fn() {
+  const s = stubFetch(
+    { extraction: () => extraction([{ text: CLAIM }]), assessment: scriptedAssess({ Demagog: { stance: "supports", needle: "Sprawdzane twierdzenie" } }, "confirmed") },
+    { googleFactCheck: () => factCheck("Demagog", "Fałsz", CLAIM) },
+  );
+  try {
+    const r = await runCheck(text(CLAIM), deps());
+    assertEquals(r.claims[0].verdict, "false");
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "rating override: an unrecognised rating never lets the checked statement confirm the claim", async fn() {
+  const s = stubFetch(
+    { extraction: () => extraction([{ text: CLAIM }]), assessment: scriptedAssess({ Demagog: { stance: "supports", needle: "Sprawdzane twierdzenie" } }, "confirmed") },
+    { googleFactCheck: () => factCheck("Demagog", "Nieweryfikowalne", CLAIM) },
+  );
+  try {
+    const r = await runCheck(text(CLAIM), deps());
+    assert(r.claims[0].verdict !== "confirmed", `got ${r.claims[0].verdict}`);
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "Google Fact Check: one query fails and the rest only finds an unlisted publisher → failure, not 'brak dowodów'", async fn() {
+  const s = stubFetch(
+    { extraction: () => extraction([{ text: CLAIM }]) },
+    {
+      googleFactCheck: (_q, lang) =>
+        lang === "pl" ? json({ error: "x" }, 503) : factCheck("Nieznany Portal", "False", CLAIM, "https://unlisted-portal.invalid/x"),
+    },
+  );
+  try {
+    const r = await runCheck(text(CLAIM), deps());
+    assertEquals(r.claims[0].verdict, null);
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test("ratingStance: 'Фейк' (й folds to и) refutes", async () => {
+  const { ratingStance } = await import("../src/pipeline/factcheck.ts");
+  assertEquals(ratingStance("Фейк"), "refutes");
+});

@@ -252,3 +252,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | clean: 012, codebase, evidence-assessment edited; links and index unaffected
 ## [2026-11-22] update | MVP re-check against the task PDF (user): web + deployed API live with keys, one live check ok (7.3 s); bot /health shows discord + messenger; logs still in memory; gaps unchanged (corpus 100/10, moderator notify, deliverables); hackathon/compliance-matrix.md
 ## [2026-11-22] lint | clean (scope: MVP rows of hackathon/compliance-matrix.md; anchor #language-policy resolves, index entry unchanged, routing and skill parity untouched)
+## [2026-11-22] update | final review of PR #17 (GPT Sol 6/10, Claude Opus 8/10 approve): rating override guarded by polarity + recognised rating (evidence-assessment), DNS resolver for fact-check article fetches, partial failures counted after the allowlist filter, robots group/escape fixes

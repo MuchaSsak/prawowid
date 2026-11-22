@@ -54,10 +54,8 @@ export const googleFactCheck: Connector = {
     // Some queries failed and the rest found nothing: that is not "no fact-check exists" (a required
     // route), so report the failure instead of letting the claim become "brak dowodów".
     const failed = settled.find((s): s is PromiseRejectedResult => s.status === "rejected");
-    const found = ok.reduce((n, { value }) => n + (value.claims?.length ?? 0), 0);
-    if (ok.length === 0 || (failed && found === 0)) {
-      throw failed?.reason instanceof ConnectorError ? failed.reason : new ConnectorError("error", "all queries failed");
-    }
+    const failure = () => failed?.reason instanceof ConnectorError ? failed.reason : new ConnectorError("error", "all queries failed");
+    if (ok.length === 0) throw failure();
 
     const retrieved = new Date().toISOString();
     const seen = new Set<string>();
@@ -94,7 +92,9 @@ export const googleFactCheck: Connector = {
         }
       }
     }
-    return enrichWithArticles(out, ctx.signal, ctx.isSwitchedOff);
+    // Counted after the allowlist filter: a hit from an unlisted publisher is not evidence either.
+    if (failed && out.length === 0) throw failure();
+    return enrichWithArticles(out, ctx.signal, ctx.isSwitchedOff, ctx.resolveHost);
   },
 };
 
@@ -117,12 +117,13 @@ async function enrichWithArticles(
   records: SourceRecord[],
   signal: AbortSignal | undefined,
   isSwitchedOff?: (r: SourceRecord) => boolean,
+  resolveHost?: (hostname: string) => Promise<string[]>,
 ): Promise<SourceRecord[]> {
   const picks = articlePicks(records, isSwitchedOff);
   await Promise.all(picks.map(async (r) => {
     try {
       const deadline = AbortSignal.timeout(LIMITS.factcheckArticleTimeoutMs);
-      const a = await fetchArticle(r.url, { signal: signal ? AbortSignal.any([signal, deadline]) : deadline });
+      const a = await fetchArticle(r.url, { resolveHost, signal: signal ? AbortSignal.any([signal, deadline]) : deadline });
       const excerpt = clipAtSentence(a.text, LIMITS.factcheckArticleChars);
       if (excerpt) r.text = `${r.text}\n${ARTICLE_LABEL}\n${excerpt}`;
     } catch {

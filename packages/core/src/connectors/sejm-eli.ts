@@ -87,11 +87,11 @@ export const sejmEli: Connector = {
     const ok = settled.filter((s): s is PromiseFulfilledResult<{ items?: EliAct[] }> => s.status === "fulfilled");
     // Some queries failed and the rest found nothing: report the failure (required route), not "no act".
     const failed = settled.find((s): s is PromiseRejectedResult => s.status === "rejected");
-    const found = ok.reduce((n, { value }) => n + (value.items?.length ?? 0), 0);
-    if (failed && (ok.length === 0 || found === 0)) {
-      const r = failed.reason;
-      throw r instanceof ConnectorError ? r : new ConnectorError("error", safeErrorMessage(r));
-    }
+    const failure = () => {
+      const r = failed!.reason;
+      return r instanceof ConnectorError ? r : new ConnectorError("error", safeErrorMessage(r));
+    };
+    if (failed && ok.length === 0) throw failure();
     const retrieved = new Date().toISOString();
     const seen = new Set<string>();
     const out: SourceRecord[] = [];
@@ -142,6 +142,8 @@ export const sejmEli: Connector = {
         });
       }
     }
+    // Counted after filtering: only acts we would cite count as "found".
+    if (failed && out.length === 0) throw failure();
     return out;
   },
 };
