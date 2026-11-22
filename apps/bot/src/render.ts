@@ -6,7 +6,8 @@
  *      warnings, and up to 3 "Sprawdź sam" links.
  *   4. Escalation, when recommended, says exactly "Rekomendujemy przekazanie do weryfikacji przez
  *      człowieka", never "przekazano".
- *   5. One limitations line ("nie wykrywamy deepfake'ów" for screenshots), then the footer.
+ *   5. One limitations line ("nie wykrywamy deepfake'ów" for screenshots), how long the check took
+ *      (live answers only), then the footer.
  * Claims that don't fit the platform limit are counted, never cut in half.
  *
  * Every string from the response goes through sanitizeText; the only links are https citation URLs
@@ -76,6 +77,23 @@ function footer(o: RenderOptions): string {
   return [web ? `Pełny wynik i opis metody: ${f.link(web)}` : null, PRIVACY_POINTER[o.surface]]
     .filter(Boolean)
     .join(" · ");
+}
+
+/**
+ * How long the API took to answer (`meta.latency_ms`), e.g. "Czas sprawdzenia: 8,4 s". Skipped for
+ * mock answers (synthetic, latency 0) and anything not a positive finite number.
+ */
+export function timeLine(res: CheckResponse): string | null {
+  const ms = res.meta.latency_ms;
+  if (isDemo(res) || typeof ms !== "number" || !Number.isFinite(ms) || ms <= 0) return null;
+  let t: string;
+  if (ms < 100) t = "mniej niż 0,1 s";
+  else if (ms < 60_000) t = `${(Math.round(ms / 100) / 10).toFixed(1).replace(".", ",")} s`;
+  else {
+    const s = Math.round(ms / 1000);
+    t = `${Math.floor(s / 60)} min${s % 60 ? ` ${s % 60} s` : ""}`;
+  }
+  return `⏱️ Czas sprawdzenia: ${t}`;
 }
 
 function isDemo(res: CheckResponse): boolean {
@@ -168,7 +186,7 @@ export function renderResponse(res: CheckResponse, o: RenderOptions): string {
     // An all-failed technical_error keeps its claims, each with a claim-level system state that says
     // what failed (e.g. a source without a key). Show those notices; never a claim with a verdict.
     const notices = known ? res.claims.filter((c) => c.verdict === null) : [];
-    const tail = footer(o);
+    const tail = [timeLine(res), footer(o)].filter((x): x is string => x !== null).join("\n\n");
     const shown = addClaims(head, notices, f, max - tail.length - 80);
     if (notices.length > shown) head.push(hiddenLine(notices.length - shown, o));
     return fit([...head, tail], max);
@@ -188,6 +206,8 @@ export function renderResponse(res: CheckResponse, o: RenderOptions): string {
   const tail: string[] = [];
   if (res.escalation.state === "recommended") tail.push(`👤 ${ESCALATION_TEXT}.`);
   tail.push(limitationsLine(res));
+  const time = timeLine(res);
+  if (time) tail.push(time);
   tail.push(footer(o));
 
   const blocks = [...head];
