@@ -61,6 +61,7 @@ export async function retrieve(
   routes.sort((a, b) => applicable.findIndex((c) => c.id === a.route) - applicable.findIndex((c) => c.id === b.route));
   const requiredFailure =
     routes.find((r) => r.required && (r.status === "unavailable" || r.status === "error" || r.status === "timeout")) ??
+    routes.find((r) => r.route === "corpus" && (r.status === "unavailable" || r.status === "error" || r.status === "timeout")) ??
       null;
   const unique = [...new Map(all.map((r) => [r.source_id, r])).values()];
   return { records: rank(claim, unique).slice(0, LIMITS.passagesPerClaim), routes, requiredFailure };

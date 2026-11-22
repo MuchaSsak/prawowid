@@ -70,6 +70,11 @@ export interface CheckStore {
 
 export interface CorpusStore {
   size(): number;
-  search(queries: string[], limit: number): Promise<SourceRecord[]>;
+  search(
+    queries: string[],
+    limit: number,
+    options?: { sources?: string[]; tiers?: string[]; dateFrom?: string; dateTo?: string },
+    signal?: AbortSignal,
+  ): Promise<SourceRecord[]>;
   upsert(records: SourceRecord[]): Promise<void>;
 }

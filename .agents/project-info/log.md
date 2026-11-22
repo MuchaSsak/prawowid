@@ -235,4 +235,8 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] update | /admin/analityka: export icon button (dropdown CSV or JSON of the current report, client-side, no API change)
 
 ## [2026-11-22] decision | Answers always in Polish (input and sources any language); dropped the answer-in-user-language idea (response-contract.md, codebase.md)
-- 2026-11-22: ocena danych z example/ (repo „dane”) pod korpus wektorowy → architecture/vector-db-integration-plan.md
+- 2026-11-22: ocena danych z example/ (repo „dane”) pod lokalny korpus BM25; stare wejście pgvector wektorowe zostało usunięte
+## [2026-11-22] ingest | Imported the current PavelSfk/Data JSON snapshot into local data/raw and copied collector provenance into tools/collector
+## [2026-11-22] lint | 0 structural findings: routing, index paths and skill parity are clean after the Data import
+## [2026-11-22] update | removed Python/pgvector corpus integration; added IndexedCorpusStore BM25, alert-data converter, local corpus index, archive policy and corpus-specific eval cases
+## [2026-11-22] lint | corpus migration pass

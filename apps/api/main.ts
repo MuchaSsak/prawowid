@@ -44,7 +44,7 @@ import {
   mockResponse,
   CONNECTORS,
   INDICATORS,
-  HttpCorpusStore,
+  IndexedCorpusStore,
   NARRATIVE_MATCHERS,
   publicCatalog,
   runCheck,
@@ -56,8 +56,8 @@ const config = loadConfig({ get: (k) => Deno.env.get(k) });
 // MVP check log survives restarts and instances until Supabase lands (decision 001).
 const store = new LoggingCheckStore(new MemoryCheckStore());
 const ADMIN_TOKEN = Deno.env.get("ADMIN_TOKEN") ?? "";
-const retrievalUrl = Deno.env.get("PRAWDOWID_RETRIEVAL_URL")?.trim() ?? "";
-const corpus = retrievalUrl ? new HttpCorpusStore(retrievalUrl) : new MemoryCorpusStore();
+const corpus = new IndexedCorpusStore();
+await corpus.loadIndex(new URL("../../data/corpus/alert-corpus-index.json", import.meta.url).pathname);
 const PORT = Number(Deno.env.get("PORT") ?? 8787);
 const MODE: "live" | "mock" = Deno.env.get("PRAWDOWID_MODE") === "mock" ? "mock" : "live";
 const MOCK_DELAY_MS = Number(Deno.env.get("MOCK_DELAY_MS") ?? 600);
@@ -172,7 +172,7 @@ app.get("/api/v1/health", (c) => {
     },
     models: config.models,
     storage: "memory (mock, lost on restart)",
-    corpus: retrievalUrl ? { configured: true, retrieval_url: retrievalUrl } : { configured: false },
+    corpus: corpus.indexStatus(),
   });
 });
 

@@ -48,6 +48,9 @@ export interface SourceRecord {
   text: string;
   /** Official data records only: the values, so code can check the claimed number. */
   data?: RecordData;
+  /** Literal offsets in the underlying stored text, when a chunk is indexed. */
+  start_offset?: number;
+  end_offset?: number;
 }
 
 export class ConnectorError extends Error {

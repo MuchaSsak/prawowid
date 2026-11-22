@@ -520,6 +520,18 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     for (const g of guard.downgrades) event("number_check", { claim: c.id, ...g });
     const d = decideVerdict(guard.passages, { optionalRouteMissing });
     d.warnings.push(...guard.warnings);
+    const archival = guard.passages
+      .map((p) => p.record.published_at)
+      .filter((date): date is string => Boolean(date))
+      .filter((date) => {
+        const published = Date.parse(date);
+        const now = Date.parse(today);
+        return Number.isFinite(published) && Number.isFinite(now) && now - published > 365 * 86_400_000;
+      });
+    if (archival.length) d.warnings.push({
+      type: "archival_material",
+      text: "Materiał pochodzi sprzed ponad roku; sprawdź, czy nadal opisuje aktualny stan.",
+    });
     const proposed = assessed.assessment.proposed_verdict;
     let explanation = assessed.assessment.explanation;
     let missingOverride: string | null = null;

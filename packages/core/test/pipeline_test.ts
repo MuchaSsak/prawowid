@@ -4,7 +4,7 @@
  * .agents/project-info/architecture/verification-pipeline.md. Synthetic data only (rule 16).
  */
 import { assert, assertEquals, assertExists } from "jsr:@std/assert@^1";
-import { CheckResponseSchema, type Connector, runCheck, type SourceRecord } from "../src/mod.ts";
+import { CheckResponseSchema, IndexedCorpusStore, type Connector, runCheck, type SourceRecord } from "../src/mod.ts";
 import { assess, deps, eliAct, extraction, factCheck, json, stubFetch, T } from "./harness.ts";
 
 const CLAIM = "Most w Przykładowie zamknięto na stałe w 2025 roku.";
@@ -295,6 +295,47 @@ Deno.test({ ...T, name: "circular corroboration: one media origin twice is not t
   try {
     const r = await runCheck(text(CLAIM), d);
     assertEquals(r.claims[0].verdict, "insufficient_evidence");
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "corpus: official record supports and archival warning is shown", async fn() {
+  const claim = "CERT Polska ostrzega przed krytycznymi podatnościami VMware.";
+  const s = stubFetch(
+    { extraction: () => extraction([{ text: claim }]), assessment: assess({ "CERT Polska": { stance: "supports", needle: "podatności" } }, "confirmed") },
+  );
+  const d = deps();
+  await d.corpus.upsert([{
+    source_id: "corpus:cert:1",
+    route: "corpus",
+    title: "Krytyczne podatności VMware",
+    publisher: "CERT Polska",
+    url: "https://cert.pl/alert",
+    published_at: "2024-01-10",
+    retrieved_at: "2026-11-21T00:00:00Z",
+    tier: "official",
+    origin_key: "cert:vmware",
+    text: "CERT Polska ostrzega przed krytycznymi podatnościami.",
+  }]);
+  try {
+    const r = await runCheck(text(claim), d);
+    assertEquals(r.claims[0].verdict, "confirmed");
+    assert(r.claims[0].citations.some((citation) => citation.source_id === "corpus:cert:1"));
+    assert(r.claims[0].warnings.some((warning) => warning.type === "archival_material"));
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "corpus: missing index is a system state, never an insufficient verdict", async fn() {
+  const s = stubFetch({ extraction: () => extraction([{ text: CLAIM }]) });
+  const d = deps();
+  d.corpus = new IndexedCorpusStore();
+  try {
+    const r = await runCheck(text(CLAIM), d);
+    assertEquals(r.claims[0].system_state, "source_unavailable");
+    assertEquals(r.claims[0].verdict, null);
   } finally {
     s.restore();
   }
