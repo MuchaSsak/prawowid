@@ -3,7 +3,7 @@ import { z } from "zod";
 import { LIMITS } from "../config.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
 import { containsVerbatim, foldTyping, normalizeForMatch } from "../guard/normalize.ts";
-import { claimExtractionSystem } from "../prompts/claim-extraction.v6.ts";
+import { claimExtractionSystem } from "../prompts/claim-extraction.v7.ts";
 import { CLAIM_TYPES } from "../types.ts";
 import { INDICATOR_KEYS } from "../connectors/stats-catalog.ts";
 

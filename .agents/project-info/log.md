@@ -298,3 +298,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] update | decision 016: short official pages (<= 4000 chars) read whole from their chunks (corpus pageOf + expandPages), cancellation only in a sentence about the claim's subject; decisions/016, architecture/codebase.md
 ## [2026-11-22] update | live after Spain refinements: 16/16 Spain/Italy answers as expected and stable; Vercel preview d6xv5u84o; new known gap 8 (subject guard vs "5G"/COVID-19, A02, pre-existing); evaluation/benchmark.md
 ## [2026-11-22] update | too_vague now gets the strong-model second extraction; claim spans ignore Polish letters (typed "odbyl" vs copied "odbył"); prompts/claim-extraction.md
+## [2026-11-22] update | claim-extraction@7 (events of a named kind in a named place checkable; casual typing read as meant); prompts/claim-extraction.md, prompts/README.md
