@@ -146,3 +146,6 @@ $RECYCLE.BIN/
 .claude/settings.local.json
 .claude/*.local.*
 CLAUDE.local.md
+
+# Raw benchmark dumps of the source-registry prototype runs (summaries stay in latest-registry-*.md)
+eval/results/registry-*.json
