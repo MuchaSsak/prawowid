@@ -59,6 +59,7 @@ import {
 import { type Decision, ipKey, RateLimiter, waitText } from "./rate-limit.ts";
 import { openCheckStore } from "./check-store.ts";
 import { openSourceControlStore } from "./source-controls.ts";
+import { createModeratorNotifier } from "./moderator-alert.ts";
 
 const config = loadConfig({ get: (k) => Deno.env.get(k) });
 // Every saved check also becomes one JSON audit line in the host's log (no question text), so the
@@ -66,6 +67,7 @@ const config = loadConfig({ get: (k) => Deno.env.get(k) });
 // admin analytics read live in Deno KV when the runtime has it (shared by every instance), else memory.
 const checkLog = await openCheckStore();
 const store = new LoggingCheckStore(checkLog);
+const notifyModerator = createModeratorNotifier((key) => Deno.env.get(key), store, sha256);
 const ADMIN_TOKEN = Deno.env.get("ADMIN_TOKEN") ?? "";
 const corpus = new IndexedCorpusStore();
 await corpus.loadIndex(new URL("../../data/corpus/alert-corpus-index.json", import.meta.url));
@@ -319,16 +321,16 @@ app.post(
     } catch {
       return c.json(systemOnly("technical_error", "Chwilowy problem z usługą", "Nie mogliśmy wczytać listy źródeł. Spróbuj ponownie za chwilę."), 503);
     }
-    return c.json(
-      await runCheck({ ...body, channel }, {
-        config: { ...config, trustedSources: live.trustedSources },
-        store,
-        corpus: live.corpus,
-        connectors: live.connectors,
-        resolveHost,
-        cacheScope: live.state.revision ? `sources:${live.state.revision}` : undefined,
-      }),
-    );
+    const result = await runCheck({ ...body, channel }, {
+      config: { ...config, trustedSources: live.trustedSources },
+      store,
+      corpus: live.corpus,
+      connectors: live.connectors,
+      resolveHost,
+      cacheScope: live.state.revision ? `sources:${live.state.revision}` : undefined,
+    });
+    notifyModerator(result);
+    return c.json(result);
   },
 );
 

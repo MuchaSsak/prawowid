@@ -3,7 +3,6 @@
 Things we don't know yet. When one is answered, put the answer in the owning page and delete the entry here.
 Format: `- [topic/page or folder] question (raised YYYY-MM-DD, by whom)`
 
-- [decisions/013-source-controls.md] Does the Deno Deploy app `prawowid` have a KV database attached? Without it source switches and the check log behind admin analytics stay in memory per instance (health shows `source_controls: "memory"`, the analytics page shows an ⓘ popover). Check after the next deploy. (raised 2026-11-22, agent)
 - [architecture/codebase.md] The corpus search returns several fragments of the same document (e.g. three CERT fragments of one SMS warning) as separate hits; dedup by document before the 5-passage cut? (raised 2026-11-22, agent)
 
 - [team/] Who is on the team, what are their skills, and in which roles? What is the team name? (raised 2026-11-21, setup)
