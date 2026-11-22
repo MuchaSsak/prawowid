@@ -220,6 +220,16 @@ Deno.test("CORS: allowed origin echoed, unknown origin not allowed, bot headers 
   assert((ok.headers.get("access-control-allow-headers") ?? "").toLowerCase().includes("x-client-key"));
   const bad = await pre("https://evil.example");
   assert(bad.headers.get("access-control-allow-origin") !== "https://evil.example");
+  // The web project's Vercel previews (team scope suffix) are allowed; look-alikes are not.
+  for (const o of ["https://prawdomat-abc123-rocketplns-projects.vercel.app", "https://prawdomat-git-fix-x-rocketplns-projects.vercel.app"]) {
+    assertEquals((await pre(o)).headers.get("access-control-allow-origin"), o);
+  }
+  for (const o of [
+    "https://prawdomat-x-rocketplns-projects.vercel.app.evil.example",
+    "https://evil-prawdomat-x-rocketplns-projects.vercel.app",
+    "https://prawdomat-x-other-team.vercel.app",
+    "http://prawdomat-x-rocketplns-projects.vercel.app",
+  ]) assert((await pre(o)).headers.get("access-control-allow-origin") !== o, o);
 });
 
 Deno.test("DELETE /api/v1/session/:id", async () => {
