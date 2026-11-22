@@ -134,7 +134,10 @@ export function initAnalytics() {
     notice.hidden = false;
   }
 
+  let current: AnalyticsReport | null = null;
+
   function render(r: AnalyticsReport) {
+    current = r;
     content.classList.remove("is-loading");
     // Replay the short staggered entry on every new report (first load, range or sample switch).
     content.classList.remove("is-entering");
@@ -298,6 +301,23 @@ export function initAnalytics() {
     gateForm.reset();
     load();
   });
+  const exportMenu = $<HTMLDetailsElement>("export");
+  for (const b of exportMenu.querySelectorAll<HTMLButtonElement>("[data-export]")) {
+    b.addEventListener("click", () => {
+      exportMenu.open = false;
+      if (!current) return showNotice("Brak danych do eksportu.");
+      const kind = b.dataset.export as "csv" | "json";
+      const name = `prawdomat-analityka-${current.range}${current.sample ? "-przyklad" : ""}-${current.generated_at.slice(0, 10)}.${kind}`;
+      if (kind === "json") download(name, JSON.stringify(current, null, 2), "application/json");
+      else download(name, "﻿" + toCsv(current), "text/csv;charset=utf-8");
+    });
+  }
+  document.addEventListener("click", (e) => {
+    if (exportMenu.open && !exportMenu.contains(e.target as Node)) exportMenu.open = false;
+  });
+  exportMenu.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") exportMenu.open = false;
+  });
   $("gate-sample").addEventListener("click", () => setSample(true));
   logout.addEventListener("click", () => {
     token = null;
@@ -323,6 +343,31 @@ function sliceLabels(r: AnalyticsReport): string[] {
     const da = day.format(a), db = day.format(b - 1);
     return da === db ? da : `${da} – ${db}`;
   });
+}
+
+function download(name: string, body: string, type: string) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([body], { type }));
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/** One CSV file, sections separated by a blank line (Excel-friendly: BOM added by the caller, `;` separator). */
+function toCsv(r: AnalyticsReport): string {
+  const cell = (v: unknown) => {
+    const s = v === null || v === undefined ? "" : String(v);
+    return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const rows = (head: string[], body: unknown[][]) => [head, ...body].map((row) => row.map(cell).join(";")).join("\r\n");
+  const days = ["pon", "wt", "śr", "czw", "pt", "sob", "nd"];
+  return [
+    rows(["zakres", "od", "wygenerowano", "przykładowe"], [[r.range, r.from, r.generated_at, r.sample ? "tak" : "nie"]]),
+    rows(["wskaźnik", "wartość", "poprzednio"], Object.entries(r.kpis).map(([k, v]) => [k, v.value, v.prev])),
+    rows(["okres", "klucz", "sprawdzenia", "zdania", "niepełny"], r.volume.map((v) => [v.label, v.key, v.checks, v.claims, v.partial ? "tak" : ""])),
+    rows(["twierdzenie", "werdykt", "sprawdzenia", "poprzednio", "zmiana"], r.top_claims.map((c) => [c.text, c.verdict ?? "", c.count, c.prev, c.growth ?? ""])),
+    rows(["dzień", ...Array.from({ length: 24 }, (_, h) => `${h}:00`)], r.heatmap.map((row, i) => [days[i], ...row])),
+  ].join("\r\n\r\n");
 }
 
 const MONTHS = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];

@@ -2,13 +2,10 @@
 The response types (verdicts, system states, warnings, escalation), the answer language and tone, and the JSON shape every channel renders. **Contract v1 is decided and frozen ([decision 006](../decisions/006-api-contract-v1-and-mock.md)); it is implemented in `packages/core/src/types.ts` + `contract.ts`.** Endpoints, headers and mock mode: [architecture/api-reference.md](../architecture/api-reference.md). Verdict logic: [architecture/verification-pipeline.md](../architecture/verification-pipeline.md). Prompts: [prompts/](../prompts/README.md).
 
 ## Language policy
-The brief makes **"odpowiedź po polsku, prostym i zrozumiałym językiem"** an MVP requirement, lists "multilingual search with an answer in Polish" as a bonus, and allows new languages in the pilot only "after regression validation" (source: sources/2026-11-21-msz-pelna-tresc-zadania.pdf, sec. 3 and 9). So (Idea, the team asked for multilingual answers, user 2026-11-21):
-- **The answer language follows the user, not the material.** A Polish user who pastes a Russian article or an English screenshot gets a Polish answer. That is exactly the bonus feature.
-- **Polish is the default** whenever the user hasn't written anything of their own (a bare URL, image or pasted article) or the language can't be detected confidently.
-- **Switch to another language only when** the user's own message (`user_message`) is clearly in it, or the user picked it in the UI. Detection runs in code (e.g. a language-ID library), not inside the model.
-- Demo languages: **pl** (validated), **en** and **uk** (marked "experimental" in the UI; Ukrainian matters for refugees living in Poland). Other languages get the answer in Polish with a short note.
-- The verdict label stays canonical: in en/uk, show the translation with the Polish label alongside it, e.g. "False (fałszywe)", so the web and the second channel stay comparable (scenario G).
-- Templates (labels, system messages, warnings) are translated files in code. Only `explanation`, `missing`, `why_not_verifiable` and `clarification_question` come from the model in `{{answer_language}}`.
+The brief makes **"odpowiedź po polsku, prostym i zrozumiałym językiem"** an MVP requirement, lists "multilingual search with an answer in Polish" as a bonus, and allows new languages in the pilot only "after regression validation" (source: sources/2026-11-21-msz-pelna-tresc-zadania.pdf, sec. 3 and 9). So (Fact, user 2026-11-22, per the brief):
+- **The answer is always in Polish.** Input and sources may be in any language (a Russian article, an English screenshot, a Ukrainian post); that is the multilingual bonus. The output language never changes.
+- No language detection, no language picker, no en/uk answers. This replaces the earlier idea (2026-11-21) of answering in the user's language.
+- Code enforces it: `answer_language` is `z.literal("pl")` in `packages/core/src/contract.ts`, and every prompt is called with `"Polish"`. `{{answer_language}}` stays as a prompt placeholder, always filled with Polish.
 
 ## Response types
 **A. Verdicts (per claim, exactly one of five; never anything else):**

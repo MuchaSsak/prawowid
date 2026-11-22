@@ -84,6 +84,15 @@ const ranges = [
             <button type="button" id="refresh" class="icon-btn" aria-label="Odśwież">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" /></svg>
             </button>
+            <details id="export" class="export-menu">
+              <summary class="icon-btn" aria-label="Eksportuj dane" title="Eksportuj dane">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16" /></svg>
+              </summary>
+              <div class="export-list" role="menu">
+                <button type="button" role="menuitem" data-export="csv">Pobierz CSV</button>
+                <button type="button" role="menuitem" data-export="json">Pobierz JSON</button>
+              </div>
+            </details>
           </div>
         </header>
 

@@ -39,6 +39,12 @@ body.admin.has-test-bar { padding-top: 32px; }
 .switch[aria-checked="true"] .switch-thumb { transform: translateX(14px); }
 .icon-btn { display: inline-grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 50%; background: var(--page); color: var(--ink-2); cursor: pointer; }
 .icon-btn:hover { color: var(--ink); }
+.export-menu { position: relative; }
+.export-menu > summary { list-style: none; }
+.export-menu > summary::-webkit-details-marker { display: none; }
+.export-list { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; display: grid; min-width: 11rem; padding: 6px; border: 1px solid var(--line); border-radius: 14px; background: var(--page); box-shadow: 0 8px 24px rgb(0 0 0 / .08); }
+.export-list button { padding: 8px 12px; border: 0; border-radius: 8px; background: none; color: var(--ink); font: inherit; font-size: .9375rem; text-align: left; cursor: pointer; }
+.export-list button:hover, .export-list button:focus-visible { background: var(--line); }
 .icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .notice { margin: 0 0 16px; padding: 10px 14px; border-left: 3px solid var(--state-line); background: var(--page); border-radius: 0 10px 10px 0; font-size: .9375rem; color: var(--ink-2); }
 

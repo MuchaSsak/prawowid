@@ -216,3 +216,8 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-21] lint | clean (scope: web-performance, codebase web row, ui-conventions, index; links resolve except the intentional index format example; no OGL mentions left outside the log; routing and skill parity unchanged)
 ## [2026-11-21] update | web: PageSpeed Insights (no GPU, SwiftShader) scored the pre-perf deploy 69 / TBT 38 s; backdrop now reports a GPU verdict and, without a GPU, the hero video and grain stay off (poster as still); PSI-like local run 99-100 / TBT 0; architecture/web-performance.md and index updated
 ## [2026-11-21] lint | clean (scope: web-performance.md PageSpeed section, index line; links resolve, routing and skill parity unchanged)
+
+## [2026-11-22] update | /admin/analityka: export icon button (dropdown CSV or JSON of the current report, client-side, no API change)
+
+## [2026-11-22] decision | Answers always in Polish (input and sources any language); dropped the answer-in-user-language idea (response-contract.md, codebase.md)
+- 2026-11-22: ocena danych z example/ (repo „dane”) pod korpus wektorowy → architecture/vector-db-integration-plan.md

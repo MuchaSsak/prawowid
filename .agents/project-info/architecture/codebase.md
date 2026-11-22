@@ -55,7 +55,7 @@ A text message that contains a link: the first link is also fetched through the 
 - **Inconsistent assessment guard** (pipeline §4): when the passage labels lead code to `confirmed` but the model's own proposed verdict is `false`/`misleading` (or the reverse), the claim abstains.
 - **A lone "misleading" reading does not override a refutation backed by more independent origins** (found by the benchmark: one misleading passage beat three fact-check refutations).
 - Fact-claim cap = **8** (prompt), not 12 (pipeline).
-- Answers are Polish only for now; en/uk are not wired yet.
+- Answers are always Polish, by design ([language policy](../product/response-contract.md#language-policy)).
 - Private names are not masked yet (no local recognizer); disclosed in limitations.
 
 ## Measured (smoke runs, 2026-11-21, synthetic inputs)

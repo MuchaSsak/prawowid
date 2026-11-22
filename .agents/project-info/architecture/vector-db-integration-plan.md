@@ -76,3 +76,13 @@ Przegląd kodu po commicie `2e32f15` (Fakt = sprawdzone w repo).
 5. **Polityka korpusu** (Fakt): pełne teksty z `license_status: conditional` bez spisanej podstawy prawnej i retencji: pozycja ❌ w compliance-matrix.
 6. **Ewaluacja** (Fakt): brak przypadków w `eval/` zależnych od korpusu i brak porównania keyword vs vector; próg `0.82` dla `multilingual-e5-small` nie był strojony.
 7. **Odświeżanie** (Idea): jednorazowy snapshot z `retrieved_at` wystarczy na hackathon; codzienny re-ingest RSS później.
+
+## Ocena repo „dane” w `example/` (2026-11-22)
+
+Fakt (policzone po treści; nazwy plików w `example/` są przesunięte względem zawartości, np. `gddkia_map.json` zawiera Demagog): 10 109 rekordów z 31 kolektorów, ~30 mln znaków, wspólny model `Record` (source, url, external_id, title, published_at, content, raw).
+
+- Wymóg korpusu (≥100 dok., ≥10 domen, ≥2 typy) jest spełniony: oficjalne (gov.pl: RCB, MSWiA, KPRM, GIS, MON, PAA, KG PSP; cert.pl, policja.pl, odyseusz, IMGW, GDDKiA) + wtórne (Demagog).
+- Demagog to 3 545 rekordów i ~75% znaków (pełne artykuły). Robots.txt Demagogu zabrania botów AI ([data-sources-research](data-sources-research.md)); pełne teksty to ryzyko licencyjne. Do korpusu tylko tytuł, ocena ClaimReview, krótki fragment i link, jako trasa fact-check, nie `official`.
+- Do odrzucenia z wektorów (dane strukturalne/efemeryczne, <200 znaków): `gddkia_map`, `gddkia_obstacles`, `paa_monitoring`, `ums_navigation`, `rso_mazowieckie`.
+- Daty w różnych formatach (`01.06.2026`, `Sat, 21 Nov`), część to zakresy listy, nie data publikacji: trzeba znormalizować do ISO przed ingestem.
+- Luki tematyczne: brak zdrowia (poza GIS), gospodarki/GUS, prawa (ELI), UE, wojny/Rosji (EUvsDisinfo osobno).
