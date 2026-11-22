@@ -10,14 +10,20 @@ export function normalizeForMatch(text: string): string {
     .trim();
 }
 
+/** What a person may type differently from the model's copy: case and Polish letters ("odbyl" vs "odbył"). */
+export function foldTyping(text: string): string {
+  return normalizeForMatch(text).toLocaleLowerCase("pl").normalize("NFD").replace(/\p{M}+/gu, "").replace(/ł/g, "l").normalize("NFC");
+}
+
 /**
  * True when `needle` occurs verbatim in `haystack` after normalization. `ignoreCase` is only for
- * claim spans copied from what a person typed (people write "robert lewandowski", the model copies
- * "Robert Lewandowski") and may lack the final full stop or question mark the model adds; quotes
- * from sources stay exact.
+ * claim spans copied from what a person typed (people write "robert lewandowski" or "czy w hiszpanii
+ * odbyl sie strajk", the model copies "Robert Lewandowski" or "odbył się") and may lack the final
+ * full stop or question mark the model adds: case and Polish letters are ignored. Quotes from
+ * sources stay exact.
  */
 export function containsVerbatim(haystack: string, needle: string, opts: { ignoreCase?: boolean } = {}): boolean {
-  const norm = (s: string) => (opts.ignoreCase ? normalizeForMatch(s).toLocaleLowerCase("pl") : normalizeForMatch(s));
+  const norm = (s: string) => (opts.ignoreCase ? foldTyping(s) : normalizeForMatch(s));
   const n = opts.ignoreCase ? norm(needle).replace(/[.!?]+$/, "").trimEnd() : norm(needle);
   if (n.length < 3) return false;
   const h = norm(haystack);

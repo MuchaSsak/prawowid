@@ -74,6 +74,9 @@ export class MemoryCorpusStore implements CorpusStore {
     this.records = [...byId.values()];
     return Promise.resolve();
   }
+  pageOf(url: string): SourceRecord[] {
+    return this.records.filter((r) => r.url === url).sort((a, b) => (a.start_offset ?? 0) - (b.start_offset ?? 0));
+  }
   search(queries: string[], limit: number) {
     const q = new Set(queries.flatMap(tokens));
     const scored = this.records

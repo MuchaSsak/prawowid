@@ -14,8 +14,8 @@ import { isMediaType, mediaInputError } from "../intake/media.ts";
 import { transcribeRecording, transcriptToMaterial } from "../intake/recording.ts";
 import { fetchArticle, IntakeError, type ResolveHost } from "../intake/url.ts";
 import { LlmError, type LlmUsage } from "../llm/openrouter.ts";
-import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v6.ts";
-import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v6.ts";
+import { CLAIM_EXTRACTION_ID } from "../prompts/claim-extraction.v7.ts";
+import { EVIDENCE_ASSESSMENT_ID } from "../prompts/evidence-assessment.v7.ts";
 import type { CheckEventRow, CheckStore, CorpusStore } from "../store/types.ts";
 import {
   type CheckRequest,
@@ -33,6 +33,8 @@ import { assessClaim } from "./assess.ts";
 import { periodNote, referenceDate, resolveTime } from "./dates.ts";
 import { type ExtractedClaim, extractClaims, type Material } from "./extract.ts";
 import {
+  announcedPassedExplanation,
+  announcementExplanation,
   askedCheckerAnswer,
   factcheckExplanation,
   plainFromVerdict,
@@ -383,13 +385,15 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     });
     usages.push(extracted.usage);
     prompts.add(CLAIM_EXTRACTION_ID);
-    // No fact at all ("opinion only", "joke or nonsense") is where the small model errs: it files
-    // conspiracy-style factual claims as opinions. The stronger model checks that call once; its
-    // answer wins only when it finds a fact claim. Costs one extra call on opinion-only inputs.
+    // No fact at all ("opinion only", "joke or nonsense", "too vague") is where the small model errs:
+    // it files conspiracy-style factual claims as opinions, and asks "which strike?" about a named
+    // place and event typed without Polish letters ("czy w hiszpanii odbyl sie strajk", 2026-11-22).
+    // The stronger model checks that call once; its answer wins only when it finds a fact claim.
+    // Costs one extra call on such inputs; a genuinely vague one still gets the clarification question.
     const strong = deps.config.models.evidence_assessment;
     const kind = extracted.extraction.input_kind;
     const hasFact = extracted.extraction.claims.some((x) => x.class === "fact");
-    if (!hasFact && (kind === "opinion_only" || kind === "joke_or_nonsense") && strong !== deps.config.models.claim_extraction) {
+    if (!hasFact && (kind === "opinion_only" || kind === "joke_or_nonsense" || kind === "too_vague") && strong !== deps.config.models.claim_extraction) {
       try {
         const second = await extractClaims({
           material, userMessage, today, publishedAt: response.input.published_at,
@@ -542,6 +546,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       assessed = await assessClaim({
         claim: { text: c.text, time: resolved.time, place: c.place, entities: c.entities },
         records: r.records,
+        referenceDate: ref.date,
         apiKey: deps.config.secrets.openrouterApiKey,
         model: deps.config.models.evidence_assessment,
         fallbackModel: deps.config.models.claim_extraction,
@@ -567,7 +572,9 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     for (const g of guard.upgrades) event("number_check", { claim: c.id, ...g, match: "exact_record" });
     const d = decideVerdict(guard.passages, { optionalRouteMissing });
     d.warnings.push(...guard.warnings);
+    // Only passages the user sees as citations count; an old irrelevant hit is not "the material".
     const archival = guard.passages
+      .filter((p) => p.stance !== "irrelevant")
       .map((p) => p.record.published_at)
       .filter((date): date is string => Boolean(date))
       .filter((date) => {
@@ -598,12 +605,29 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
         d.strength = { level: "low", reasons: ["ocena źródeł była niespójna"] };
         explanation = templateExplanation("insufficient_evidence", []);
         missingOverride = "Ocena źródeł była niejednoznaczna. Sprawdź cytowane źródła samodzielnie.";
+      } else if (d.verdict === "insufficient_evidence") {
+        // The model read an announcement as proof and code made it context: keep the fact we have
+        // (announced, by whom, when) instead of the generic "nothing found" template.
+        const announced = announcementExplanation(guard.passages);
+        if (announced) {
+          explanation = announced.explanation;
+          missingOverride = announced.missing;
+        }
       }
     }
+    // Decision 016: confirmed only by official announcements whose day has passed. Code owns this
+    // verdict (the prompt still labels announcements "context"), so it owns the wording and the lead
+    // word too, and the strength is low: nobody reported how the event went.
+    const byAnnouncement = d.verdict === "confirmed" && d.decisive.length > 0 && d.decisive.every((p) => p.announcedPassed);
+    if (byAnnouncement) {
+      event("announced_passed", { claim: c.id, model: proposed, days: [...new Set(d.decisive.map((p) => p.announcedPassed))] });
+      explanation = announcedPassedExplanation(d.decisive);
+      d.strength = { level: "low", reasons: ["tylko oficjalna zapowiedź, termin już minął", "brak relacji z przebiegu"] };
+    }
     // The leading word only when code and model agree on the verdict (or the verdict came from a rating).
-    const plain = stale && proposed !== d.verdict ? plainFromVerdict(d.verdict) : assessed.assessment.plain_answer;
+    const plain = byAnnouncement ? "yes" : stale && proposed !== d.verdict ? plainFromVerdict(d.verdict) : assessed.assessment.plain_answer;
     const partly = d.verdict === "misleading" && ratedPartlyTrue(d.decisive);
-    const lead = (proposed === d.verdict || stale) && !partly ? leadWord(d.verdict, plain, asksQuestion) : null;
+    const lead = (proposed === d.verdict || stale || byAnnouncement) && !partly ? leadWord(d.verdict, plain, asksQuestion) : null;
     explanation = c.asked_checker
       // "Did <checker> check X?": answer that question first; the verdict on X follows.
       ? `${askedCheckerAnswer(c.asked_checker, guard.passages).lead} ${withLead(explanation, null)}`

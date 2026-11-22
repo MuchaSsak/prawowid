@@ -4,6 +4,7 @@ import { MemoryCorpusStore } from "../src/mod.ts";
 import { parsePeriod } from "../src/connectors/stats-catalog.ts";
 import {
   distinctiveSentences,
+  eventDateIn,
   findOriginalDate,
   periodNote,
   type ReferenceDate,
@@ -145,3 +146,31 @@ Deno.test("'ostatnio' / 'niedawno' → the last 30 days before the reference dat
   );
 });
 
+
+Deno.test("'w tym tygodniu' / 'w zeszłym tygodniu' → Monday-to-Sunday weeks, this week ending at the reference date", () => {
+  // 2026-11-22 is a Sunday, 2026-11-18 a Wednesday, 2026-11-16 a Monday.
+  assertEquals(resolveTime("w tym tygodniu", "past", ref("2026-11-22")), { time: "2026-11-16/2026-11-22", filledYear: true, relative: "w tym tygodniu" });
+  assertEquals(resolveTime("ten tydzień", "past", ref("2026-11-18")).time, "2026-11-16/2026-11-18");
+  assertEquals(resolveTime("tego tygodnia", "past", ref("2026-11-16")).time, "2026-11-16/2026-11-16");
+  assertEquals(resolveTime("w zeszłym tygodniu", "past", ref("2026-11-18")).time, "2026-11-09/2026-11-15");
+  assertEquals(resolveTime("ubiegły tydzień", "past", ref("2026-11-22")).time, "2026-11-09/2026-11-15");
+  assertEquals(
+    periodNote(resolveTime("w tym tygodniu", "past", ref("2026-11-22")), ref("2026-11-22", "submission")),
+    "Tekst podaje czas względnie („w tym tygodniu”); przyjęliśmy okres 16.11.2026–22.11.2026 na podstawie daty zgłoszenia (22.11.2026); jeśli tekst jest starszy, wynik może być inny.",
+  );
+});
+
+Deno.test("eventDateIn: one named day, year from the publication date looking ahead; lists and ranges are not one day", () => {
+  assertEquals(eventDateIn("W dniu 20 listopada zapowiedziano strajk.", "2026-11-19"), "2026-11-20");
+  assertEquals(eventDateIn("Strajk zapowiedziano na 5 stycznia.", "2026-12-20"), "2027-01-05");
+  assertEquals(eventDateIn("Strajk 20.11.2026 r.", "2026-11-01"), "2026-11-20");
+  assertEquals(eventDateIn("Strajk 20.11 od godz. 9.00.", "2026-11-01"), "2026-11-20");
+  for (const t of ["20 lub 21 listopada", "20-22 listopada", "w dniach 20 i 21 listopada", "od 20 do 22 listopada", "20.11 i 21.11", "bez daty"]) {
+    assertEquals(eventDateIn(t, "2026-11-01"), null, t);
+  }
+});
+
+Deno.test("'ten miesiąc' / 'ten rok' (the model's normalized forms) resolve like 'w tym miesiącu' / 'w tym roku'", () => {
+  assertEquals(resolveTime("ten miesiąc", "past", ref("2026-11-22")).time, "2026-11");
+  assertEquals(resolveTime("ten rok", "past", ref("2026-11-22")).time, "2026");
+});

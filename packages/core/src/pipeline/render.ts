@@ -1,6 +1,7 @@
 /** Polish templates for system messages and fallback explanations (response-contract.md). */
 import type { ClaimSystemState, RequestStatus, SystemMessage, Verdict } from "../types.ts";
 import type { VerifiedPassage } from "./assess.ts";
+import { formatDatePl } from "./dates.ts";
 import { factcheckFields, isAskedChecker, isFactcheckCard } from "./factcheck.ts";
 
 export const NOT_A_VERDICT = "To nie jest ocena treści.";
@@ -54,6 +55,30 @@ export function templateExplanation(verdict: Verdict, decisive: VerifiedPassage[
     case "not_verifiable":
       return "To opinia, ocena lub prognoza, a nie twierdzenie o faktach.";
   }
+}
+
+/**
+ * Abstention where a source only announced the event (assess.ts announced guard): state that fact with
+ * its source and the announcing sentence, then what is unknown (evidence-assessment `missing` rule).
+ * Null when no passage carries an announcement.
+ */
+export function announcementExplanation(passages: VerifiedPassage[]): { explanation: string; missing: string } | null {
+  const p = passages.find((x) => x.announcement);
+  if (!p?.announcement) return null;
+  const when = p.record.published_at ? `, ${formatDatePl(p.record.published_at)}` : "";
+  const sentence = p.announcement.replace(/[.!?]+$/, "");
+  return {
+    explanation: `Źródło podaje tylko zapowiedź (${p.record.publisher}${when}): „${sentence}”. Nie znaleźliśmy źródła, które potwierdza, że to się odbyło.`,
+    missing: "Nie wiemy, czy zapowiedziane wydarzenie się odbyło. Rozstrzygnęłoby to źródło opublikowane po jego terminie, np. komunikat organizatora lub relacja agencji.",
+  };
+}
+
+/** Confirmed from an official announcement whose day has passed (decision 016): say what it rests on. */
+export function announcedPassedExplanation(passages: VerifiedPassage[]): string {
+  const p = passages.find((x) => x.announcedPassed && x.announcement)!;
+  const when = p.record.published_at ? ` (${formatDatePl(p.record.published_at)})` : "";
+  const sentence = p.announcement!.replace(/[.!?]+$/, "");
+  return `${p.record.publisher}${when} podało: „${sentence}”. Termin (${formatDatePl(p.announcedPassed!)}) już minął, a źródło nie informuje o odwołaniu ani przełożeniu, więc przyjmujemy, że wydarzenie się odbyło. Nie mamy relacji z jego przebiegu.`;
 }
 
 /** Polish plural: 1 → one, 2-4 (not 12-14) → few, else many. */

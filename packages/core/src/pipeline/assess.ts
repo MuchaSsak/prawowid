@@ -4,7 +4,8 @@ import { LIMITS } from "../config.ts";
 import type { SourceRecord } from "../connectors/types.ts";
 import { containsVerbatim } from "../guard/normalize.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
-import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v6.ts";
+import { eventDateIn } from "./dates.ts";
+import { evidenceAssessmentSystem } from "../prompts/evidence-assessment.v7.ts";
 import type { Stance } from "../types.ts";
 import { factcheckFields, isFactcheckCard, oppositePolarity, ratingStance } from "./factcheck.ts";
 
@@ -15,6 +16,8 @@ export const Assessment = z.strictObject({
     quote: z.string(),
     difference: z.string().nullable(),
     data_period: z.string().nullable(),
+    /** The passage announces or schedules exactly the event the claim says took place (prompt v7). */
+    announces_claimed_event: z.boolean(),
   })),
   proposed_verdict: z.enum(["confirmed", "false", "misleading", "insufficient_evidence"]),
   explanation: z.string(),
@@ -36,6 +39,17 @@ export interface VerifiedPassage {
   data_period: string | null;
   /** The model quoted a fact-check's checked statement; code used the rating instead. */
   ratingOverride?: boolean;
+  /**
+   * Set when the announced-is-not-happened guard turned a "supports" into "context": the sentence of
+   * the same document that announces the event, verbatim. The answer states it (announced, outcome unknown).
+   */
+  announcement?: string;
+  /**
+   * Decision 016: an official source announced exactly this event for this day, the day is before the
+   * reference date and the source mentions no cancellation, so the announcement supports the claim.
+   * The answer says it rests on the announcement and the strength is low.
+   */
+  announcedPassed?: string;
 }
 
 export interface AssessmentResult {
@@ -49,6 +63,8 @@ export interface AssessmentResult {
 export async function assessClaim(args: {
   claim: { text: string; time: string; place: string | null; entities?: string[] };
   records: SourceRecord[];
+  /** YYYY-MM-DD the claim is read from (pipeline/dates.ts referenceDate); enables the decision-016 rule. */
+  referenceDate?: string;
   apiKey?: string;
   model: string;
   fallbackModel?: string;
@@ -126,7 +142,14 @@ export async function assessClaim(args: {
     // "X was announced for Monday. X is nationwide.", and the second sentence alone reads like support.
     if (verified.stance === "supports" && !ANNOUNCED.test(args.claim.text)) {
       const siblings = args.records.filter((r) => r !== record && r.url === record.url).map((r) => r.text).join("\n");
-      if (ANNOUNCED.test(around(record.text, verified.quote)) || ANNOUNCED.test(siblings)) verified.stance = "context";
+      const near = around(record.text, verified.quote);
+      if (ANNOUNCED.test(near) || ANNOUNCED.test(siblings)) {
+        verified.stance = "context";
+        const sentence = ANNOUNCED.test(near)
+          ? announcingSentence(record.text, Math.max(0, record.text.indexOf(verified.quote)), args.claim.text, args.claim.place)
+          : announcingSentence(siblings, 0, args.claim.text, args.claim.place);
+        if (sentence) verified.announcement = sentence;
+      }
     }
     // A local claim is decided only by a passage about that place: a refutation about another city
     // never settles a claim about this one. Official data records (routed by country) and acts of
@@ -140,12 +163,68 @@ export async function assessClaim(args: {
       !aboutSubject(args.claim.entities ?? [], record.text)) {
       verified.stance = "context";
     }
+    // Decision 016 (user, 2026-11-22): an official announcement of exactly this event, for a day that
+    // has already passed, with no cancellation in the same document, supports a claim that it took place.
+    if (ok && verified.stance === "context" && p.announces_claimed_event && args.referenceDate) {
+      const day = announcedDayPassed(record, args.records, verified.quote, args.claim, args.referenceDate);
+      if (day) {
+        verified.stance = "supports";
+        verified.announcedPassed = day.date;
+        verified.announcement = day.sentence;
+        // The citation shows the announcing sentence (verbatim from the same page), not the neighbour quoted.
+        verified.quote = day.sentence;
+      }
+    }
     return verified;
   });
   return { passages, assessment: data, usage, ratingOverrides };
 }
 
 const DECISIVE: Stance[] = ["supports", "refutes", "misleading"];
+const CANCELLED =
+  /(odwoła\p{L}*|odwołan\p{L}*|przełożon\p{L}*|przełoż\p{L}*|przesunięt\p{L}*|zawieszon\p{L}*|anulowan\p{L}*|cancel\p{L}*|postpon\p{L}*|revoked|annullat\p{L}*|revocat\p{L}*|rinviat\p{L}*|sospes\p{L}*)/iu;
+
+/** Is the claim's time ("YYYY", "YYYY-MM", "YYYY-MM-DD", "start/end", "unknown") compatible with this day? */
+function dayInClaimTime(day: string, time: string): boolean {
+  const interval = time.match(/^(\d{4}-\d{2}-\d{2})\/(\d{4}-\d{2}-\d{2})$/);
+  if (interval) return day >= interval[1] && day <= interval[2];
+  if (/^\d{4}(-\d{2}){0,2}$/.test(time)) return day.startsWith(time);
+  return true; // "unknown" or unparsed text: the model's same-event check stands alone
+}
+
+/**
+ * Decision 016 conditions, all required: an official-tier record about the claim's place, a claim that
+ * the event took place (not that it was announced), one announcing sentence naming a single day, that
+ * day inside the claim's time and before the reference date, and no cancellation or postponement
+ * anywhere in the same document.
+ */
+function announcedDayPassed(
+  record: SourceRecord,
+  records: SourceRecord[],
+  quote: string,
+  claim: { text: string; time: string; place: string | null },
+  referenceDate: string,
+): { date: string; sentence: string } | null {
+  if (record.tier !== "official" || ANNOUNCED.test(claim.text) || !record.published_at) return null;
+  // The title counts too: a country page is titled with the country ("Włochy") while its text may only
+  // use an inflected form whose stem differs ("we Włoszech").
+  if (!aboutPlace(claim.place, `${record.title}\n${record.text}`)) return null;
+  const document = [record, ...records.filter((r) => r !== record && r.url === record.url)].map((r) => r.text).join("\n");
+  // A cancellation counts only in a sentence about the claim's subject: "Strajk został odwołany" blocks,
+  // "odwołane mogą być zaplanowane zabiegi" (a consequence of the strike) does not.
+  if (sentencesOf(document).some((s) => CANCELLED.test(s) && sharesSubject(claim.text, s, claim.place))) return null;
+  // The model's quote may be a neighbouring sentence ("Konsekwencje strajku są trudne do przewidzenia"),
+  // and the corpus splits a page into chunks: take the nearest announcing sentence of this chunk, then
+  // of the other chunks of the same page, that is about the claim's subject and names a qualifying day.
+  const siblings = records.filter((r) => r !== record && r.url === record.url).map((r) => r.text).join("\n");
+  const candidates = [...announcingSentences(record.text, Math.max(0, record.text.indexOf(quote))), ...announcingSentences(siblings, 0)];
+  for (const sentence of candidates) {
+    if (!sharesSubject(claim.text, sentence, claim.place)) continue;
+    const date = eventDateIn(sentence, record.published_at);
+    if (date && date < referenceDate.slice(0, 10) && dayInClaimTime(date, claim.time)) return { date, sentence };
+  }
+  return null;
+}
 const COUNTRY_WIDE = /^(polsk|pl$|rp$|rzeczpospolit|kraj|ue$|uni|europ|świat|swiat|internet)/i;
 const foldPl = (x: string) => x.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/ł/g, "l");
 /** True when the claim names no specific place, or the passage mentions it (5-letter stems absorb Polish case endings). */
@@ -168,6 +247,42 @@ function aboutSubject(entities: string[], text: string): boolean {
 function around(text: string, quote: string): string {
   const i = text.indexOf(quote);
   return i < 0 ? quote : text.slice(Math.max(0, i - 200), i + quote.length + 200);
+}
+/**
+ * Whole sentences that announce or schedule something, verbatim, nearest to `at` first. A sentence
+ * ends at . ! ? before a capital letter, a digit ("…poniżej. 11 listopada…") or the end, so
+ * "20.11. zapowiedziano" stays one sentence.
+ */
+const SENTENCE = /(?:[^\n.!?]|[.!?](?!\s+[\p{Lu}\d]|\s*$))+[.!?]?/gu;
+function announcingSentences(text: string, at: number): string[] {
+  const found: { s: string; d: number }[] = [];
+  for (const m of text.matchAll(SENTENCE)) {
+    const sentence = m[0].trim();
+    if (sentence.length > 10 && ANNOUNCED.test(sentence)) found.push({ s: sentence, d: Math.abs(m.index! - at) });
+  }
+  return found.sort((a, b) => a.d - b.d).map((x) => x.s);
+}
+const sentencesOf = (text: string) => [...text.matchAll(SENTENCE)].map((m) => m[0].trim()).filter(Boolean);
+
+/** The announcing sentence about the claim's subject nearest to `at`, else the nearest one (null when none). */
+function announcingSentence(text: string, at: number, claimText = "", place: string | null = null): string | null {
+  const all = announcingSentences(text, at);
+  return all.find((s) => sharesSubject(claimText, s, place)) ?? all[0] ?? null;
+}
+
+// Words of a claim that say when or that something happened, not what: never a subject match.
+const NOT_SUBJECT = /^(odby\p{L}*|ostatni\p{L}*|niedawn\p{L}*|tygodni\p{L}*|tydzie\p{L}*|miesi\p{L}*|wczoraj|dzisiaj|przedwczoraj|kiedy\p{L}*|został\p{L}*|zostan\p{L}*|naprawd\p{L}*)$/iu;
+/**
+ * True when the sentence contains a 5-letter stem of a claim word that names the subject (or the claim
+ * has none). Place words don't count: every sentence of a country page names the country.
+ */
+function sharesSubject(claimText: string, sentence: string, place: string | null = null): boolean {
+  const placeStems = (place ?? "").split(/[^\p{L}]+/u).filter((w) => w.length >= 4).map((w) => foldPl(w).slice(0, 4));
+  const words = claimText.split(/[^\p{L}]+/u)
+    .filter((w) => w.length >= 5 && !NOT_SUBJECT.test(w) && !placeStems.some((s) => foldPl(w).startsWith(s)));
+  if (!words.length) return true;
+  const t = foldPl(sentence);
+  return words.some((w) => t.includes(foldPl(w).slice(0, 5)));
 }
 const ANNOUNCED =
   /\b(?:zapowiedzia\p{L}*|zapowiada\p{L}*|zaplanowan\p{L}*|ma się odbyć|mają się odbyć|odbędzie się|odbędą się|announced|scheduled|will take place)/iu;

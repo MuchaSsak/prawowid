@@ -98,12 +98,12 @@ Pick a scenario (first match wins):
 | `ADMIN_TOKEN` | no (secret) | enables `GET /api/v1/admin/checks`, `GET /api/v1/admin/analytics` and the `/api/v1/admin/sources` routes (the admin pages ask for it). Independently of it, every live check writes one JSON audit line to the host log (`event: "prawdowid.check"`: time, channel, status, verdicts, source ids, a hash and the length of the masked question, never its text, so sessions stay deletable) |
 | `CLIENT_KEYS` | no | `name:key,name2:key2` for server clients |
 | `MOCK_CLIENTS` | no | comma-separated client names (from `CLIENT_KEYS`) that always get mock answers, even when `PRAWDOWID_MODE` is live; `bot` holds the messaging bot in mock until the bot itself is ready for live (its daily quota, M1b); the API spend caps exist since 2026-11-21 ([messaging-bot](messaging-bot.md)) |
-| `WEB_ORIGINS` | no | comma-separated browser origins for CORS (default localhost:4321) |
+| `WEB_ORIGINS` | no | comma-separated browser origins for CORS (default localhost:4321). The web project's Vercel previews (`https://prawdomat-*-rocketplns-projects.vercel.app`, `VERCEL_PREVIEW_ORIGIN` in `main.ts`) are always allowed too (user, 2026-11-22), so a preview needs no env change |
 | `MODEL_CLAIM_EXTRACTION`, `MODEL_EVIDENCE_ASSESSMENT`, `MODEL_IMAGE_EXTRACTION` | no | model overrides ([decision 003](../decisions/003-config-in-code.md)) |
 | `PORT` | no | local port (default 8787) |
 
 ## Deno Deploy setup
-App directory `apps/api`, entrypoint `main.ts`, working directory empty, no build command. Deploys build from GitHub `main`, so unpushed commits are not deployed. Set the env vars above in the app settings, and pick the EU region if offered. Storage is in memory per instance, so logs and the 5-min cache reset on redeploy or cold start until Supabase lands.
+App directory `apps/api`, entrypoint `main.ts`, working directory empty, no build command. Production builds from GitHub `main`; every pushed branch commit also gets its own build at `https://prawowid-<build id>.mateusz.deno.net` (build id from the commit's `deploy/mateusz/prawowid` status; same env vars, live; seen 2026-11-22). Unpushed commits are not deployed. Set the env vars above in the app settings, and pick the EU region if offered. Storage is in memory per instance, so logs and the 5-min cache reset on redeploy or cold start until Supabase lands.
 
 ## Versioning rules
 - v1 changes are **additive only**: a new optional request field, a new response field, a new enum value. Clients must ignore unknown fields and treat an unknown `status`/`system_state`/warning `type` as a generic system message.

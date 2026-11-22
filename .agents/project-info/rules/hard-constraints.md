@@ -4,7 +4,7 @@ Non-negotiable rules for everything we build. Breaking one can zero the bonus po
 ## Truth and evidence
 1. **Never present LLM output as fact without a verifiable source.** Every factual finding links to a real, stored source record (title, publisher, date, link, excerpt).
 2. **Never fabricate sources.** Citations come only from our retrieved corpus or a live API response, never written freely by the model. This is a gate condition.
-3. **Abstain** (`brak wystarczających dowodów`) when evidence is insufficient. Never create a "pseudo-answer". Say what couldn't be established.
+3. **Abstain** (`brak wystarczających dowodów`) when evidence is insufficient. Never create a "pseudo-answer". Say what couldn't be established. One narrow exception, by the user's decision: an official announcement of exactly the claimed event, for a single day that has passed, with no cancellation in the source, confirms it with low strength and says so ([decision 016](../decisions/016-official-announcement-past-day.md)).
 4. **Never decide truth from the domain, author, channel, popularity, share count, or a label made by the same model.**
 5. **Source status (e.g. EU sanctions) never decides truth on its own.** At most, show a separate, neutral, current and verifiable warning about the source.
 6. A match with a known-incident catalog or domain is **context or a warning, never a verdict**.

@@ -193,3 +193,182 @@ Deno.test({ ...T, name: "subject guard: a refutation that names none of the clai
   assertEquals(await run(rec), "context");
   assertEquals(await run({ ...rec, text: "Kodeks testowy zmieniano; uchylono część przepisów w 1993 roku." }), "refutes");
 } });
+
+Deno.test({ ...T, name: "announced: the abstention states the announcement with its source; an old uncited hit adds no archival warning", async fn() {
+  const claim = "W Przykładowie odbył się strajk generalny.";
+  const recent = new Date(Date.now() - 3 * 86_400_000).toISOString().slice(0, 10);
+  const s = stubFetch({
+    extraction: () => extraction([{ text: claim, time: "w tym tygodniu" }]),
+    // The model reads the announcement as proof; code must make it context.
+    assessment: assess({ "Urząd Testowy": { stance: "supports", needle: "zapowiedziano" } }, "confirmed", { plain_answer: "yes" }),
+  });
+  const d = deps();
+  const base = { route: "corpus" as const, retrieved_at: "2026-11-21T00:00:00Z", tier: "official" as const };
+  await d.corpus.upsert([
+    { ...base, source_id: "corpus:u:1", title: "Przykładowo", publisher: "Urząd Testowy", url: "https://u.example/p", published_at: recent, origin_key: "u:t",
+      text: "Informacje dla podróżnych.\nW dniu 20.11. na terenie Przykładowa zapowiedziano strajk generalny w sektorze publicznym." },
+    { ...base, source_id: "corpus:a:1", title: "Archiwum", publisher: "Archiwum Testowe", url: "https://a.example/s", published_at: "2020-01-01", origin_key: "a:t",
+      text: "Strajk generalny w Przykładowie w 2019 roku dotyczył kolei." },
+  ]);
+  try {
+    const r = await runCheck({ input: { type: "text", value: claim }, channel: "web", session_id: "t-announced" }, d);
+    const c = r.claims[0];
+    assertEquals(c.verdict, "insufficient_evidence");
+    assertStringIncludes(c.explanation ?? "", "Urząd Testowy");
+    assertStringIncludes(c.explanation ?? "", "„W dniu 20.11. na terenie Przykładowa zapowiedziano strajk generalny w sektorze publicznym”");
+    assert(!/^(Tak|To prawda)\./.test(c.explanation ?? ""), c.explanation ?? "");
+    assertStringIncludes(c.missing ?? "", "czy zapowiedziane wydarzenie się odbyło");
+    assert(!c.warnings.some((w) => w.type === "archival_material"), JSON.stringify(c.warnings));
+  } finally {
+    s.restore();
+  }
+} });
+
+// ── Decision 016: an official announcement whose day has passed confirms "it took place" ──────────
+const OFFICIAL_NOTICE: SourceRecord = {
+  ...card("Prawda"), source_id: "corpus:u16:1", route: "corpus", tier: "official", publisher: "Urząd Testowy", origin_key: "u16:t",
+  url: "https://u.example/kraje/PR", title: "Przykładowo", published_at: "2026-11-19",
+  text: "Kontakty znajdziesz poniżej. W dniu 20 listopada na terenie całego Przykładowa zapowiedziano strajk generalny w sektorze publicznym. Mogą występować utrudnienia.",
+};
+async function announced16(record: SourceRecord, opts: { announces?: boolean; ref?: string; time?: string; place?: string; claim?: string } = {}) {
+  const s = stubFetch({ assessment: assess({ [record.publisher]: { stance: "context", needle: "zapowiedziano", announces: opts.announces ?? true } }, "insufficient_evidence") });
+  try {
+    const r = await assessClaim({
+      claim: { text: opts.claim ?? "W Przykładowie odbył się strajk generalny.", time: opts.time ?? "2026-11-16/2026-11-22", place: opts.place ?? "Przykładowo" },
+      records: [record], referenceDate: opts.ref ?? "2026-11-22", apiKey: "k", model: "m",
+    });
+    return r.passages[0];
+  } finally { s.restore(); }
+}
+
+Deno.test({ ...T, name: "decision 016: official announcement, day passed, no cancellation → supports, with the day and sentence", async fn() {
+  const p = await announced16(OFFICIAL_NOTICE);
+  assertEquals(p.stance, "supports");
+  assertEquals(p.announcedPassed, "2026-11-20");
+  assertEquals(p.announcement, "W dniu 20 listopada na terenie całego Przykładowa zapowiedziano strajk generalny w sektorze publicznym.");
+} });
+
+Deno.test({ ...T, name: "decision 016: every condition is required (model match, tier, day passed, claim time, place, no cancellation, happened-claim)", async fn() {
+  assertEquals((await announced16(OFFICIAL_NOTICE, { announces: false })).stance, "context");
+  assertEquals((await announced16({ ...OFFICIAL_NOTICE, tier: "media" })).stance, "context");
+  assertEquals((await announced16(OFFICIAL_NOTICE, { ref: "2026-11-20" })).stance, "context", "the day itself is not over");
+  assertEquals((await announced16(OFFICIAL_NOTICE, { time: "2026-10" })).stance, "context", "outside the claim's time");
+  assertEquals((await announced16(OFFICIAL_NOTICE, { place: "Testowice" })).stance, "context", "another place");
+  assertEquals((await announced16({ ...OFFICIAL_NOTICE, text: OFFICIAL_NOTICE.text + " Strajk został odwołany." })).stance, "context", "cancelled");
+  assertEquals((await announced16({ ...OFFICIAL_NOTICE, text: "W dniu 20 lub 21 listopada zapowiedziano strajk generalny w Przykładowie." })).stance, "context", "no single day");
+  // A claim that it was announced is supported by the announcement anyway, never through this rule.
+  assertEquals((await announced16(OFFICIAL_NOTICE, { claim: "W Przykładowie zapowiedziano strajk generalny." })).announcedPassed, undefined);
+} });
+
+Deno.test({ ...T, name: "decision 016: the answer says 'Tak', rests on the announcement, low strength", async fn() {
+  const day = new Date(Date.now() - 2 * 86_400_000);
+  const dd = `${String(day.getUTCDate()).padStart(2, "0")}.${String(day.getUTCMonth() + 1).padStart(2, "0")}`;
+  const published = new Date(Date.now() - 3 * 86_400_000).toISOString().slice(0, 10);
+  const question = "Czy w Przykładowie ostatnio odbył się strajk generalny?";
+  const s = stubFetch({
+    extraction: () => extraction([{ text: "W Przykładowie ostatnio odbył się strajk generalny.", span: question, time: "ostatnio" }]),
+    assessment: assess({ "Urząd Testowy": { stance: "context", needle: "zapowiedziano", announces: true } }, "insufficient_evidence"),
+  });
+  const d = deps();
+  await d.corpus.upsert([{ ...OFFICIAL_NOTICE, published_at: published, text: `W dniu ${dd} na terenie Przykładowa zapowiedziano strajk generalny w sektorze publicznym.` }]);
+  try {
+    const r = await runCheck({ input: { type: "text", value: question }, channel: "web", session_id: "t-016" }, d);
+    const c = r.claims[0];
+    assertEquals(c.verdict, "confirmed");
+    assertEquals(c.strength?.level, "low");
+    assert(/^Tak\./.test(c.explanation ?? ""), c.explanation ?? "");
+    assertStringIncludes(c.explanation ?? "", "nie informuje o odwołaniu ani przełożeniu");
+    assertEquals(c.citations[0].stance, "supports");
+  } finally {
+    s.restore();
+  }
+} });
+
+Deno.test({ ...T, name: "decision 016: the dated announcement about the claim's subject is used, not the nearest sentence; a sentence may start with a digit", async fn() {
+  const page: SourceRecord = {
+    ...OFFICIAL_NOTICE, source_id: "corpus:u16:2", published_at: "2026-11-06",
+    text: "Zobacz więcej na stronie: [Pomoc](/strona/pomoc) Kontakty znajdziesz poniżej. 11 listopada 2026 r. w Przykładowie odbędzie się całodobowy strajk generalny. " +
+      "Mogą wystąpić utrudnienia z uwagi na zaplanowane demonstracje w wielu miastach. Konsekwencje strajku są trudne do przewidzenia.",
+  };
+  const s = stubFetch({ assessment: assess({ "Urząd Testowy": { stance: "context", needle: "Konsekwencje", announces: true } }, "insufficient_evidence") });
+  try {
+    const run = async (claim: string, record = page) =>
+      (await assessClaim({ claim: { text: claim, time: "unknown", place: "Przykładowo" }, records: [record], referenceDate: "2026-11-22", apiKey: "k", model: "m" })).passages[0];
+    const p = await run("W Przykładowie odbył się strajk.");
+    assertEquals(p.stance, "supports");
+    assertEquals(p.announcement, "11 listopada 2026 r. w Przykładowie odbędzie się całodobowy strajk generalny.");
+    // The only dated announcement is about another subject: no confirmation.
+    const marathon = { ...page, text: "11 listopada 2026 r. w Przykładowie odbędzie się maraton miejski. Konsekwencje strajku są trudne do przewidzenia." };
+    assertEquals((await run("W Przykładowie odbył się strajk.", marathon)).stance, "context");
+  } finally { s.restore(); }
+} });
+
+Deno.test({ ...T, name: "decision 016: the dated sentence may sit in another chunk of the same page; the citation shows it", async fn() {
+  const a: SourceRecord = { ...OFFICIAL_NOTICE, source_id: "corpus:u16:3", published_at: "2026-11-06",
+    text: "Mogą wystąpić utrudnienia z uwagi na zaplanowane demonstracje. Konsekwencje strajku są trudne do przewidzenia." };
+  const b: SourceRecord = { ...a, source_id: "corpus:u16:4", text: "Kontakty poniżej. 11 listopada 2026 r. w Przykładowie odbędzie się całodobowy strajk generalny." };
+  const s = stubFetch({ assessment: (input: { passages: { passage_id: string; text: string }[] }) => ({
+    passages: input.passages.map((p) => p.text.startsWith("Mogą")
+      ? { passage_id: p.passage_id, stance: "context", quote: "Konsekwencje strajku są trudne do przewidzenia.", difference: null, data_period: null, announces_claimed_event: true }
+      : { passage_id: p.passage_id, stance: "irrelevant", quote: "", difference: null, data_period: null, announces_claimed_event: false }),
+    proposed_verdict: "insufficient_evidence", explanation: "x", missing: null, plain_answer: "neither", injection_signals: [],
+  }) });
+  try {
+    const r = await assessClaim({ claim: { text: "W Przykładowie ostatnio odbył się strajk generalny.", time: "2026-10-23/2026-11-22", place: "Przykładowo" },
+      records: [a, b], referenceDate: "2026-11-22", apiKey: "k", model: "m" });
+    assertEquals(r.passages[0].stance, "supports");
+    assertEquals(r.passages[0].quote, "11 listopada 2026 r. w Przykładowie odbędzie się całodobowy strajk generalny.");
+  } finally { s.restore(); }
+} });
+
+Deno.test({ ...T, name: "decision 016: a cancellation counts only when it is about the claim's subject", async fn() {
+  const consequence = { ...OFFICIAL_NOTICE, text: OFFICIAL_NOTICE.text + " W szpitalach odwołane mogą być zaplanowane zabiegi." };
+  assertEquals((await announced16(consequence)).stance, "supports");
+  const cancelled = { ...OFFICIAL_NOTICE, text: OFFICIAL_NOTICE.text + " Strajk generalny przełożono na grudzień." };
+  assertEquals((await announced16(cancelled)).stance, "context");
+} });
+
+Deno.test({ ...T, name: "'too vague' from the small model → the stronger model re-checks once; a fact wins, agreement keeps the question", async fn() {
+  const run = async (second: "fact" | "vague") => {
+    let calls = 0;
+    const s = stubFetch({
+      extraction: () => {
+        calls++;
+        if (calls === 1 || second === "vague") {
+          return extraction([], { input_kind: "too_vague", clarification_question: "Jaki strajk masz na myśli?" });
+        }
+        return extraction([{ text: "W Przykładowie odbył się strajk.", span: "czy w przykladowie odbyl sie strajk", time: null }]);
+      },
+      assessment: assess({}, "insufficient_evidence"),
+    });
+    try {
+      const r = await runCheck({ input: { type: "text", value: "czy w przykladowie odbyl sie strajk" }, channel: "web", session_id: `t-vague-${second}` }, deps());
+      return { calls, r };
+    } finally { s.restore(); }
+  };
+  const fact = await run("fact");
+  assertEquals(fact.calls, 2);
+  assertEquals(fact.r.claims[0]?.class, "fact");
+  const vague = await run("vague");
+  assertEquals(vague.calls, 2);
+  assertEquals(vague.r.status, "needs_clarification");
+} });
+
+Deno.test({ ...T, name: "hard constraint 21: a fact with the same span as an opinion and no number is dropped; a figure stays", async fn() {
+  const run = async (factText: string) => {
+    const sentence = "Zarząd Przykładowa kłamie w sprawie budżetu.";
+    const s = stubFetch({
+      extraction: () => extraction([{ text: factText, span: sentence }, { text: sentence, class: "opinion" }]),
+      assessment: assess({}, "insufficient_evidence"),
+    });
+    try {
+      return await runCheck({ input: { type: "text", value: sentence }, channel: "web", session_id: `t-hc21-${factText.length}` }, deps());
+    } finally { s.restore(); }
+  };
+  const paraphrase = await run("Zarząd Przykładowa przedstawia informacje o budżecie.");
+  assertEquals(paraphrase.status, "ok");
+  assertEquals(paraphrase.claims.map((c) => c.class), ["opinion"]);
+  assertEquals(paraphrase.claims[0].verdict, "not_verifiable");
+  const figure = await run("Budżet Przykładowa wynosi 5 mln zł.");
+  assertEquals(figure.claims.map((c) => c.class), ["fact", "opinion"]);
+} });

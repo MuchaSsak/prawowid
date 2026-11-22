@@ -23,7 +23,8 @@
  *   CLIENT_KEYS=bot:<secret>,...                    server-to-server clients (messaging bot)
  *   MOCK_CLIENTS=bot,...                            these client names always get mock answers, even in live
  *                                                   mode (holds the bot in mock until its spend caps exist)
- *   WEB_ORIGINS=https://…,…                         browser origins allowed by CORS
+ *   WEB_ORIGINS=https://…,…                         browser origins allowed by CORS (plus the web
+ *                                                   project's Vercel preview URLs, VERCEL_PREVIEW_ORIGIN)
  *   ADMIN_TOKEN=<secret>                            enables GET /api/v1/admin/checks (the check log)
  */
 import { type Context, Hono } from "hono";
@@ -98,6 +99,12 @@ const MODE: "live" | "mock" = Deno.env.get("PRAWDOWID_MODE") === "mock" ? "mock"
 const MOCK_DELAY_MS = Number(Deno.env.get("MOCK_DELAY_MS") ?? 600);
 const ALLOWED_ORIGINS = (Deno.env.get("WEB_ORIGINS") ?? "http://localhost:4321,http://127.0.0.1:4321")
   .split(",").map((s) => s.trim()).filter(Boolean);
+/**
+ * Vercel preview deployments of the web project (`prawdomat-<hash>-…`, `prawdomat-git-<branch>-…`).
+ * Only the rocketplns-projects team can create URLs under its own scope suffix (user, 2026-11-22).
+ */
+export const VERCEL_PREVIEW_ORIGIN = /^https:\/\/prawdomat-[a-z0-9-]+-rocketplns-projects\.vercel\.app$/;
+const originAllowed = (o: string) => ALLOWED_ORIGINS.includes(o) || VERCEL_PREVIEW_ORIGIN.test(o);
 /** name → key; a client sends `X-Client-Key: <key>` and gets per-end-user rate limits. */
 const CLIENT_KEYS = new Map(
   (Deno.env.get("CLIENT_KEYS") ?? "").split(",").map((p) => p.trim()).filter(Boolean).map((p) => {
@@ -178,7 +185,7 @@ const app = new Hono();
 app.use(
   "/api/*",
   cors({
-    origin: (o) => (ALLOWED_ORIGINS.includes(o) ? o : null),
+    origin: (o) => (originAllowed(o) ? o : null),
     allowMethods: ["GET", "POST", "DELETE"],
     // Authorization: the admin page sends ADMIN_TOKEN; origins stay limited to WEB_ORIGINS.
     allowHeaders: ["Content-Type", "X-Client-Key", "X-End-User", "Authorization"],

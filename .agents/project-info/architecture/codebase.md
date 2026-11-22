@@ -8,7 +8,7 @@ The code layout, what each part does today, what was measured, and what is still
 | `CoreDeps` extension points | `deps.connectors` (evidence routes, default `CONNECTORS`) and `deps.narrativeMatchers` (known-incident matchers, default `NARRATIVE_MATCHERS`); plugin types (`Connector`, `SourceRecord`, `NarrativeMatcher`, `fetchJson`) exported from `@prawdowid/core` ([extensibility](extensibility.md)) |
 | `packages/core/src/intake/` | `url.ts` (SSRF guards, DNS check via host hook, ≤3 revalidated redirects, robots.txt, tracking params stripped, Readability), `image.ts` (EXIF/XMP/IPTC and PNG text chunks stripped, vision call), `recording.ts` (video/audio → timestamped transcript, model picked by format; [multimodal-media](multimodal-media.md#status-2026-11-21-uploaded-recordings-work-live)) |
 | `packages/core/src/guard/` | PII rules (e-mail, phone, PESEL with checksum, IBAN, cards with Luhn, ID card, street address, IP), injection patterns (pl/en), quote normalization |
-| `packages/core/src/connectors/` | `google-factcheck.ts`, `sejm-eli.ts`, `eurostat.ts`, `nbp.ts`, `gus.ts`, `corpus.ts` (local BM25 corpus); `stats-catalog.ts` (16 indicators); `mod.ts` = the deployment profile |
+| `packages/core/src/connectors/` | `google-factcheck.ts`, `sejm-eli.ts`, `eurostat.ts`, `nbp.ts`, `gus.ts`, `corpus.ts` (local BM25 corpus; a hit on an official page of at most 4,000 characters is read as the whole page, its chunks joined by offset: [decision 016](../decisions/016-official-announcement-past-day.md)); `stats-catalog.ts` (16 indicators); `mod.ts` = the deployment profile |
 | `packages/core/src/narratives/` | known-incident context (EUvsDisinfo), separate from evidence: MCP client, live `search` matcher, corpus matcher + `KnownIncidentStore` for the future DB ([euvsdisinfo-mcp](euvsdisinfo-mcp.md)) |
 | `packages/core/scripts/euvsdisinfo-pull.ts` | bulk pull of all EUvsDisinfo cases into gitignored `data/euvsdisinfo/*.jsonl` |
 | `packages/core/src/sources/catalog.ts` | trusted-source allowlist with tiers ([decision 008](../decisions/008-trusted-source-allowlist.md)), served at `GET /api/v1/sources` |
@@ -43,7 +43,7 @@ The code layout, what each part does today, what was measured, and what is still
 | Corpus | all | no | local BM25 index (`IndexedCorpusStore`, 31 collections); collections can be switched off at runtime ([decision 013](../decisions/013-source-controls.md)); an index error makes the claim a system state |
 | EUvsDisinfo (context, not evidence) | all fact claims | no | MCP `search` (English query) → `context_matches` + `known_narrative` warning; never a citation or verdict input; `skipped` without `EUVSDISINFO_TOKEN` |
 
-A required route that is unavailable (e.g. no Google key, Eurostat down for a statistics claim) gives the claim a system state, never a verdict. Not covered yet, and listed in `limitations`: Sejm votings, institutions' press releases, regional statistics, MSZ Odyseusz.
+A required route that is unavailable (e.g. no Google key, Eurostat down for a statistics claim) gives the claim a system state, never a verdict. Not covered yet, and listed in `limitations`: Sejm votings, institutions' press releases, regional statistics. MSZ Odyseusz country pages are in the corpus (collected by `tools/collector/scripts/collect_odyseusz.py`; seen live 2026-11-22).
 
 A text message that contains a link: the first link is also fetched through the URL intake (same SSRF/robots guards) and read as `article` material; a failure only adds a warning (organizer samples E/I, [organizer-sample-answers](../hackathon/organizer-sample-answers.md)).
 
@@ -79,9 +79,11 @@ Prawdomat runs at [prawdomat.vercel.app](https://prawdomat.vercel.app) in the Ve
 
 Set `PUBLIC_API_URL=https://prawowid.mateusz.deno.net` for Production in Vercel, then redeploy to bake the API URL into the static frontend. A trailing slash is tolerated: every page strips it at build (the first Production value `https://prawowid.mateusz.deno.net/` made the admin pages call `//api/v1/admin/...`, a 404 shown as "Panel jest wyłączony", fixed and redeployed 2026-11-22; the chat page already stripped it in `app.ts`). The Deno API already accepts requests from the production web origin. `PUBLIC_SITE_URL` is optional because Astro can use Vercel's production URL. API secrets belong to Deno Deploy.
 
+Preview of a branch (2026-11-22, first used for the Italy-strike fix): push the branch, take the Deno Deploy build URL of its commit ([api-reference](api-reference.md#deno-deploy-setup)), then from a `git archive` snapshot without `data/ eval/ tools/ docs/ supabase/ infra/` run `vercel link --yes --project prawdomat --scope rocketplns-projects` and `vercel deploy --yes --scope rocketplns-projects --build-env PUBLIC_API_URL=<build URL>`. The API allows the team's preview origins. Previews sit behind Vercel's team login (anonymous visitors get a 302).
+
 ## Next steps
 1. Finish the frontend connection to the API using the [web production deployment](#web-production-deployment) settings. See the [API reference](api-reference.md) for backend configuration.
-2. A route for MSZ's Odyseusz travel advisories (expected by the organizer samples) and the corpus (gov.pl, CERT, RCB communiqués).
+2. More corpus sources (gov.pl, CERT, RCB communiqués); Odyseusz country pages are already in it.
 3. Ask the Sprawdzam To editors for consent to ingest; re-verify the IFCN status of OKO.press and Konkret24.
 4. Supabase: `private.check_logs` / `check_events` tables, then the corpus with hybrid search, including `corpus.known_incidents` for EUvsDisinfo (upgrade path in [euvsdisinfo-mcp](euvsdisinfo-mcp.md)). Set `EUVSDISINFO_TOKEN` on Deno Deploy.
 5. Messaging bot: M1 code in `apps/bot`; next is deploying it on Vercel with a Discord app, then M1b (Redis, deep health, consistency script). See [messaging-bot](messaging-bot.md#implementation-status-2026-11-21).

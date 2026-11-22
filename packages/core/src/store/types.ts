@@ -43,6 +43,8 @@ export type CheckEventType =
   | "verdict_disagreement"
   | "rating_override"
   | "number_check"
+  /** Decision 016: an official announcement whose day has passed confirmed the claim. */
+  | "announced_passed"
   | "extraction_escalated"
   /** Known-incident context shown next to a claim (EUvsDisinfo); never evidence. */
   | "context_match"
@@ -80,4 +82,6 @@ export interface CorpusStore {
     signal?: AbortSignal,
   ): Promise<SourceRecord[]>;
   upsert(records: SourceRecord[]): Promise<void>;
+  /** Every chunk of one page (same URL), in page order. Optional: stores without it skip page expansion. */
+  pageOf?(url: string): SourceRecord[];
 }

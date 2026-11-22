@@ -37,13 +37,17 @@ Deno.test("quotes: whitespace and typographic quotes are normalised, wording is 
   assert(!containsVerbatim(passage, "Rzecznik powiedział, że wstrzymują płatności."));
 });
 
-Deno.test("verbatim: claim spans from typed text may differ in case only; source quotes stay case-exact", () => {
+Deno.test("verbatim: claim spans from typed text may differ in case and Polish letters; source quotes stay exact", () => {
   const typed = "czy robert lewandowski sprzedaje prezerwatywy\ntak";
   assert(!containsVerbatim(typed, "Robert Lewandowski sprzedaje prezerwatywy"));
   assert(containsVerbatim(typed, "Robert Lewandowski sprzedaje prezerwatywy", { ignoreCase: true }));
   assert(containsVerbatim(typed, "Robert Lewandowski sprzedaje prezerwatywy.", { ignoreCase: true }));
   assert(containsVerbatim("ŁÓDŹ ma metro", "łódź ma metro", { ignoreCase: true }));
   assert(!containsVerbatim(typed, "Robert Lewandowski reklamuje prezerwatywy", { ignoreCase: true }));
+  // Typed without Polish letters, copied with them: the same words.
+  assert(containsVerbatim("Czy w hiszpanii odbyl sie strajk", "W Hiszpanii odbył się strajk.", { ignoreCase: true }));
+  assert(!containsVerbatim("Czy w hiszpanii odbyl sie strajk", "W Hiszpanii odbył się strajk."));
+  assert(!containsVerbatim("Czy w hiszpanii odbyl sie strajk", "W Hiszpanii odbył się protest.", { ignoreCase: true }));
 });
 
 Deno.test("injection: detects instructions in Polish and English", () => {
