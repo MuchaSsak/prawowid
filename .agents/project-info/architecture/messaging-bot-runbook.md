@@ -9,7 +9,7 @@ How to bring up the bot designed in [messaging-bot.md](messaging-bot.md) and kee
 | `BOT_ID_SECRET` | yes | M1 | HMAC key for the user pseudonym (generate with `openssl rand -hex 32`). Don't rotate it during the event (rotation orphans sessions and quotas). Without it the function still boots, but `/health` answers 503 with `missing: ["BOT_ID_SECRET"]` and every webhook answers 503 |
 | `REDIS_URL` | yes | M1b | set by the Upstash integration (dedupe, daily quota, outcome counters) |
 | `HEALTH_TOKEN` | yes | M1b | sent as `Authorization: Bearer …` to `/health?deep=1`; only the uptime monitor holds it |
-| `PRAWDOWID_WEB_URL` | no | M1 | the web app link in every reply's footer: `https://prawdomat.vercel.app` (the web app, Vercel project `prawdomat`, deployed from `main`; checked 2026-11-21) |
+| `PRAWDOWID_WEB_URL` | no | M1 | the [production web app](codebase.md#web-production-deployment) linked in every reply's footer |
 | `BOT_PRIVACY_CONTACT` | no | M1 | the data controller and contact e-mail shown in `/pomoc` (blocks the invite gate until set) |
 | `DISCORD_GUILD_ID` | no | M1 | the demo server; used only by `bun run bot:discord:commands` |
 | `DISCORD_BOT_TOKEN`, `DISCORD_PUBLIC_KEY`, `DISCORD_APPLICATION_ID` | yes / no / no | M1 | Discord app (the adapter requires the token, and command registration uses it) |

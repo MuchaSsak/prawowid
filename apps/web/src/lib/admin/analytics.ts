@@ -48,6 +48,19 @@ const store = {
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
+// Sample reports are deterministic per hour (sample.ts), so one build per range and hour is enough:
+// switching back to a range already seen is instant instead of re-running ~10k synthetic rows.
+const sampleCache = new Map<string, AnalyticsReport>();
+function sampleReport(range: AnalyticsRange): AnalyticsReport {
+  const key = `${range}:${Math.floor(Date.now() / 3_600_000)}`;
+  let r = sampleCache.get(key);
+  if (!r) {
+    if (sampleCache.size >= ANALYTICS_RANGES.length) sampleCache.clear();
+    sampleCache.set(key, r = sampleAnalytics(range));
+  }
+  return r;
+}
+
 export function initAnalytics() {
   drawRosettes();
   const api = document.body.dataset.api ?? "http://localhost:8787";
@@ -99,7 +112,7 @@ export function initAnalytics() {
     notice.hidden = true;
     if (sample) {
       lock(false);
-      return render(sampleAnalytics(range));
+      return render(sampleReport(range));
     }
     if (!token) {
       lock(true);
