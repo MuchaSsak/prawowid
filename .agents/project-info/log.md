@@ -236,3 +236,6 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 
 ## [2026-11-22] decision | Answers always in Polish (input and sources any language); dropped the answer-in-user-language idea (response-contract.md, codebase.md)
 - 2026-11-22: ocena danych z example/ (repo „dane”) pod korpus wektorowy → architecture/vector-db-integration-plan.md
+
+## [2026-11-22] update | MVP re-check against the task PDF (user): web + deployed API live with keys, one live check ok (7.3 s); bot /health shows discord + messenger; logs still in memory; gaps unchanged (corpus 100/10, moderator notify, deliverables); hackathon/compliance-matrix.md
+## [2026-11-22] lint | clean (scope: MVP rows of hackathon/compliance-matrix.md; anchor #language-policy resolves, index entry unchanged, routing and skill parity untouched)
