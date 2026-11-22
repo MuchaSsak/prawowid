@@ -82,4 +82,6 @@ export interface CorpusStore {
     signal?: AbortSignal,
   ): Promise<SourceRecord[]>;
   upsert(records: SourceRecord[]): Promise<void>;
+  /** Every chunk of one page (same URL), in page order. Optional: stores without it skip page expansion. */
+  pageOf?(url: string): SourceRecord[];
 }

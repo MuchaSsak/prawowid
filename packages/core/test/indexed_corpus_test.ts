@@ -1,5 +1,6 @@
 import { assert, assertEquals } from "jsr:@std/assert@^1";
 import { IndexedCorpusStore } from "../src/store/indexed-corpus.ts";
+import { expandPages } from "../src/connectors/corpus.ts";
 import type { SourceRecord } from "../src/connectors/types.ts";
 import { trustedSourceFor } from "../src/sources/catalog.ts";
 
@@ -72,4 +73,21 @@ Deno.test("IndexedCorpusStore: loadIndex takes a file URL on every OS (Windows p
   await store.loadIndex(toFileUrl(file));
   assertEquals(store.indexStatus().state, "ready");
   await Deno.remove(dir, { recursive: true });
+});
+
+Deno.test("corpus: a hit on a short official page is read as the whole page, chunks joined by offset without overlap", () => {
+  const base = { route: "corpus" as const, title: "Przykładowo", publisher: "Urząd Testowy", url: "https://u.example/kraje/PR", published_at: "2026-11-06",
+    retrieved_at: "2026-11-21T00:00:00Z", tier: "official" as const, origin_key: "u:t" };
+  const store = new IndexedCorpusStore([
+    { ...base, source_id: "c:0", start_offset: 0, end_offset: 30, text: "Pierwsze zdanie strony testowej" },
+    { ...base, source_id: "c:1", start_offset: 20, end_offset: 52, text: "y testowej. Drugie zdanie strony." },
+    { ...base, source_id: "c:2", start_offset: 52, end_offset: 70, text: "Trzecie zdanie tu." },
+  ]);
+  const out = expandPages([store.pageOf(base.url)[2], store.pageOf(base.url)[0]], store);
+  assertEquals(out.length, 1, "one passage per page");
+  assertEquals(out[0].source_id, "c:2");
+  assertEquals(out[0].text, "Pierwsze zdanie strony testowej. Drugie zdanie strony. Trzecie zdanie tu.");
+  // A media page or a long page stays a single chunk.
+  const media = { ...store.pageOf(base.url)[0], tier: "media" as const };
+  assertEquals(expandPages([media], store)[0].text, "Pierwsze zdanie strony testowej");
 });

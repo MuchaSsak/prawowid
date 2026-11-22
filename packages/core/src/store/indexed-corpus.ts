@@ -132,6 +132,7 @@ class Bm25Index {
 
 export class IndexedCorpusStore implements CorpusStore {
   private records: SourceRecord[] = [];
+  private byUrl = new Map<string, SourceRecord[]>();
   private official = new Bm25Index([]);
   private demagog = new Bm25Index([]);
   private error: string | null = null;
@@ -190,6 +191,9 @@ export class IndexedCorpusStore implements CorpusStore {
     const byId = new Map(this.records.map((r) => [r.source_id, r]));
     for (const record of records) byId.set(record.source_id, record);
     this.records = [...byId.values()];
+    this.byUrl = new Map();
+    for (const r of this.records) this.byUrl.set(r.url, [...(this.byUrl.get(r.url) ?? []), r]);
+    for (const chunks of this.byUrl.values()) chunks.sort((a, b) => (a.start_offset ?? 0) - (b.start_offset ?? 0));
     this.official = new Bm25Index(this.records.filter((r) => r.tier === "official"));
     this.demagog = new Bm25Index(this.records.filter((r) => r.tier === "factcheck"));
     return Promise.resolve();
@@ -205,7 +209,12 @@ export class IndexedCorpusStore implements CorpusStore {
       indexStatus: () => this.indexStatus(),
       upsert: (records) => this.upsert(records),
       search: (queries, limit, options, signal) => this.searchWith(queries, limit, options, signal, exclude),
+      pageOf: (url) => this.pageOf(url).filter((r) => !exclude(r)),
     };
+  }
+
+  pageOf(url: string): SourceRecord[] {
+    return this.byUrl.get(url) ?? [];
   }
 
   private matches(record: SourceRecord, options?: SearchOptions) {

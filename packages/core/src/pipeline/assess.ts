@@ -210,7 +210,9 @@ function announcedDayPassed(
   // use an inflected form whose stem differs ("we Włoszech").
   if (!aboutPlace(claim.place, `${record.title}\n${record.text}`)) return null;
   const document = [record, ...records.filter((r) => r !== record && r.url === record.url)].map((r) => r.text).join("\n");
-  if (CANCELLED.test(document)) return null;
+  // A cancellation counts only in a sentence about the claim's subject: "Strajk został odwołany" blocks,
+  // "odwołane mogą być zaplanowane zabiegi" (a consequence of the strike) does not.
+  if (sentencesOf(document).some((s) => CANCELLED.test(s) && sharesSubject(claim.text, s, claim.place))) return null;
   // The model's quote may be a neighbouring sentence ("Konsekwencje strajku są trudne do przewidzenia"),
   // and the corpus splits a page into chunks: take the nearest announcing sentence of this chunk, then
   // of the other chunks of the same page, that is about the claim's subject and names a qualifying day.
@@ -251,14 +253,16 @@ function around(text: string, quote: string): string {
  * ends at . ! ? before a capital letter, a digit ("…poniżej. 11 listopada…") or the end, so
  * "20.11. zapowiedziano" stays one sentence.
  */
+const SENTENCE = /(?:[^\n.!?]|[.!?](?!\s+[\p{Lu}\d]|\s*$))+[.!?]?/gu;
 function announcingSentences(text: string, at: number): string[] {
   const found: { s: string; d: number }[] = [];
-  for (const m of text.matchAll(/(?:[^\n.!?]|[.!?](?!\s+[\p{Lu}\d]|\s*$))+[.!?]?/gu)) {
+  for (const m of text.matchAll(SENTENCE)) {
     const sentence = m[0].trim();
     if (sentence.length > 10 && ANNOUNCED.test(sentence)) found.push({ s: sentence, d: Math.abs(m.index! - at) });
   }
   return found.sort((a, b) => a.d - b.d).map((x) => x.s);
 }
+const sentencesOf = (text: string) => [...text.matchAll(SENTENCE)].map((m) => m[0].trim()).filter(Boolean);
 
 /** The announcing sentence about the claim's subject nearest to `at`, else the nearest one (null when none). */
 function announcingSentence(text: string, at: number, claimText = "", place: string | null = null): string | null {

@@ -320,3 +320,10 @@ Deno.test({ ...T, name: "decision 016: the dated sentence may sit in another chu
     assertEquals(r.passages[0].quote, "11 listopada 2026 r. w Przykładowie odbędzie się całodobowy strajk generalny.");
   } finally { s.restore(); }
 } });
+
+Deno.test({ ...T, name: "decision 016: a cancellation counts only when it is about the claim's subject", async fn() {
+  const consequence = { ...OFFICIAL_NOTICE, text: OFFICIAL_NOTICE.text + " W szpitalach odwołane mogą być zaplanowane zabiegi." };
+  assertEquals((await announced16(consequence)).stance, "supports");
+  const cancelled = { ...OFFICIAL_NOTICE, text: OFFICIAL_NOTICE.text + " Strajk generalny przełożono na grudzień." };
+  assertEquals((await announced16(cancelled)).stance, "context");
+} });
