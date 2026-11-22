@@ -1,7 +1,7 @@
 /** Polish templates for system messages and fallback explanations (response-contract.md). */
 import type { ClaimSystemState, RequestStatus, SystemMessage, Verdict } from "../types.ts";
 import type { VerifiedPassage } from "./assess.ts";
-import { factcheckFields, isAskedChecker } from "./factcheck.ts";
+import { factcheckFields, isAskedChecker, isFactcheckCard } from "./factcheck.ts";
 
 export const NOT_A_VERDICT = "To nie jest ocena treści.";
 
@@ -110,7 +110,7 @@ export function plainFromVerdict(verdict: Verdict): PlainAnswer {
 /** Explanation from the fact-checker's rating, used when the model's explanation is stale. */
 export function factcheckExplanation(decisive: VerifiedPassage[]): string | null {
   for (const p of decisive) {
-    if (p.record.route !== "google_factcheck") continue;
+    if (!isFactcheckCard(p.record)) continue;
     const rating = factcheckFields(p.record.text).rating;
     if (rating) return `${p.record.publisher} ocenia to twierdzenie jako „${rating}”.`;
   }
@@ -123,7 +123,7 @@ export function factcheckExplanation(decisive: VerifiedPassage[]): string | null
 // that we did not find one, without "Tak."/"Nie." and never "there is no such article".
 export function askedCheckerAnswer(asked: string, passages: VerifiedPassage[]): { lead: string; found: boolean } {
   const hit = passages.find((p) =>
-    p.record.route === "google_factcheck" && ["supports", "refutes", "misleading"].includes(p.stance) &&
+    isFactcheckCard(p.record) && ["supports", "refutes", "misleading"].includes(p.stance) &&
     isAskedChecker(asked, p.record.publisher)
   );
   if (hit) {
@@ -137,7 +137,7 @@ export function askedCheckerAnswer(asked: string, passages: VerifiedPassage[]): 
   }
   return {
     found: false,
-    lead: `Nie znaleźliśmy weryfikacji ${asked.trim()} na ten temat w indeksie Google Fact Check (to nie znaczy, że jej nie ma).`,
+    lead: `Nie znaleźliśmy weryfikacji ${asked.trim()} na ten temat w indeksie Google Fact Check ani w naszym korpusie (to nie znaczy, że jej nie ma).`,
   };
 }
 

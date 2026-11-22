@@ -118,8 +118,10 @@ export const eurostat: Connector = {
       if (members.length >= 10) {
         const lo = members[0];
         const hi = members[members.length - 1];
+        // Some members missing: the extremes are only among those reporting, never "in the EU".
+        const scope = members.length < EU_MEMBERS.length ? `spośród ${members.length} państw UE z danymi` : "w UE";
         lines.push(
-          `Najniższa wartość w UE w ${compareYear}: ${geoName(lo.geo)}, ${formatNumber(lo.value, ind.unit)}; najwyższa: ${geoName(hi.geo)}, ${formatNumber(hi.value, ind.unit)}.`,
+          `Najniższa wartość ${scope} w ${compareYear}: ${geoName(lo.geo)}, ${formatNumber(lo.value, ind.unit)}; najwyższa: ${geoName(hi.geo)}, ${formatNumber(hi.value, ind.unit)}.`,
         );
         if (me) {
           const fromLow = 1 + members.filter((r) => r.value < me.value).length;

@@ -185,7 +185,8 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
 
   // ── 1. Validate ────────────────────────────────────────────────────────────
   const value = typeof req.input?.value === "string" ? req.input.value : "";
-  const userMessageRaw = (req.user_message ?? "").slice(0, 2000);
+  // Optional fields arrive unchecked from the HTTP body: a non-string must not throw (HTTP 500).
+  const userMessageRaw = (typeof req.user_message === "string" ? req.user_message : "").slice(0, 2000);
   if (!(INPUT_TYPES as readonly string[]).includes(inputType) || !value.trim()) {
     return finish("input_rejected", "Wklej tekst, link albo dodaj obraz, wideo lub nagranie audio.");
   }
@@ -331,6 +332,9 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       today,
       normalizeForMatch(userMessage),
       material.map((m) => normalizeForMatch(m.text)),
+      // Same article text at another URL or date is another input: its link and reference date differ.
+      response.input.url,
+      response.input.published_at,
       ...(deps.cacheScope ? [deps.cacheScope] : []),
     ]),
   );
@@ -398,15 +402,19 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
   }
   for (const w of extraction.implied_warnings) response.warnings.push({ type: "implied_claim", text: w });
 
-  if (extraction.input_kind === "too_vague" || (extraction.input_kind !== "checkable" && extraction.claims.length === 0)) {
+  if (extraction.input_kind === "checkable" && extraction.claims.length === 0) {
+    // The model said there is something to check, but no claim survived validation (e.g. a span that
+    // is not verbatim): our failure, a system state, never "nothing to check" (hard constraint 8).
+    return finish("technical_error", "Nie udało się wiarygodnie wydzielić twierdzeń z tego tekstu. Spróbuj ponownie.");
+  }
+  if (extraction.input_kind === "too_vague" || extraction.claims.length === 0) {
     const map: Record<string, RequestStatus> = {
       too_vague: "needs_clarification",
       out_of_scope: "out_of_scope",
       joke_or_nonsense: "not_a_claim",
       opinion_only: "not_a_claim",
-      checkable: "not_a_claim",
     };
-    return finish(map[extraction.input_kind], extraction.clarification_question);
+    return finish(map[extraction.input_kind] ?? "not_a_claim", extraction.clarification_question);
   }
 
   // ── 7. Evidence per claim, in parallel ─────────────────────────────────────
@@ -626,6 +634,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     };
   }
   const result = await finish(status, null);
-  if (status === "ok" || status === "partial") await deps.store.setCached(cacheKey, structuredClone(result), sessionHash);
+  // Only complete answers are cached: a partial one (a source failed) must be retried, not replayed.
+  if (status === "ok") await deps.store.setCached(cacheKey, structuredClone(result), sessionHash);
   return result;
 }

@@ -3,7 +3,7 @@
  * The passage is a labelled data record built from API fields only.
  */
 import { LIMITS } from "../config.ts";
-import { type Connector, ConnectorError, fetchJson, type SourceRecord } from "./types.ts";
+import { type Connector, ConnectorError, fetchJson, safeErrorMessage, type SourceRecord } from "./types.ts";
 
 interface EliAct {
   address: string;
@@ -85,9 +85,12 @@ export const sejmEli: Connector = {
       }),
     );
     const ok = settled.filter((s): s is PromiseFulfilledResult<{ items?: EliAct[] }> => s.status === "fulfilled");
-    if (ok.length === 0 && settled.length > 0) {
-      const r = (settled[0] as PromiseRejectedResult).reason;
-      throw r instanceof ConnectorError ? r : new ConnectorError("error", String(r));
+    // Some queries failed and the rest found nothing: report the failure (required route), not "no act".
+    const failed = settled.find((s): s is PromiseRejectedResult => s.status === "rejected");
+    const found = ok.reduce((n, { value }) => n + (value.items?.length ?? 0), 0);
+    if (failed && (ok.length === 0 || found === 0)) {
+      const r = failed.reason;
+      throw r instanceof ConnectorError ? r : new ConnectorError("error", safeErrorMessage(r));
     }
     const retrieved = new Date().toISOString();
     const seen = new Set<string>();

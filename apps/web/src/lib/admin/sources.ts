@@ -357,7 +357,8 @@ export function initSources() {
       settle();
       if (sample !== startedInSample) return;
       if (e instanceof HttpError && (e.status === 401 || e.status === 429)) return;
-      if (e instanceof HttpError && e.status === 503) {
+      // 503, or no answer at all (network drop, unreadable body): the save may have landed.
+      if ((e instanceof HttpError && e.status === 503) || !(e instanceof HttpError)) {
         // The server could not confirm the save, and the write may still land: re-read, and say the
         // outcome is unknown either way (other rows keep their messages).
         const kept = new Map(rowErrors);

@@ -56,6 +56,8 @@ export class MemoryCheckStore implements CheckStore {
     const cutoff = now.getTime() - LIMITS.retentionDays * 86_400_000;
     this.checks = this.checks.filter((c) => Date.parse(c.created_at) >= cutoff);
     this.events = this.events.filter((e) => Date.parse(e.created_at) >= cutoff);
+    // Cached answers expire after the TTL; a key never read again would otherwise stay in memory.
+    for (const [k, v] of this.cache) if (now.getTime() - v.at > LIMITS.cacheTtlMs) this.cache.delete(k);
     return Promise.resolve();
   }
 }

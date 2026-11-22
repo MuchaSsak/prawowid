@@ -184,11 +184,15 @@ export async function findOriginalDate(
   timeoutMs = 1500,
 ): Promise<string | null> {
   if (corpus.size() === 0) return null;
-  const sentences = texts.flatMap((t) => distinctiveSentences(t));
+  // Corpus search is synchronous CPU work, so the timeout below can't interrupt it: cap the number of
+  // searches and check the deadline between them (a recording with many turns must not block the instance).
+  const sentences = texts.flatMap((t) => distinctiveSentences(t)).slice(0, 3);
   if (!sentences.length) return null;
+  const deadline = Date.now() + timeoutMs;
   const search = (async () => {
     const dates: string[] = [];
     for (const s of sentences) {
+      if (Date.now() > deadline) break;
       const records = await corpus.search([s], 5);
       for (const r of records) {
         if (r.published_at && DAY.test(r.published_at) && containsVerbatim(r.text, s)) {
@@ -199,11 +203,16 @@ export async function findOriginalDate(
     }
     return dates.sort()[0] ?? null;
   })();
-  const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs));
+  let timer: number | undefined;
+  const timeout = new Promise<null>((resolve) => {
+    timer = setTimeout(() => resolve(null), timeoutMs);
+  });
   try {
     return await Promise.race([search, timeout]);
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
