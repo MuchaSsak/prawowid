@@ -373,7 +373,8 @@ export function initSources() {
         if (state) render(state);
         return;
       }
-      rowErrors.set(key, e instanceof HttpError ? (e.status === 400 ? "Serwer nie zna tego źródła." : `Nie zapisano (błąd ${e.status}).`) : "Nie zapisano: brak połączenia z API.");
+      // Only HTTP errors reach here (a missing answer took the unknown-outcome branch above).
+      rowErrors.set(key, e.status === 400 ? "Serwer nie zna tego źródła." : `Nie zapisano (błąd ${e.status}).`);
       // Revert: the server state did not change, so put the old value back.
       render({ ...state, sources: state.sources.map((s) => (s.key === key ? { ...s, enabled: !want } : s)) });
     }

@@ -405,7 +405,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
   if (extraction.input_kind === "checkable" && extraction.claims.length === 0) {
     // The model said there is something to check, but no claim survived validation (e.g. a span that
     // is not verbatim): our failure, a system state, never "nothing to check" (hard constraint 8).
-    return finish("technical_error", "Nie udało się wiarygodnie wydzielić twierdzeń z tego tekstu. Spróbuj ponownie.");
+    return finish("technical_error", "Nie udało się dosłownie wskazać twierdzeń w tym tekście. Wklej samo zdanie, które chcesz sprawdzić.");
   }
   if (extraction.input_kind === "too_vague" || extraction.claims.length === 0) {
     const map: Record<string, RequestStatus> = {
@@ -418,7 +418,7 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
   }
 
   // ── 7. Evidence per claim, in parallel ─────────────────────────────────────
-  const ctx: ConnectorContext = { config: deps.config, signal: deadline.signal, corpus: deps.corpus };
+  const ctx: ConnectorContext = { config: deps.config, signal: deadline.signal, corpus: deps.corpus, resolveHost: deps.resolveHost };
   const tEvidence = Date.now();
   const claimResults = await Promise.all(extraction.claims.map((c) => checkOne(c)));
   mark("evidence", tEvidence);

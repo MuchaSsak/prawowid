@@ -41,6 +41,17 @@ const fold = (s: string) => s.toLowerCase().normalize("NFD").replace(/\p{M}/gu, 
  * Stance of a rating for the same claim. Order matters: "częściowa prawda" before "prawda",
  * "nieprawda" before "prawda", "partly false" before "false". Unknown ratings → null (no override).
  */
+/**
+ * True when two statements differ in negation ("powodują" vs "nie powodują"): a fact-checker's rating
+ * of one then says the opposite about the other, so it can't be applied to it.
+ */
+export function oppositePolarity(a: string, b: string): boolean {
+  const NEGATIONS = /^(nie|nigdy|zaden|zadna|zadne|zadnego|zadnych|zadnej|zadnym|brak|not|no|never|none)$/;
+  // Presence, not parity: Polish negative concord ("żaden … nie") is one negation, not two.
+  const negated = (s: string) => fold(s).split(/[^\p{L}\p{N}]+/u).some((w) => NEGATIONS.test(w));
+  return negated(a) !== negated(b);
+}
+
 export function ratingStance(rating: string): Stance | null {
   const r = fold(rating);
   if (/mostly false|w wiekszosci falsz/.test(r)) return "refutes";
@@ -48,7 +59,7 @@ export function ratingStance(rating: string): Stance | null {
     return "misleading";
   }
   // "Przerobione zdjęcie / film": the material shown was altered, so what it purports to show is false.
-  if (/falsz|nieprawd|false|fake|falso|faux|incorrect|wrong|pants on fire|fabricated|bezpodstawn|przerobion|scam|oszustw|неправда|фальш|фейк/.test(r)) {
+  if (/falsz|nieprawd|false|fake|falso|faux|incorrect|wrong|pants on fire|fabricated|bezpodstawn|przerobion|scam|oszustw|неправда|фальш|фейк|феик/.test(r)) {
     return "refutes";
   }
   if (/^(prawda|prawdziwe|true|correct|accurate|verdadero|vrai|правда)(?![\p{L}])/u.test(r)) return "supports";

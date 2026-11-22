@@ -250,3 +250,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | clean: edits to 008, 012, 013, codebase; links and index unaffected
 ## [2026-11-22] update | full code review (Fable + Astra) fixes: robots.txt RFC 9309 matching + AI-crawler groups for pasted links (012, user decision), SSRF-safe robots redirects, whole-name private params, fact-check cards by shape (evidence-assessment), Demagog ratings kept in the corpus (3142/3142 cards), key-safe transport errors, partial route failures, cache fixes (codebase)
 ## [2026-11-22] lint | clean: 012, codebase, evidence-assessment edited; links and index unaffected
+## [2026-11-22] update | final review of PR #17 (GPT Sol 6/10, Claude Opus 8/10 approve): rating override guarded by polarity + recognised rating (evidence-assessment), DNS resolver for fact-check article fetches, partial failures counted after the allowlist filter, robots group/escape fixes

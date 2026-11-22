@@ -179,3 +179,14 @@ Deno.test("robots: a site that blocks AI crawlers blocks us too, even when '*' a
   assertEquals(robotsGroupsAllow(plain, "/kraj/artykul,123.html"), true);
   assertEquals(robotsGroupsAllow(plain, "/kraj?page=2"), false);
 });
+
+Deno.test("robots: Sitemap between User-agent lines keeps one group; our own group replaces '*'; escapes compare canonically", async () => {
+  const { parseRobotsGroups, robotsGroupsAllow } = await import("../src/intake/url.ts");
+  const split = parseRobotsGroups("User-agent: *\nSitemap: https://x.example/s.xml\nUser-agent: GPTBot\nDisallow: /private\n");
+  assertEquals(robotsGroupsAllow(split, "/private/a"), false);
+  const ours = parseRobotsGroups("User-agent: *\nDisallow: /\n\nUser-agent: prawdowid\nAllow: /\n");
+  assertEquals(robotsGroupsAllow(ours, "/artykul"), true);
+  const enc = parseRobotsGroups("User-agent: *\nDisallow: /%7Euser/\n");
+  assertEquals(robotsGroupsAllow(enc, "/~user/page"), false);
+  assertEquals(robotsGroupsAllow(parseRobotsGroups("User-agent: *\nDisallow: /a%2fb\n"), "/a%2Fb/x"), false);
+});

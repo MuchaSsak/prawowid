@@ -34,7 +34,7 @@ const TRACKING = /^(utm_\w+|fbclid|gclid|dclid|msclkid|yclid|igshid|mc_cid|mc_ei
 /** Private-looking words, matched against whole parameter-name parts (`access_token`, `userEmail`,
  * `PHPSESSID`), never substrings, so `author`, `keyword`, `postcode`, `president` pass. */
 const PRIVATE_PARAM =
-  /^(token|key|apikey|pass|passwd|password|pwd|secret|session|sessionid|sessid|phpsessid|jsessionid|sid|auth|authtoken|accesstoken|sig|signature|email|phone|code)$/;
+  /^(token|key|apikey|apitoken|authkey|accesskey|passkey|privatekey|sesskey|sessiontoken|pass|passwd|password|pwd|secret|session|sessionid|sessid|phpsessid|jsessionid|sid|auth|authtoken|accesstoken|sig|signature|email|phone|code)$/;
 
 export function isPrivateParam(name: string): boolean {
   const parts = name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase().split(/[^a-z0-9]+/);
@@ -131,9 +131,9 @@ function agentApplies(agent: string): boolean {
  * tie against "Disallow: /" for GPTBot.
  */
 export function parseRobotsGroups(txt: string): RobotsRule[][] {
-  const lines = txt.split(/\r?\n/).map((l) => l.replace(/#.*/, "").trim()).filter(Boolean);
-  const groups: RobotsRule[][] = [];
-  let current: RobotsRule[] | null = null;
+  const lines = txt.replace(/^\uFEFF/, "").split(/\r?\n/).map((l) => l.replace(/#.*/, "").trim()).filter(Boolean);
+  const groups: { rules: RobotsRule[]; agents: string[] }[] = [];
+  let current: { rules: RobotsRule[]; agents: string[] } | null = null;
   let applies = false;
   let lastWasAgent = false;
   for (const line of lines) {
@@ -141,28 +141,45 @@ export function parseRobotsGroups(txt: string): RobotsRule[][] {
     const key = k.trim().toLowerCase();
     const value = rest.join(":").trim();
     if (key === "user-agent") {
-      const match = agentApplies(value.toLowerCase());
+      const agent = value.toLowerCase();
+      const match = agentApplies(agent);
       if (!lastWasAgent) {
-        current = [];
+        current = { rules: [], agents: [] };
         applies = false;
       }
+      current!.agents.push(agent);
       if (match && !applies) groups.push(current!);
       applies = applies || match;
       lastWasAgent = true;
       continue;
     }
+    // Only rules end a run of User-agent lines (RFC 9309 §2.2.4); Sitemap and other records don't.
+    if (key !== "disallow" && key !== "allow") continue;
     lastWasAgent = false;
-    if (applies && current && (key === "disallow" || key === "allow") && value) {
-      const pattern = value.replace(/[^\x00-\x7f]+/g, (c) => encodeURIComponent(c));
-      current.push({ allow: key === "allow", pattern });
-    }
+    if (applies && current && value) current.rules.push({ allow: key === "allow", pattern: canonicalPath(value) });
   }
-  return groups;
+  // A group naming our bot replaces "*" for us (RFC 9309); AI-crawler groups still apply.
+  const ours = groups.some((g) => g.agents.some((a) => a.includes("prawdowid")));
+  return groups.filter((g) => !ours || !g.agents.every((a) => a === "*")).map((g) => g.rules);
+}
+
+/**
+ * One form for paths and rules before comparing: raw non-ASCII percent-encoded, percent escapes in
+ * upper case, escapes of unreserved characters decoded (RFC 9309 §2.2.2); reserved escapes stay.
+ */
+function canonicalPath(s: string): string {
+  return s
+    .replace(/[^\x00-\x7f]+/g, (c) => encodeURIComponent(c))
+    .replace(/%([0-9a-fA-F]{2})/g, (_, h: string) => {
+      const ch = String.fromCharCode(parseInt(h, 16));
+      return /[A-Za-z0-9\-._~]/.test(ch) ? ch : `%${h.toUpperCase()}`;
+    });
 }
 
 /** A path is allowed when every applicable group allows it (the strictest reading). */
 export function robotsGroupsAllow(groups: RobotsRule[][], path: string): boolean {
-  return groups.every((g) => robotsRulesAllow(g, path));
+  const canonical = canonicalPath(path);
+  return groups.every((g) => robotsRulesAllow(g, canonical));
 }
 
 /** Allow/Disallow rules from the groups for "*" or our bot (both merged, the stricter reading). */
