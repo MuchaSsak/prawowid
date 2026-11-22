@@ -62,3 +62,14 @@ Deno.test("catalog assigns cert.pl and imgw.pl official tiers", () => {
   assertEquals(trustedSourceFor("https://www.cert.pl/alerty")?.tier, "official");
   assertEquals(trustedSourceFor("https://danepubliczne.imgw.pl/")?.tier, "official");
 });
+
+Deno.test("IndexedCorpusStore: loadIndex takes a file URL on every OS (Windows pathname is /C:/…)", async () => {
+  const dir = await Deno.makeTempDir();
+  const file = `${dir}/index.json`;
+  await Deno.writeTextFile(file, JSON.stringify({ version: 1, records: [record({})] }));
+  const { toFileUrl } = await import("jsr:@std/path@^1");
+  const store = new IndexedCorpusStore();
+  await store.loadIndex(toFileUrl(file));
+  assertEquals(store.indexStatus().state, "ready");
+  await Deno.remove(dir, { recursive: true });
+});

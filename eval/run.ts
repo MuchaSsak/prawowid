@@ -82,7 +82,7 @@ const PRIORITY: Verdict[] = ["false", "misleading", "insufficient_evidence", "co
 // ── execution ────────────────────────────────────────────────────────────────
 const store = new MemoryCheckStore();
 const corpus = new IndexedCorpusStore();
-await corpus.loadIndex(new URL("../data/corpus/alert-corpus-index.json", import.meta.url).pathname);
+await corpus.loadIndex(new URL("../data/corpus/alert-corpus-index.json", import.meta.url));
 
 async function resolveHost(h: string): Promise<string[]> {
   const r = await Promise.allSettled([Deno.resolveDns(h, "A"), Deno.resolveDns(h, "AAAA")]);

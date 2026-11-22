@@ -4,8 +4,8 @@
     "hono/": "jsr:/@hono/hono@^4.9.0/"
   },
   "tasks": {
-    "dev": "deno run --watch --allow-net --allow-env --allow-read=../../.env --env-file=../../.env main.ts",
-    "start": "deno run --allow-net --allow-env main.ts",
+    "dev": "deno run --watch --allow-net --allow-env --allow-read=../../.env,../../data/corpus --env-file=../../.env main.ts",
+    "start": "deno run --allow-net --allow-env --allow-read=../../data/corpus main.ts",
     "check": "deno check main.ts"
   }
 }

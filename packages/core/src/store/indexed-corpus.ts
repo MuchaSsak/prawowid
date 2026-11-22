@@ -135,7 +135,11 @@ export class IndexedCorpusStore implements CorpusStore {
     if (records.length) this.upsert(records);
   }
 
-  async loadIndex(path: string): Promise<void> {
+  /**
+   * Pass a file URL (`new URL("…/alert-corpus-index.json", import.meta.url)`), not its `.pathname`:
+   * on Windows the pathname is "/C:/…", which the file system rejects. A URL works on every OS.
+   */
+  async loadIndex(path: string | URL): Promise<void> {
     try {
       if (typeof Deno === "undefined") throw new Error("index_loading_requires_deno");
       const raw = await Deno.readTextFile(path);

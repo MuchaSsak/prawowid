@@ -64,7 +64,7 @@ const config = loadConfig({ get: (k) => Deno.env.get(k) });
 const store = new LoggingCheckStore(new MemoryCheckStore());
 const ADMIN_TOKEN = Deno.env.get("ADMIN_TOKEN") ?? "";
 const corpus = new IndexedCorpusStore();
-await corpus.loadIndex(new URL("../../data/corpus/alert-corpus-index.json", import.meta.url).pathname);
+await corpus.loadIndex(new URL("../../data/corpus/alert-corpus-index.json", import.meta.url));
 /** Operator on/off switches for evidence sources (admin page /admin/zrodla). */
 const sourceControls = await openSourceControlStore();
 /** Routes, corpus and allowlist with the switched-off sources removed, read once per request. */
