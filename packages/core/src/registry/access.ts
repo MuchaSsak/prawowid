@@ -56,6 +56,9 @@ export const BUILTINS: Record<string, Connector> = Object.fromEntries(
   [googleFactCheck, sejmEli, eurostat, nbp, gus].map((c) => [c.id, c]),
 );
 
+/** Minimum cosine score for a pgvector corpus hit to become a passage (see the corpus route). */
+export const PGVECTOR_MIN_SCORE = 0.85;
+
 /** Route detail prefix for a capability whose only binding is disabled (not a failure, not "no hits"). */
 export const UNSUPPORTED_SCOPE = "nieobsługiwany zakres";
 
@@ -285,10 +288,14 @@ export class EvidenceAccess {
         } catch (err) {
           throw new ConnectorError("error", `korpus: ${(err as Error).message}`);
         }
-        const fresh = res.hits.filter((h) => !h.stale);
+        // pgvector (e5-small) scores unrelated Polish text up to ~0.835 and related text from ~0.85
+        // (measured 2026-11-22 on the policja + CERT corpus); below the floor a hit is noise that would
+        // crowd fact-checks and official records out of the claim's few passages.
+        const floor = this.corpus.backend === "pgvector" ? PGVECTOR_MIN_SCORE : 0;
+        const fresh = res.hits.filter((h) => !h.stale && h.score >= floor);
         const records = this.hitRecords(fresh, reg).flatMap((r) => filter(byId.get(r.route)!, [r]));
         if (!records.length) {
-          const stale = res.hits.find((h) => h.stale && byId.get(h.binding_id)?.required);
+          const stale = res.hits.find((h) => h.stale && h.score >= floor && byId.get(h.binding_id)?.required);
           if (stale) {
             throw new ConnectorError(
               "unavailable",

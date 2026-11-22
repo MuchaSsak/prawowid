@@ -32,7 +32,7 @@ The code layout, what each part does today, what was measured, and what is still
 | Route | Applies to | Required | Notes |
 |---|---|---|---|
 | Google Fact Check | all fact claims | yes | 2 Polish queries (`languageCode=pl`) + 1 English query; the passage is assembled only from API fields (claim, claimant, rating, title); **only allowlisted publishers are kept**, tier from the catalog |
-| Sejm ELI | `legal` | yes | title search with up to 3 queries; amending acts are labelled as such in the record |
+| Sejm ELI | `legal` (on branch `t3/test-source-registry`: also any claim naming an act: Konstytucja, kodeks, ustawa, rozporządzenie) | yes | title search with up to 3 queries; amending acts are labelled as such in the record. On branch `t3/test-source-registry`: also searched with the claim's year (the newest-50 limit otherwise hides an old base act) and a named act's own title wins over looser fragments |
 | Eurostat | claims with a catalog `indicator` that has a Eurostat series | yes | series for the claim's country (claim year − 4 → latest), plus one call for all countries in that year: EU-27 value, lowest/highest member, the country's rank. Status flags shown in Polish |
 | NBP | `exchange_rate`, `gold_price`, `nbp_reference_rate` | yes | rate in force on a date (7-day window, last quote ≤ date), month/year summaries (mean, min, max, first, last); reference-rate history from the archive XML |
 | GUS BDL | `population` (verified variable only), Poland | no | optional: was unreachable on 2026-11-21, so an outage only adds the "not all sources" caveat |

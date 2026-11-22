@@ -234,3 +234,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | clean: routing, index, links, sources and skill parity checked after the registry prototype update; the operator-identity open question stays open (prototype uses an X-Operator header).
 ## [2026-11-22] update | evaluation/benchmark.md: benchmark of the source registry prototype (branch t3/test-source-registry) against the local API; 11 cases lost to OpenRouter credit (402), so not comparable with run 3; cost sheet not updated.
 ## [2026-11-22] lint | clean: benchmark note links and log checked.
+## [2026-11-22] update | Branch t3/test-source-registry: claim-extraction v5 (prompts/claim-extraction.md), Sejm ELI year search and act-name routing (codebase.md), pgvector score floor 0.85 in the registry corpus route; benchmark note updated (73%, macro-F1 0.63, misleading class 0/5).
+## [2026-11-22] lint | clean: links in benchmark.md and claim-extraction.md checked, prompt page and code version agree (v5).

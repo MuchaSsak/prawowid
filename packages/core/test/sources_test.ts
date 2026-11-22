@@ -4,7 +4,7 @@
  * All values here are synthetic test data (rule 16), not the jury set.
  */
 import { assert, assertEquals, assertStringIncludes } from "jsr:@std/assert@^1";
-import { CheckResponseSchema, runCheck } from "../src/mod.ts";
+import { CheckResponseSchema, loadConfig, MemoryCorpusStore, runCheck } from "../src/mod.ts";
 import { decodeJsonStat } from "../src/connectors/eurostat.ts";
 import { parseReferenceRates } from "../src/connectors/nbp.ts";
 import { INDICATOR_KEYS, parsePeriod } from "../src/connectors/stats-catalog.ts";
@@ -363,3 +363,37 @@ Deno.test({ ...T, name: "one publisher is one origin: two articles by the same n
     s.restore();
   }
 } });
+
+Deno.test("Sejm ELI: a claim naming an act runs whatever its type; the claim's year finds an old base act", async () => {
+  const { sejmEli } = await import("../src/connectors/sejm-eli.ts");
+  const base = { text: "", type: "event" as const, time: "unknown", entities: [], search_queries_pl: [], search_query_en: "", indicator: null, geo: null, claimed_value: null, currency: null };
+  assert(sejmEli.appliesTo({ ...base, text: "Konstytucja RP została uchwalona w 1997 roku." }));
+  assert(sejmEli.appliesTo({ ...base, text: "Kodeks testowy to akt z 1974 roku." }));
+  assert(!sejmEli.appliesTo({ ...base, text: "Most w Przykładowie zamknięto w 2025 roku." }));
+
+  // Synthetic acts: without the year only amendments come back (newest 50); with it, the base act.
+  const seen: string[] = [];
+  const original = globalThis.fetch;
+  globalThis.fetch = ((input: RequestInfo | URL) => {
+    const u = new URL(String(input));
+    seen.push(u.search);
+    const items = u.searchParams.get("year") === "1974"
+      ? [{ address: "WDU19740240141", title: "Ustawa z dnia 26 czerwca 1974 r. Kodeks testowy.", type: "Ustawa" }]
+      : [
+        { address: "WDU20260000001", title: "Ustawa z dnia 1 marca 2026 r. o zmianie ustawy - Kodeks testowy", type: "Ustawa" },
+        { address: "WDU20260000002", title: "Ustawa z dnia 2 marca 2026 r. o osobach testowych", type: "Ustawa" },
+      ];
+    return Promise.resolve(new Response(JSON.stringify({ count: items.length, items }), { headers: { "content-type": "application/json" } }));
+  }) as typeof fetch;
+  try {
+    const records = await sejmEli.search(
+      { ...base, type: "legal", text: "Kodeks testowy to ustawa z 26 czerwca 1974 roku.", time: "1974-06-26", search_queries_pl: ["Kodeks testowy"] },
+      { config: loadConfig({ get: () => undefined }), signal: AbortSignal.timeout(5000), corpus: new MemoryCorpusStore() },
+    );
+    assert(seen.some((s) => s.includes("year=1974")), "the claim's year is used");
+    assert(seen.some((s) => !s.includes("year=")), "the unfiltered search still runs");
+    assertEquals(records.map((r) => r.source_id), ["eli:WDU19740240141"]);
+  } finally {
+    globalThis.fetch = original;
+  }
+});

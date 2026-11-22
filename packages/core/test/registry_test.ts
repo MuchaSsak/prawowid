@@ -696,3 +696,31 @@ Deno.test("upload: needs a public URL in the publisher's scope; replace by docum
   const probe = await access.probe({ text: "Wersja druga komunikat" });
   assertEquals(probe.records.filter((r) => r.url.includes("policja.pl")), []);
 });
+
+Deno.test({ ...T, name: "corpus: pgvector hits below the similarity floor never become passages", async fn() {
+  const store = new MemoryRegistryStore();
+  await store.init(seedRegistry);
+  const hit = (score: number, n: number) => ({
+    chunk_id: `doc${n}:1:0`, document_id: `doc${n}`, version: 1, publisher_id: "policja", binding_id: "policja_upload",
+    kind: "dated_statement" as const, status: "current" as const, title: `Dokument ${n}`, url: `https://policja.pl/pol/${n}.html`,
+    published_at: null, retrieved_at: "2026-11-22T00:00:00Z", effective_from: null, effective_to: null,
+    quoted_text: `Tekst ${n}.`, score, stale: false,
+  });
+  const fake = {
+    backend: "pgvector" as const,
+    revision: () => Promise.resolve(1),
+    replace: () => Promise.reject(new Error("unused")),
+    list: () => Promise.reject(new Error("unused")),
+    history: () => Promise.resolve(null),
+    query: () => Promise.resolve({ hits: [hit(0.91, 1), hit(0.83, 2)], corpus_revision: 1 }),
+  };
+  const d = deps();
+  const access = new EvidenceAccess(store, fake, { config: d.config });
+  const corpus = access.connectors(await store.read()).find((c) => c.id === "corpus")!;
+  const claim: ClaimQuery = {
+    text: "x", type: null, time: "unknown", entities: [], search_queries_pl: [], search_query_en: "", indicator: null, geo: null,
+    claimed_value: null, currency: null,
+  };
+  const records = await corpus.search(claim, { config: d.config, signal: AbortSignal.timeout(5000), corpus: access.corpusView() });
+  assertEquals(records.map((r) => r.title), ["Dokument 1"]);
+} });

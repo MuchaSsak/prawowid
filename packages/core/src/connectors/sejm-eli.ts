@@ -66,20 +66,32 @@ export function titleCandidates(claimText: string, queries: string[]): string[] 
   return out;
 }
 
+/** A claim that names a legal act is checked in ELI whatever type extraction gave it ("uchwalona" reads as an event). */
+const NAMES_ACT = /\b(konstytucj\p{L}*|kodeks\p{L}*|ustaw(?:a|y|ę|ie|ą|ach|om)|rozporządzeni\p{L}*|dz\.\s?u\.)(?=\P{L}|$)/iu;
+
 export const sejmEli: Connector = {
   id: "sejm_eli",
   label: "Sejm ELI (akty prawne)",
   required: true,
-  appliesTo: (c) => c.type === "legal",
+  appliesTo: (c) => c.type === "legal" || NAMES_ACT.test(c.text),
   unavailableReason: () => null,
 
   async search(claim, ctx) {
-    const queries = titleCandidates(claim.text, claim.search_queries_pl).slice(0, 3);
+    const candidates = titleCandidates(claim.text, claim.search_queries_pl);
     const aboutAmendment = /noweliz|zmian|zmieni/i.test(claim.text);
+    // ELI returns the newest 50 matches, so an old base act (a code from 1974) is crowded out by its
+    // amendments. The year the claim names narrows the search; the unfiltered search still runs, so a
+    // wrong year in the claim cannot hide the real act.
+    const year = Number(/^(\d{4})/.exec(claim.time ?? "")?.[1]);
+    const withYear = year >= 1918 && year <= new Date().getUTCFullYear();
+    const queries: { title: string; year?: number }[] = withYear
+      ? [...candidates.slice(0, 2).map((title) => ({ title, year })), ...candidates.slice(0, 2).map((title) => ({ title }))]
+      : candidates.slice(0, 3).map((title) => ({ title }));
     const settled = await Promise.allSettled(
       queries.map((q) => {
         const u = new URL("https://api.sejm.gov.pl/eli/acts/search");
-        u.searchParams.set("title", q);
+        u.searchParams.set("title", q.title);
+        if (q.year) u.searchParams.set("year", String(q.year));
         u.searchParams.set("limit", "50");
         return fetchJson(u.toString(), ctx.signal, LIMITS.connectorTimeoutMs) as Promise<{ items?: EliAct[] }>;
       }),
@@ -94,7 +106,12 @@ export const sejmEli: Connector = {
     const out: SourceRecord[] = [];
     // Base acts first (the act the claim is about); amending acts only if the claim is about a change;
     // announcements (tekst jednolity), corrections and regulations are not the act itself.
-    const items = ok.flatMap(({ value }) => value.items ?? []);
+    let items = ok.flatMap(({ value }) => value.items ?? []);
+    // A named act (Konstytucja, Kodeks …) found by its own title beats acts found by looser fragments.
+    const named = candidates[0] && /^(Konstytucja|Kodeks)\b/.test(candidates[0]) ? candidates[0].toLowerCase() : null;
+    if (named && items.some((a) => (a.title ?? "").toLowerCase().includes(named))) {
+      items = items.filter((a) => (a.title ?? "").toLowerCase().includes(named));
+    }
     const rank = (a: EliAct) => {
       const t = a.title ?? "";
       if (/Obwieszczenie|sprostowani|Rozporządzenie|Uchwała|Postanowienie|Wyrok/i.test(t)) return 9;
