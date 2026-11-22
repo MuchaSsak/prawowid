@@ -86,12 +86,13 @@ Return only JSON matching the schema. "source_span" must be copied exactly from 
 ```
 
 ## Code checks after the call
-- Every `source_span` must be found in the material (whitespace and quote normalisation, **case-insensitive, a trailing `.`/`?`/`!` ignored**, since 2026-11-22: people type "robert lewandowski", the model copies "Robert Lewandowski." and the claim used to be dropped as invented → `technical_error`). The words must all be there. If it isn't, drop the claim: the model may not invent claims. Quotes from sources stay exact.
+- Every `source_span` must be found in the material (whitespace and quote normalisation, **case-insensitive and Polish letters ignored, a trailing `.`/`?`/`!` ignored**, since 2026-11-22: people type "robert lewandowski" or "odbyl sie", the model copies "Robert Lewandowski." or "odbył się", and the claim used to be dropped as invented → `technical_error`; `foldTyping` in `guard/normalize.ts`). The words must all be there. If it isn't, drop the claim: the model may not invent claims. Quotes from sources stay exact.
 - More than 8 fact claims → keep the 8 by `risk`, then by order.
 - `injection_signals` non-empty → log an `injection_detected` row to `check_events` and add the warning to the answer. The pipeline continues (scenario E).
 - Every `assumptions[].source_span` must be found in the material too. If it isn't, drop the claim (an unsupported resolution counts as an invented claim).
 - Dates: code computes the reference date and turns `time_text` into the full date or period it writes to the claim's `time` field ([pipeline §2](../architecture/verification-pipeline.md#2-extract-and-classify-claims)). A filled year is shown as an `assumed_period` warning.
 - Opinion or prediction → verdict `nie podlega weryfikacji` + the one-line `why_not_verifiable`, with no retrieval. Rendered after the fact claims, with no further commentary.
+- **Second opinion:** when the small model finds no fact claim (`opinion_only`, `joke_or_nonsense`, and since 2026-11-22 `too_vague`), the evidence model re-runs extraction once; its answer wins only if it finds a fact claim (event `extraction_escalated`). Trigger for `too_vague`: "Czy w hiszpanii odbyl sie strajk" (no Polish letters) got "Jaki strajk?" 3 of 3 times while "Czy w Hiszpanii odbył się strajk?" was checked.
 - `input_kind` mapping: `too_vague` → system state `needs_clarification`, `out_of_scope` → `out_of_scope`, `joke_or_nonsense` → a friendly system message (not a verdict).
 
 ## Edge cases

@@ -327,3 +327,29 @@ Deno.test({ ...T, name: "decision 016: a cancellation counts only when it is abo
   const cancelled = { ...OFFICIAL_NOTICE, text: OFFICIAL_NOTICE.text + " Strajk generalny przełożono na grudzień." };
   assertEquals((await announced16(cancelled)).stance, "context");
 } });
+
+Deno.test({ ...T, name: "'too vague' from the small model → the stronger model re-checks once; a fact wins, agreement keeps the question", async fn() {
+  const run = async (second: "fact" | "vague") => {
+    let calls = 0;
+    const s = stubFetch({
+      extraction: () => {
+        calls++;
+        if (calls === 1 || second === "vague") {
+          return extraction([], { input_kind: "too_vague", clarification_question: "Jaki strajk masz na myśli?" });
+        }
+        return extraction([{ text: "W Przykładowie odbył się strajk.", span: "czy w przykladowie odbyl sie strajk", time: null }]);
+      },
+      assessment: assess({}, "insufficient_evidence"),
+    });
+    try {
+      const r = await runCheck({ input: { type: "text", value: "czy w przykladowie odbyl sie strajk" }, channel: "web", session_id: `t-vague-${second}` }, deps());
+      return { calls, r };
+    } finally { s.restore(); }
+  };
+  const fact = await run("fact");
+  assertEquals(fact.calls, 2);
+  assertEquals(fact.r.claims[0]?.class, "fact");
+  const vague = await run("vague");
+  assertEquals(vague.calls, 2);
+  assertEquals(vague.r.status, "needs_clarification");
+} });

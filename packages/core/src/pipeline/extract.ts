@@ -2,7 +2,7 @@
 import { z } from "zod";
 import { LIMITS } from "../config.ts";
 import { chatJson, type LlmUsage } from "../llm/openrouter.ts";
-import { containsVerbatim, normalizeForMatch } from "../guard/normalize.ts";
+import { containsVerbatim, foldTyping, normalizeForMatch } from "../guard/normalize.ts";
 import { claimExtractionSystem } from "../prompts/claim-extraction.v6.ts";
 import { CLAIM_TYPES } from "../types.ts";
 import { INDICATOR_KEYS } from "../connectors/stats-catalog.ts";
@@ -86,10 +86,10 @@ export async function extractClaims(args: {
   });
 
   const corpus = [args.userMessage, ...args.material.map((m) => m.text)].join("\n");
-  const lower = (s: string) => normalizeForMatch(s).toLocaleLowerCase("pl");
+  const lower = (s: string) => foldTyping(s);
   const normCorpus = lower(corpus);
   const rejectedSpans: string[] = [];
-  // Case-insensitive: the words must all be there, only the capitalisation may differ.
+  // The words must all be there; only capitalisation and Polish letters may differ (guard/normalize.ts).
   const verbatim = (span: string) => containsVerbatim(corpus, span, { ignoreCase: true });
   const kept = data.claims.filter((c) => {
     if (!verbatim(c.source_span)) {

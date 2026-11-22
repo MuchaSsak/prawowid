@@ -385,13 +385,15 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
     });
     usages.push(extracted.usage);
     prompts.add(CLAIM_EXTRACTION_ID);
-    // No fact at all ("opinion only", "joke or nonsense") is where the small model errs: it files
-    // conspiracy-style factual claims as opinions. The stronger model checks that call once; its
-    // answer wins only when it finds a fact claim. Costs one extra call on opinion-only inputs.
+    // No fact at all ("opinion only", "joke or nonsense", "too vague") is where the small model errs:
+    // it files conspiracy-style factual claims as opinions, and asks "which strike?" about a named
+    // place and event typed without Polish letters ("czy w hiszpanii odbyl sie strajk", 2026-11-22).
+    // The stronger model checks that call once; its answer wins only when it finds a fact claim.
+    // Costs one extra call on such inputs; a genuinely vague one still gets the clarification question.
     const strong = deps.config.models.evidence_assessment;
     const kind = extracted.extraction.input_kind;
     const hasFact = extracted.extraction.claims.some((x) => x.class === "fact");
-    if (!hasFact && (kind === "opinion_only" || kind === "joke_or_nonsense") && strong !== deps.config.models.claim_extraction) {
+    if (!hasFact && (kind === "opinion_only" || kind === "joke_or_nonsense" || kind === "too_vague") && strong !== deps.config.models.claim_extraction) {
       try {
         const second = await extractClaims({
           material, userMessage, today, publishedAt: response.input.published_at,
