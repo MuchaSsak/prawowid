@@ -67,6 +67,12 @@ Per class, run 3: false F1 0.91 (15/16), not_verifiable 0.86, confirmed 0.67 (pr
 
 Fixes between runs 1 and 2: Sejm ELI title search on literal title fragments, base acts ranked above amendments; causal and "secretly contains" claims are facts; a lone "misleading" passage no longer outranks a refutation with more origins; missing-key cases get their own cache. Between runs 2 and 3: connector retry; opinions always listed; official record fields count as statements; older passages are context for later periods; **trusted-source allowlist** ([decision 008](../decisions/008-trusted-source-allowlist.md)); **Eurostat/NBP/GUS routes with the code-side number check**; fact-check ratings like "Częściowa prawda"/"Missing context" → misleading; links inside chat messages are read.
 
+**Source registry prototype, branch `t3/test-source-registry` (2026-11-22, 50 cases against the local API with the registry on, corpus on pgvector, `--url` mode so J01/J02 skipped; results `eval/results/latest-registry-full.md`):**
+- Runs with 19 active sources (Google Fact Check + its 14 publishers, Sejm ELI, Eurostat, NBP, GUS, Policja.pl and CERT Polska in the corpus). As scored: macro-F1 0.54, accuracy 56% (25/45), citation coverage 100% (20/20), robustness 75% (3/4), latency 7.2 / 20.1 s, $0.096 per 100 checks, end-to-end 77% (37/48), channel consistency 100%.
+- **Not comparable with run 3:** 11 cases ended in `technical_error` because OpenRouter refused for insufficient credit (HTTP 402); they count as wrong. On the 35 labelled cases that ran, accuracy was 71% (25/35), close to run 3's 73%. A clean run needs a topped-up OpenRouter balance.
+- An earlier run the same night with Google Fact Check switched off (no key): macro-F1 lower, true fact-check cases abstained, as expected (`latest-registry-local.md`).
+- The cost sheet was not updated from these runs: credit failures and the prototype configuration make them unrepresentative ([cost-sheet rule](../rules/cost-sheet.md)).
+
 ## Known gaps (ranked by impact on the score)
 1. **True claims abstain too often** (confirmed recall 0.50): A08, A10, A11, E03, F02 and S05. In S05 the model labelled the exact NBP line (4,2578 vs claim 4,26) as context. Code never upgrades a stance on purpose (a same-named statistic with another definition must not become a verdict), so the fix belongs in the prompt or the model.
 2. **Misleading inference** (B01, B03: true premise + wrong conclusion) still abstains: needs the explicit "misleading inference" handling from pipeline §2.

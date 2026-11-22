@@ -232,3 +232,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | Clean: links, index entries, section parity of the translation and skill parity checked.
 ## [2026-11-22] update | Source registry prototype on branch t3/test-source-registry: status section in architecture/source-platform.md (mapping to code, verified localhost run on pgvector, tests, simplifications), registry row in architecture/codebase.md, run guide in docs/source-registry-prototype.md.
 ## [2026-11-22] lint | clean: routing, index, links, sources and skill parity checked after the registry prototype update; the operator-identity open question stays open (prototype uses an X-Operator header).
+## [2026-11-22] update | evaluation/benchmark.md: benchmark of the source registry prototype (branch t3/test-source-registry) against the local API; 11 cases lost to OpenRouter credit (402), so not comparable with run 3; cost sheet not updated.
+## [2026-11-22] lint | clean: benchmark note links and log checked.
