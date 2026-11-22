@@ -244,3 +244,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | 1 finding: codebase.md still called the corpus route an empty mock -> fixed; routing, index, links and skill parity clean
 ## [2026-11-22] update | retrieve keeps the best record of every route before filling by rank (Eurostat figure was pushed out by corpus fragments); GUS connector falls back to a saved API copy (scripts/snapshot_gus.ts); codebase updated
 ## [2026-11-22] lint | clean: two codebase rows edited, links and index unaffected
+## [2026-11-22] update | corpus build reworked (user): passages instead of sentences, Demagog verdict cards + article opening, publisher names, origin_key per publisher, retrieved_at from raw, validity / snapshot headers; codebase and 012 updated

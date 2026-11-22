@@ -180,8 +180,52 @@ async function jsonDirs(): Promise<string[]> {
   return [...new Set(out)].sort();
 }
 
+/**
+ * Live-state snapshots: what the source showed when it was collected, not a dated publication.
+ * Their text starts with "Stan na <time>" so nobody cites an expired state as current.
+ */
+const SNAPSHOT_SOURCES = new Set(["gddkia_map", "gddkia_obstacles", "rso", "rso_mazowieckie", "paa_monitoring", "gios"]);
+
+function str(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+/** Metadata the raw records already carry, passed through to the index builder. */
+function metadata(record: Record<string, unknown>) {
+  const raw = asObject(record.raw) ?? {};
+  const location = Array.isArray(record.location)
+    ? record.location.filter((x): x is string => typeof x === "string" && x.trim().length > 0 && !/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/.test(x))
+    : [];
+  return {
+    publisher: str(raw.publisher),
+    retrieved_at: str(record.last_seen_at) ?? str(record.first_seen_at),
+    updated_at: isoDate(record.updated_at),
+    valid_from: str(record.valid_from),
+    valid_to: str(record.valid_to),
+    location,
+    category: str(record.category),
+    date_issue: str(raw.date_issue),
+  };
+}
+
+/** One leading sentence with the validity period or the snapshot time, built from structured fields. */
+function stateHeader(source: string, record: Record<string, unknown>, content: string): string | null {
+  if (/^Obowiązuje (od|do) /.test(content) || content.includes(" Obowiązuje od ")) return null; // GDDKiA map text has it
+  const from = polishDateTime(record.valid_from);
+  const to = polishDateTime(record.valid_to);
+  const parts: string[] = [];
+  if (SNAPSHOT_SOURCES.has(source)) {
+    const seen = polishDateTime(record.last_seen_at ?? record.first_seen_at);
+    if (seen) parts.push(`Stan na ${seen} (dane bieżące w chwili pobrania).`);
+  }
+  if (from || to) parts.push(from ? `Obowiązuje od ${from}${to ? ` do ${to}` : ""}.` : `Obowiązuje do ${to}.`);
+  return parts.length ? parts.join(" ") : null;
+}
+
 const files = await jsonDirs();
 const lines: string[] = [];
+// The same record may be read from ../data and data/raw: keep the first copy only.
+const seenKeys = new Set<string>();
 for (const file of files) {
   let parsed: unknown;
   try {
@@ -213,6 +257,11 @@ for (const file of files) {
       : typeof record.external_id === "string"
       ? record.external_id
       : "";
+    const externalId = record.external_id ?? url;
+    const key = `${source}\u0000${externalId}`;
+    if (seenKeys.has(key)) continue;
+    seenKeys.add(key);
+    const meta = metadata(record);
     const claims: unknown[] = [];
     if (source === "demagog" && record.raw && typeof record.raw === "object") {
       const raw = record.raw as Record<string, unknown>;
@@ -222,12 +271,22 @@ for (const file of files) {
           const r = review as Record<string, unknown>;
           const claim = cleanText(r.claim);
           const rating = cleanText(r.rating);
-          if (claim || rating) claims.push({ claim, rating });
+          if (claim || rating) {
+            claims.push({
+              claim,
+              rating,
+              claimant: str(r.claimant),
+              claim_date: isoDate(r.claim_date),
+              review_date: isoDate(r.review_date),
+            });
+          }
         }
       }
     }
     if (source === "demagog") {
-      const text = [
+      // The article body holds the fact-checker's findings (the real figure, date, place); the
+      // index builder keeps its opening next to the verdict card. Older text as a fallback.
+      const fallback = [
         title,
         summary,
         claims.map((c) => {
@@ -235,11 +294,11 @@ for (const file of files) {
           return [r.claim, r.rating ? `Ocena: ${r.rating}` : null].filter(Boolean).join(". ");
         }).join("\n"),
       ].filter(Boolean).join("\n");
-      const cleaned = cleanText(text);
+      const cleaned = content ?? cleanText(fallback);
       if (!cleaned) continue;
       lines.push(JSON.stringify({
         source,
-        external_id: record.external_id ?? url,
+        external_id: externalId,
         title,
         url,
         published_at: isoDate(record.published_at),
@@ -247,19 +306,23 @@ for (const file of files) {
         summary,
         claims,
         source_type: "factcheck",
+        ...meta,
+        publisher: meta.publisher ?? "Demagog",
       }));
     } else {
-      const cleaned = cleanText(content) ?? summary ?? structured;
-      if (!cleaned) continue;
+      const body = cleanText(content) ?? summary ?? structured;
+      if (!body) continue;
+      const header = stateHeader(source, record, body);
       lines.push(JSON.stringify({
         source,
-        external_id: record.external_id ?? url,
+        external_id: externalId,
         title,
         url,
         published_at: isoDate(record.published_at),
-        content: cleaned,
+        content: header ? `${header} ${body}` : body,
         summary,
         source_type: "official",
+        ...meta,
       }));
     }
   }
