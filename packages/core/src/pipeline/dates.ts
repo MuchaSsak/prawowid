@@ -123,11 +123,11 @@ function relativeTime(t: string, ref: string): string | null {
   if (has(/(tym|ten|tego|bieżąc\p{L}*|biezac\p{L}*|obecn\p{L}*)\s+(tydzień|tydzien|tygodni\p{L}*)/u)) return `${monday}/${ref}`;
   if (has(/(zeszł|ubiegł|poprzedni)\p{L}*\s+(rok|roku)|rok\s+temu/u)) return String(y - 1);
   if (has(/(przyszł|następn)\p{L}*\s+(rok|roku)/u)) return String(y + 1);
-  if (has(/(tym|bieżącym|biezacym|obecnym|tego)\s+(rok|roku)/u)) return String(y);
+  if (has(/(tym|ten|bieżącym|biezacym|bieżący|biezacy|obecnym|obecny|tego)\s+(rok|roku)/u)) return String(y);
   if (has(/(zeszł|ubiegł|poprzedni)\p{L}*\s+(miesiąc|miesiącu|miesiaca|miesiąca|miesiacu)/u)) {
     return m === 1 ? `${y - 1}-12` : `${y}-${pad(m - 1)}`;
   }
-  if (has(/(tym|bieżącym|biezacym|obecnym|tego)\s+(miesiąc|miesiącu|miesiąca|miesiacu|miesiaca)/u)) return ref.slice(0, 7);
+  if (has(/(tym|ten|bieżącym|biezacym|bieżący|biezacy|obecnym|obecny|tego)\s+(miesiąc|miesiac|miesiącu|miesiąca|miesiacu|miesiaca)/u)) return ref.slice(0, 7);
   return null;
 }
 

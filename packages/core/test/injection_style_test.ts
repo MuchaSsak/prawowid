@@ -283,3 +283,22 @@ Deno.test({ ...T, name: "decision 016: the answer says 'Tak', rests on the annou
     s.restore();
   }
 } });
+
+Deno.test({ ...T, name: "decision 016: the dated announcement about the claim's subject is used, not the nearest sentence; a sentence may start with a digit", async fn() {
+  const page: SourceRecord = {
+    ...OFFICIAL_NOTICE, source_id: "corpus:u16:2", published_at: "2026-11-06",
+    text: "Zobacz więcej na stronie: [Pomoc](/strona/pomoc) Kontakty znajdziesz poniżej. 11 listopada 2026 r. w Przykładowie odbędzie się całodobowy strajk generalny. " +
+      "Mogą wystąpić utrudnienia z uwagi na zaplanowane demonstracje w wielu miastach. Konsekwencje strajku są trudne do przewidzenia.",
+  };
+  const s = stubFetch({ assessment: assess({ "Urząd Testowy": { stance: "context", needle: "Konsekwencje", announces: true } }, "insufficient_evidence") });
+  try {
+    const run = async (claim: string, record = page) =>
+      (await assessClaim({ claim: { text: claim, time: "unknown", place: "Przykładowo" }, records: [record], referenceDate: "2026-11-22", apiKey: "k", model: "m" })).passages[0];
+    const p = await run("W Przykładowie odbył się strajk.");
+    assertEquals(p.stance, "supports");
+    assertEquals(p.announcement, "11 listopada 2026 r. w Przykładowie odbędzie się całodobowy strajk generalny.");
+    // The only dated announcement is about another subject: no confirmation.
+    const marathon = { ...page, text: "11 listopada 2026 r. w Przykładowie odbędzie się maraton miejski. Konsekwencje strajku są trudne do przewidzenia." };
+    assertEquals((await run("W Przykładowie odbył się strajk.", marathon)).stance, "context");
+  } finally { s.restore(); }
+} });

@@ -7,7 +7,7 @@ Decision: a passage supports "it took place" when **all** of these hold (code: `
 - the model marks it `announces_claimed_event: true`: it announces exactly the claimed event (same kind, place, date window). Prompt `evidence-assessment@7` adds only this field; the stance rule ("context" for an announcement) is unchanged;
 - the record is tier `official`, and its title or text names the claim's place;
 - the claim says the event happened, not that it was announced;
-- the announcing sentence names one single day (`eventDateIn` in `dates.ts`; lists and ranges such as "20 lub 21 listopada" or "w dniach" don't count). A day without a year takes the nearest one on or after the publication date;
+- an announcing sentence of the record is about the claim's subject (a 5-letter stem of a claim word other than place and time words, e.g. "strajk") and names one single day; code takes the nearest such sentence to the model's quote, since the quote is often a neighbouring sentence (2026-11-22, Spain page: the quote was "Konsekwencje… strajku…"). The sentence (`eventDateIn` in `dates.ts`; lists and ranges such as "20 lub 21 listopada" or "w dniach" don't count). A day without a year takes the nearest one on or after the publication date;
 - that day is inside the claim's time ("ostatnio" = last 30 days, "w tym tygodniu" = Monday to the reference date, a stated date or month) and strictly before the reference date;
 - no cancellation or postponement word appears anywhere in the same document (`CANCELLED`: odwołan-, przełożon-, przesunięt-, zawieszon-, anulowan-, cancel-, postpon-, plus Italian forms).
 

@@ -146,8 +146,8 @@ export async function assessClaim(args: {
       if (ANNOUNCED.test(near) || ANNOUNCED.test(siblings)) {
         verified.stance = "context";
         const sentence = ANNOUNCED.test(near)
-          ? announcingSentence(record.text, Math.max(0, record.text.indexOf(verified.quote)))
-          : announcingSentence(siblings, 0);
+          ? announcingSentence(record.text, Math.max(0, record.text.indexOf(verified.quote)), args.claim.text, args.claim.place)
+          : announcingSentence(siblings, 0, args.claim.text, args.claim.place);
         if (sentence) verified.announcement = sentence;
       }
     }
@@ -209,11 +209,14 @@ function announcedDayPassed(
   if (!aboutPlace(claim.place, `${record.title}\n${record.text}`)) return null;
   const document = [record, ...records.filter((r) => r !== record && r.url === record.url)].map((r) => r.text).join("\n");
   if (CANCELLED.test(document)) return null;
-  const sentence = announcingSentence(record.text, Math.max(0, record.text.indexOf(quote)));
-  if (!sentence) return null;
-  const date = eventDateIn(sentence, record.published_at);
-  if (!date || date >= referenceDate.slice(0, 10) || !dayInClaimTime(date, claim.time)) return null;
-  return { date, sentence };
+  // The model's quote may be a neighbouring sentence ("Konsekwencje strajku są trudne do przewidzenia"):
+  // take the nearest announcing sentence that is about the claim's subject and names a qualifying day.
+  for (const sentence of announcingSentences(record.text, Math.max(0, record.text.indexOf(quote)))) {
+    if (!sharesSubject(claim.text, sentence, claim.place)) continue;
+    const date = eventDateIn(sentence, record.published_at);
+    if (date && date < referenceDate.slice(0, 10) && dayInClaimTime(date, claim.time)) return { date, sentence };
+  }
+  return null;
 }
 const COUNTRY_WIDE = /^(polsk|pl$|rp$|rzeczpospolit|kraj|ue$|uni|europ|świat|swiat|internet)/i;
 const foldPl = (x: string) => x.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/ł/g, "l");
@@ -239,18 +242,38 @@ function around(text: string, quote: string): string {
   return i < 0 ? quote : text.slice(Math.max(0, i - 200), i + quote.length + 200);
 }
 /**
- * The whole sentence that announces or schedules something, nearest to `at`, verbatim (null when none).
- * A sentence ends at . ! ? before a capital letter or the end, so "20.11. zapowiedziano" stays one sentence.
+ * Whole sentences that announce or schedule something, verbatim, nearest to `at` first. A sentence
+ * ends at . ! ? before a capital letter, a digit ("…poniżej. 11 listopada…") or the end, so
+ * "20.11. zapowiedziano" stays one sentence.
  */
-function announcingSentence(text: string, at: number): string | null {
-  let best: { s: string; d: number } | null = null;
-  for (const m of text.matchAll(/(?:[^\n.!?]|[.!?](?!\s+\p{Lu}|\s*$))+[.!?]?/gu)) {
+function announcingSentences(text: string, at: number): string[] {
+  const found: { s: string; d: number }[] = [];
+  for (const m of text.matchAll(/(?:[^\n.!?]|[.!?](?!\s+[\p{Lu}\d]|\s*$))+[.!?]?/gu)) {
     const sentence = m[0].trim();
-    if (sentence.length <= 10 || !ANNOUNCED.test(sentence)) continue;
-    const d = Math.abs(m.index! - at);
-    if (!best || d < best.d) best = { s: sentence, d };
+    if (sentence.length > 10 && ANNOUNCED.test(sentence)) found.push({ s: sentence, d: Math.abs(m.index! - at) });
   }
-  return best?.s ?? null;
+  return found.sort((a, b) => a.d - b.d).map((x) => x.s);
+}
+
+/** The announcing sentence about the claim's subject nearest to `at`, else the nearest one (null when none). */
+function announcingSentence(text: string, at: number, claimText = "", place: string | null = null): string | null {
+  const all = announcingSentences(text, at);
+  return all.find((s) => sharesSubject(claimText, s, place)) ?? all[0] ?? null;
+}
+
+// Words of a claim that say when or that something happened, not what: never a subject match.
+const NOT_SUBJECT = /^(odby\p{L}*|ostatni\p{L}*|niedawn\p{L}*|tygodni\p{L}*|tydzie\p{L}*|miesi\p{L}*|wczoraj|dzisiaj|przedwczoraj|kiedy\p{L}*|został\p{L}*|zostan\p{L}*|naprawd\p{L}*)$/iu;
+/**
+ * True when the sentence contains a 5-letter stem of a claim word that names the subject (or the claim
+ * has none). Place words don't count: every sentence of a country page names the country.
+ */
+function sharesSubject(claimText: string, sentence: string, place: string | null = null): boolean {
+  const placeStems = (place ?? "").split(/[^\p{L}]+/u).filter((w) => w.length >= 4).map((w) => foldPl(w).slice(0, 4));
+  const words = claimText.split(/[^\p{L}]+/u)
+    .filter((w) => w.length >= 5 && !NOT_SUBJECT.test(w) && !placeStems.some((s) => foldPl(w).startsWith(s)));
+  if (!words.length) return true;
+  const t = foldPl(sentence);
+  return words.some((w) => t.includes(foldPl(w).slice(0, 5)));
 }
 const ANNOUNCED =
   /\b(?:zapowiedzia\p{L}*|zapowiada\p{L}*|zaplanowan\p{L}*|ma się odbyć|mają się odbyć|odbędzie się|odbędą się|announced|scheduled|will take place)/iu;

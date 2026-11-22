@@ -169,3 +169,8 @@ Deno.test("eventDateIn: one named day, year from the publication date looking ah
     assertEquals(eventDateIn(t, "2026-11-01"), null, t);
   }
 });
+
+Deno.test("'ten miesiąc' / 'ten rok' (the model's normalized forms) resolve like 'w tym miesiącu' / 'w tym roku'", () => {
+  assertEquals(resolveTime("ten miesiąc", "past", ref("2026-11-22")).time, "2026-11");
+  assertEquals(resolveTime("ten rok", "past", ref("2026-11-22")).time, "2026");
+});
