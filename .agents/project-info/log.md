@@ -294,3 +294,4 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | clean: decision 016 indexed and linked from 7 pages, routing and skill parity unchanged
 ## [2026-11-22] update | decision 016 live on branch build: Italy question → Tak (low strength), 12-case subset 10/11 (B01 same as prod); Vercel preview refreshed; evaluation/benchmark.md gap 3
 ## [2026-11-22] update | decision 016 refined after Spain-strike questions: nearest announcing sentence about the claim's subject with a qualifying day, sentences split before a digit, "ten miesiąc"/"ten rok" resolved; decisions/016
+## [2026-11-22] update | decision 016: the dated sentence may come from another chunk of the same page, citation shows it (Spain + "ostatnio" abstained); live: 7/8 Spain/Italy wordings right before this fix, the 8th correctly abstains (11.11 not this week); decisions/016

@@ -171,6 +171,8 @@ export async function assessClaim(args: {
         verified.stance = "supports";
         verified.announcedPassed = day.date;
         verified.announcement = day.sentence;
+        // The citation shows the announcing sentence (verbatim from the same page), not the neighbour quoted.
+        verified.quote = day.sentence;
       }
     }
     return verified;
@@ -209,9 +211,12 @@ function announcedDayPassed(
   if (!aboutPlace(claim.place, `${record.title}\n${record.text}`)) return null;
   const document = [record, ...records.filter((r) => r !== record && r.url === record.url)].map((r) => r.text).join("\n");
   if (CANCELLED.test(document)) return null;
-  // The model's quote may be a neighbouring sentence ("Konsekwencje strajku są trudne do przewidzenia"):
-  // take the nearest announcing sentence that is about the claim's subject and names a qualifying day.
-  for (const sentence of announcingSentences(record.text, Math.max(0, record.text.indexOf(quote)))) {
+  // The model's quote may be a neighbouring sentence ("Konsekwencje strajku są trudne do przewidzenia"),
+  // and the corpus splits a page into chunks: take the nearest announcing sentence of this chunk, then
+  // of the other chunks of the same page, that is about the claim's subject and names a qualifying day.
+  const siblings = records.filter((r) => r !== record && r.url === record.url).map((r) => r.text).join("\n");
+  const candidates = [...announcingSentences(record.text, Math.max(0, record.text.indexOf(quote))), ...announcingSentences(siblings, 0)];
+  for (const sentence of candidates) {
     if (!sharesSubject(claim.text, sentence, claim.place)) continue;
     const date = eventDateIn(sentence, record.published_at);
     if (date && date < referenceDate.slice(0, 10) && dayInClaimTime(date, claim.time)) return { date, sentence };

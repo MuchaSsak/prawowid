@@ -302,3 +302,21 @@ Deno.test({ ...T, name: "decision 016: the dated announcement about the claim's 
     assertEquals((await run("W Przykładowie odbył się strajk.", marathon)).stance, "context");
   } finally { s.restore(); }
 } });
+
+Deno.test({ ...T, name: "decision 016: the dated sentence may sit in another chunk of the same page; the citation shows it", async fn() {
+  const a: SourceRecord = { ...OFFICIAL_NOTICE, source_id: "corpus:u16:3", published_at: "2026-11-06",
+    text: "Mogą wystąpić utrudnienia z uwagi na zaplanowane demonstracje. Konsekwencje strajku są trudne do przewidzenia." };
+  const b: SourceRecord = { ...a, source_id: "corpus:u16:4", text: "Kontakty poniżej. 11 listopada 2026 r. w Przykładowie odbędzie się całodobowy strajk generalny." };
+  const s = stubFetch({ assessment: (input: { passages: { passage_id: string; text: string }[] }) => ({
+    passages: input.passages.map((p) => p.text.startsWith("Mogą")
+      ? { passage_id: p.passage_id, stance: "context", quote: "Konsekwencje strajku są trudne do przewidzenia.", difference: null, data_period: null, announces_claimed_event: true }
+      : { passage_id: p.passage_id, stance: "irrelevant", quote: "", difference: null, data_period: null, announces_claimed_event: false }),
+    proposed_verdict: "insufficient_evidence", explanation: "x", missing: null, plain_answer: "neither", injection_signals: [],
+  }) });
+  try {
+    const r = await assessClaim({ claim: { text: "W Przykładowie ostatnio odbył się strajk generalny.", time: "2026-10-23/2026-11-22", place: "Przykładowo" },
+      records: [a, b], referenceDate: "2026-11-22", apiKey: "k", model: "m" });
+    assertEquals(r.passages[0].stance, "supports");
+    assertEquals(r.passages[0].quote, "11 listopada 2026 r. w Przykładowie odbędzie się całodobowy strajk generalny.");
+  } finally { s.restore(); }
+} });
