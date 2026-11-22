@@ -1,0 +1,38 @@
+Copyright (c) 2026 the Prawdomat authors (team "faktokwanty"). All rights reserved.
+
+This repository and everything in it (source code, prompts, documentation,
+data files we created, designs and other materials, together "the Software")
+is proprietary. It is not open source.
+
+No license is granted to anyone except as written below. Without the prior
+written permission of the copyright holders you may not:
+
+  - copy or reproduce the Software, in whole or in part;
+  - modify, adapt, translate or create derivative works of it;
+  - distribute, publish, sublicense, sell, rent or lend it;
+  - make it available to third parties, including as a hosted service;
+  - use it, or any part of it, to train or evaluate machine learning models;
+  - remove or alter this notice.
+
+Limited permission for the hackathon
+The organizers and the jury of HackNation 2026 (task PRAWOWID) may view,
+download, install and run the Software, and reproduce its test results, only
+to evaluate our submission. This permission ends when the evaluation ends.
+It does not include any of the rights listed above.
+
+Third-party components
+Dependencies, public data sets and other third-party materials included in
+or used by the Software remain under their own licenses and terms. Nothing
+here changes those terms.
+
+Future changes
+The copyright holders may relicense the Software at any time, including
+under an open source license, or transfer their rights (for example as the
+hackathon rules require). Until a new license is published in this
+repository, this notice applies.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR ITS USE.
