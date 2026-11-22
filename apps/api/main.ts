@@ -68,8 +68,22 @@ await corpus.loadIndex(new URL("../../data/corpus/alert-corpus-index.json", impo
 /** Operator on/off switches for evidence sources (admin page /admin/zrodla). */
 const sourceControls = await openSourceControlStore();
 /** Routes, corpus and allowlist with the switched-off sources removed, read once per request. */
+/** Reads the switches; a store that hangs must not hang every check (fail closed after 2 s). */
+async function readControls() {
+  let timer: number | undefined;
+  try {
+    return await Promise.race([
+      sourceControls.read(),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error("source controls read timeout")), 2000);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 async function liveSources() {
-  const state = await sourceControls.read();
+  const state = await readControls();
   return {
     state,
     ...applySourceControls({ connectors: CONNECTORS, corpus, trustedSources: config.trustedSources }, state.disabled),
@@ -201,11 +215,13 @@ app.get("/api/v1/schema", (c) => c.json(contractJsonSchema()));
 app.get("/api/v1/sources", async (c) => {
   // Switched-off publishers and routes disappear from the open list too (source controls).
   const live = await liveSources().catch(() => null);
-  const off = new Set(live?.state.disabled ?? []);
+  // Never list a switched-off source as usable just because the switches could not be read.
+  if (!live) return c.json({ error: "source list temporarily unavailable, try again" }, 503);
+  const off = new Set(live.state.disabled);
   return c.json({
     contract_version: CONTRACT_VERSION,
     policy: "Dowodem może być tylko materiał z tej listy. Nie przeszukujemy otwartej sieci.",
-    sources: publicCatalog(live?.trustedSources ?? config.trustedSources),
+    sources: publicCatalog(live.trustedSources),
     // The routes this deployment runs (architecture/extensibility.md); context routes never decide a verdict.
     routes: CONNECTORS.filter((r) => !off.has(`route:${r.id}`)).map((r) => ({ id: r.id, label: r.label, required: r.required })),
     context_routes: NARRATIVE_MATCHERS.map((m) => ({ id: m.id, label: m.label, catalog: m.catalog })),
@@ -357,7 +373,7 @@ app.get("/api/v1/admin/analytics", async (c) => {
 
 // Source controls (admin page /admin/zrodla): switch evidence sources off and on without a deploy.
 async function sourcesReport() {
-  const state = await sourceControls.read();
+  const state = await readControls();
   return {
     persistence: sourceControls.persistence,
     revision: state.revision,
@@ -383,7 +399,10 @@ app.post("/api/v1/admin/sources", async (c) => {
   if (!body || typeof body.key !== "string" || typeof body.enabled !== "boolean") {
     return c.json({ error: 'expected { "key": "<kind>:<id>", "enabled": true|false }' }, 400);
   }
-  const known = (await sourcesReport()).sources.some((s) => s.key === body.key);
+  const report = await sourcesReport();
+  // A switched-off key whose source has since gone (e.g. a rebuilt corpus) can still be switched back on.
+  const known = report.sources.some((s) => s.key === body.key) ||
+    (body.enabled && (await readControls()).disabled.includes(body.key));
   if (!known) return c.json({ error: `unknown source key: ${body.key.slice(0, 80)}` }, 400);
   await sourceControls.set(body.key, body.enabled);
   return c.json(await sourcesReport());
@@ -396,8 +415,8 @@ app.get("/api/v1/admin/sources/search", async (c) => {
   if (!q) return c.json({ error: "q is required" }, 400);
   const live = await liveSources();
   const t0 = performance.now();
-  // Same as a check: with the corpus route switched off, nothing in it can be found.
-  const hits = live.state.disabled.includes("route:corpus") ? [] : await live.corpus.search([q], 10);
+  // Same view a check uses: switched-off collections, publishers or the whole corpus route find nothing.
+  const hits = await live.corpus.search([q], 10);
   const ms = Math.round((performance.now() - t0) * 10) / 10;
   return c.json({
     ms,

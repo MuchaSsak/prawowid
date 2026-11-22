@@ -247,6 +247,8 @@ export function initSources() {
     const labelId = `src-${s.key.replace(/[^a-z0-9]/gi, "-")}`;
     const meta: string[] = [];
     if (s.kind === "corpus") {
+      // Several collections share one publisher label, so the id is what tells the rows apart.
+      meta.push(s.id);
       if (typeof s.records === "number") meta.push(`${nf.format(s.records)} ${plural(s.records, "fragment", "fragmenty", "fragmentów")}`);
       meta.push(s.latest ? `do ${fmtDate(s.latest)}` : "bez dat");
     }

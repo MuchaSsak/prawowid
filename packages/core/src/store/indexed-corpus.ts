@@ -116,12 +116,17 @@ class Bm25Index {
         scores.set(posting.record.source_id, (scores.get(posting.record.source_id) ?? 0) + score);
       }
     }
+    // Rank first, filter second: `accept` can be costly (it parses URLs), so it only runs down the ranking
+    // until `limit` records are kept, not on every scored record. Equal scores break by source_id for a
+    // stable order.
+    const order = [...scores].sort((x, y) => y[1] - x[1] || (x[0] < y[0] ? -1 : x[0] > y[0] ? 1 : 0));
     const ranked: Array<{ record: SourceRecord; score: number }> = [];
-    for (const [id, score] of scores) {
+    for (const [id, score] of order) {
+      if (ranked.length >= limit) break;
       const record = this.byId.get(id)!;
       if (!accept || accept(record)) ranked.push({ record, score });
     }
-    return ranked.sort((a, b) => b.score - a.score).slice(0, limit);
+    return ranked;
   }
 }
 
@@ -244,17 +249,19 @@ export class IndexedCorpusStore implements CorpusStore {
       const accept: RecordFilter | undefined = filtered || exclude
         ? (r) => (!filtered || this.matches(r, options)) && (!exclude || !exclude(r))
         : undefined;
-      // Reciprocal rank fusion over the queries; official ranks before fact-checks within one query.
+      // Reciprocal rank fusion over the queries. Each tier is ranked on its own (rank within the official
+      // list, rank within the fact-check list), so the best fact-check competes with the best official
+      // record on equal footing instead of starting below the whole official list. On equal fused scores
+      // the official record comes first (insertion order, the sort is stable).
       const rrf = new Map<string, { record: SourceRecord; score: number }>();
-      for (const query of queries) {
-        const perIndex = [
-          ...this.official.search(query, limit, accept),
-          ...this.demagog.search(query, limit, accept),
-        ];
-        perIndex.forEach(({ record }, rank) => {
+      const fuse = (hits: Array<{ record: SourceRecord }>) =>
+        hits.forEach(({ record }, rank) => {
           const current = rrf.get(record.source_id);
           rrf.set(record.source_id, { record, score: (current?.score ?? 0) + 1 / (60 + rank + 1) });
         });
+      for (const query of queries) {
+        fuse(this.official.search(query, limit, accept));
+        fuse(this.demagog.search(query, limit, accept));
       }
       return Promise.resolve([...rrf.values()].sort((a, b) => b.score - a.score).slice(0, limit).map((x) => x.record));
     } catch (error) {

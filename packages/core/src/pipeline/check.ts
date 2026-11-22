@@ -49,6 +49,7 @@ import { retrieve } from "./retrieve.ts";
 import { type ContextResult, findContextMatches, NARRATIVE_MATCHERS } from "../narratives/mod.ts";
 import type { KnownIncidentStore, NarrativeMatcher } from "../narratives/types.ts";
 import { decideVerdict } from "./verdict.ts";
+import { SOURCE_DISABLED_DETAIL } from "../sources/controls.ts";
 
 export interface CoreDeps {
   config: Config;
@@ -484,7 +485,10 @@ export async function runCheck(req: CheckRequest, deps: CoreDeps): Promise<Check
       const state = r.requiredFailure.status === "unavailable" ? "source_unavailable" : "technical_error";
       return withContext({ ...base, system_state: state, system_message: claimStateMessage(state, `${r.requiredFailure.label}: ${r.requiredFailure.detail ?? r.requiredFailure.status}`) });
     }
-    const optionalRouteMissing = r.routes.some((x) => !x.required && x.status !== "hits" && x.status !== "no_hits");
+    // A route an operator switched off is the deployment's choice, not a missing database.
+    const optionalRouteMissing = r.routes.some((x) =>
+      !x.required && x.status !== "hits" && x.status !== "no_hits" && x.detail !== SOURCE_DISABLED_DETAIL
+    );
 
     if (r.records.length === 0) {
       return withContext({

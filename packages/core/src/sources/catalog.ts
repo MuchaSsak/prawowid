@@ -41,6 +41,8 @@ export const TRUSTED_SOURCES: TrustedSource[] = [
   { id: "cert_pl", name: "CERT Polska", domains: ["cert.pl"], kind: "official", tier: "official", country: "PL", credentials: "zespół CSIRT NASK", access: "not_connected", access_note: "komunikaty bezpieczeństwa zasilane do lokalnego korpusu", terms: "CC BY-SA 4.0, o ile komunikat nie stwierdza inaczej" },
   { id: "imgw", name: "Instytut Meteorologii i Gospodarki Wodnej", domains: ["imgw.pl"], kind: "official", tier: "official", country: "PL", credentials: "państwowa instytucja meteo i hydrologiczna", access: "not_connected", access_note: "ostrzeżenia i bulletiny zasilane do lokalnego korpusu", terms: "dane publiczne, z podaniem źródła" },
 
+  { id: "kgsok", name: "Komenda Główna Straży Ochrony Kolei", domains: ["kgsok.pl"], kind: "official", tier: "official", country: "PL", credentials: "formacja ochrony kolei; serwis z listy źródeł organizatora hackathonu", access: "not_connected", access_note: "aktualności ze strony głównej zasilane do lokalnego korpusu", terms: "dane publiczne, cytat z podaniem źródła" },
+
   // ── Fact-checkers (IFCN / EFCSN) via Google Fact Check ────────────────────
   { id: "demagog", name: "Demagog", domains: ["demagog.org.pl"], kind: "fact_checker", tier: "factcheck", country: "PL", credentials: "IFCN, EFCSN", access: "google_factcheck", access_note: `${VIA_GFC} Bezpośrednie pobieranie zablokowane (robots.txt blokuje boty AI).`, terms: "wszelkie prawa zastrzeżone; cytat z podaniem źródła" },
   { id: "afp", name: "AFP Sprawdzam / AFP Fact Check", domains: ["afp.com"], kind: "fact_checker", tier: "factcheck", country: "INT", credentials: "IFCN, EFCSN", access: "google_factcheck", access_note: VIA_GFC, terms: "wszelkie prawa zastrzeżone; cytat z podaniem źródła" },
