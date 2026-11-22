@@ -85,7 +85,7 @@ Format: `- [path](path): one-line summary`
 
 ## evaluation/
 - [evaluation/README.md](evaluation/README.md): scope of the folder
-- [evaluation/benchmark.md](evaluation/benchmark.md): **tests and benchmark**: 156 free deterministic tests, 50-case live reference set (A-J + statistics + organizer-style), metric definitions, results (latest 2026-11-22 on prompts v6: macro-F1 0.71, misleading 0.29, abstention 89%, robustness/consistency 100%, $0.189 per 100), known gaps
+- [evaluation/benchmark.md](evaluation/benchmark.md): **tests and benchmark**: 156 free deterministic tests, 50-case live reference set (A-J + statistics + organizer-style), metric definitions, results (latest 2026-11-22 on prompts v6: macro-F1 0.79, abstention 89%, robustness/consistency 100%, end-to-end 58/58, $0.210 per 100; rule: stay comfortably above targets), known gaps
 
 ## pitch/
 - [pitch/README.md](pitch/README.md): scope of the folder; link to the Prawdomat Design System artifact for the deck and PDFs 

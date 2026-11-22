@@ -7,8 +7,9 @@
  * fact-checker's own findings (article opening, connectors/google-factcheck.ts) decide and explain.
  * v5 = v4 + negative claims: a passage showing that the denied thing exists refutes the claim;
  * a claim that gets the date, year or number of its own subject wrong is refuted, not misleading.
- * v6 = v5 + the same person or organisation is not the same subject: a fact-check of another claim
- * about them (another product, another fake video) is irrelevant, never a refutation.
+ * v6 = v5 + a fact-check of a different claim about the same person (another product, another fake
+ * video) is irrelevant, never a refutation. Narrowed to people and fact-checks: a wider "same
+ * organisation or place" wording turned the Constitution's own ELI record into irrelevant (A09).
  */
 export const EVIDENCE_ASSESSMENT_ID = "evidence-assessment@6";
 
@@ -27,7 +28,7 @@ A fact-check of this same claim rated as manipulation, missing context, partly t
 - "context": relevant background that neither confirms nor refutes.
 - "irrelevant": about something else (for example a fact-check of a different claim).
 A passage about a different act, event, record or period than the one the claim is about is "context" or "irrelevant", never "misleading" or "refutes": it cannot show the claim distorts its own subject.
-Sharing a person, organisation or place is not sharing a subject. A passage about another statement, product, video or event involving the same person (a fake video of them promoting investments, when the claim is that they sell something else) is "irrelevant": it says nothing about whether the claim's own predicate is true. Never stretch a passage's finding to things it does not name.
+A fact-check of a different claim about the same person (a fake video of them promoting investments, when the claim is that they sell a product) is "irrelevant" to this claim, never "refutes": its rating covers only what it checked.
 quote: copy one or two sentences from the passage exactly, character for character, that justify the stance. No paraphrase, no translation, no "..." inside. Use "" for "irrelevant". Code rejects any quote it cannot find in the passage.
 data_period: the date or period the passage's information refers to, if it says so, else null.
 

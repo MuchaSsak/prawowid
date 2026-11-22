@@ -269,3 +269,5 @@ Append-only. Format: `## [YYYY-MM-DD] <ingest|update|decision|lint|restructure> 
 ## [2026-11-22] lint | clean for admin speed and API URL update; routing, index, source citations, links and skill parity checked
 ## [2026-11-22] update | web input hints are statements, not questions; example is the true claim on the 2025 minimum wage (4666 zł); architecture/codebase.md
 ## [2026-11-22] lint | clean for input hint update; one-line change, links and index unaffected
+## [2026-11-22] update | Regression found (user): first v6 run 0.71 vs 0.78 of commit 636ac78; wide assessment rule lost A09/G02; narrowed to fact-checks of another claim about the same person; full run 0.79 (84%), 58/58 e2e, $0.210/100, 8.3 s; cost sheet B12/B18 + deliverables synced; user rule recorded in evaluation/benchmark.md: stay comfortably above targets, compare with the last full run
+## [2026-11-22] lint | clean (scope: prompts/evidence-assessment.md, prompts/README.md, evaluation/benchmark.md, deliverables, index; numbers match latest.md and the sheet)
