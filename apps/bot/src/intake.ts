@@ -13,11 +13,11 @@ import { fetchDiscordImage, fetchSdkImage, type ImageResult } from "./image.js";
 export type ImageSource =
   /** Discord `obraz` option, from `resolved.attachments`. */
   | { kind: "discord"; url: string; size?: number }
-  /** WhatsApp / Messenger attachment with the SDK's authenticated download. */
+  /** Messenger attachment with the SDK's authenticated download. */
   | { kind: "sdk"; size?: number; fetchData?: () => Promise<ArrayBuffer | Uint8Array> };
 
 export interface IncomingMessage {
-  /** What the user typed (a WhatsApp caption, the Discord `tresc` option, a Messenger text). */
+  /** What the user typed (the Discord `tresc` option, a Messenger text). */
   text: string;
   image?: ImageSource;
   /** A file, video, audio, location… that we don't check. */

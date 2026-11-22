@@ -46,7 +46,7 @@ Actionable implications for the Prawdomat submission, pitch and demo. Facts and 
 
 - Juries chose the solution "with the **greatest implementation potential**", not the flashiest one.
 - The jury asked for a **live demo of a concrete use case** over slides (Solvro, 2025). **Full automation** set teams apart.
-- Plugging into channels people already use won (Word add-in in 2025). For us, that means **Discord/Messenger/SMS/WhatsApp, where citizens already are**.
+- Plugging into channels people already use won (Word add-in in 2025). For us, that means **Discord and Messenger, where citizens already are** (no WhatsApp or SMS: no operator, [decision 015](../decisions/015-no-whatsapp.md)).
 - The 2025 MSZ task (forecasting, won by "AIDA") was co-authored by the same Biuro Transformacji Cyfrowej. This is a repeat partner that wants pilots, not toys.
 
 ## Pitch (5 min) and Q&A (5 min): recommended shape

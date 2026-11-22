@@ -4,8 +4,6 @@
  *   GET  /favicon.ico              204, so browser visits don't log as errors
  *   GET  /health                   enabled platforms, the API URL and missing required env names (never values)
  *   POST /webhooks/discord         Discord Interactions endpoint (slash commands, PING)
- *   GET  /webhooks/whatsapp        Meta verification handshake (hub.verify_token)
- *   POST /webhooks/whatsapp        WhatsApp Cloud API messages
  *   GET  /webhooks/messenger       Meta verification handshake
  *   POST /webhooks/messenger       Messenger messages
  * The SDK verifies the signature and answers the platform at once; the check finishes in

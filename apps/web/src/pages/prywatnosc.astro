@@ -6,19 +6,36 @@ import Seo from "../components/Seo.astro";
 <!doctype html>
 <html lang="pl">
   <head>
-    <Seo title="polityka prywatności · Prawdomat" description="polityka prywatności Prawdomatu" />
+    <Seo title="polityka prywatności · Prawdomat" description="co Prawdomat zapisuje, jak długo i komu to przekazuje" />
   </head>
   <body>
     <main class="legal">
-      <p>nie robimy tego w 24h bez prawnika</p>
-      <p>ale wiemy co prawdziwa polityka musiałaby wyjaśnić</p>
+      <p>Prawdomat to projekt hakatonowy (HackNation, zadanie MSZ PRAWDOWID). nie pisał tego prawnik, ale opisuje dokładnie to, co robi kod. stan na 22.11.2026</p>
+
+      <p><strong>kto</strong>: zespół Prawdomatu. kontakt przez repozytorium <a class="text-link" href="https://github.com/MuchaSsak/prawowid">github.com/MuchaSsak/prawowid</a></p>
+
+      <p><strong>co zapisujemy</strong> przy każdym sprawdzeniu</p>
       <ul>
-        <li>kto jest administratorem danych i jak się z nim skontaktować</li>
-        <li>co zapisujemy: pytanie z ukrytymi danymi osobowymi, czas, ocenę i źródła. zdjęć filmów i nagrań nie trzymamy</li>
-        <li>jak długo: wpisy kasujemy po 30 dniach a swoje dane możesz usunąć wcześniej przyciskiem usuń dane sesji</li>
-        <li>komu je dajemy: hostingowi i dostawcom modeli AI, też poza EOG</li>
-        <li>na jakiej podstawie z RODO i jakie masz prawa: dostęp, usunięcie, sprzeciw, skarga do UODO</li>
+        <li>pytanie z ukrytymi danymi osobowymi: e-mail, telefon, PESEL, IBAN, numer karty, dowodu, adres i IP maskujemy, zanim tekst trafi do modelu lub logu. imion i nazwisk jeszcze nie maskujemy, więc nie wysyłaj danych innych osób</li>
+        <li>czas, kanał, wyodrębnione twierdzenia, oceny i linki do źródeł</li>
+        <li>losowy identyfikator sesji w pamięci przeglądarki (localStorage). nie używamy ciasteczek ani narzędzi śledzących</li>
+        <li>zdjęć, filmów i nagrań nie zapisujemy. przetwarzamy je tylko na czas sprawdzenia</li>
       </ul>
+
+      <p><strong>jak długo</strong>: wpisy znikają same po 30 dniach. przycisk <em>usuń dane sesji</em> na stronie głównej albo <em>/usun-dane</em> na Discordzie kasuje je od razu. gotowa odpowiedź zostaje w pamięci serwera najwyżej 5 minut</p>
+
+      <p><strong>po co i na jakiej podstawie</strong>: żeby sprawdzić to, o co prosisz, i pilnować jakości oraz nadużyć. podstawa to prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO)</p>
+
+      <p><strong>komu przekazujemy</strong></p>
+      <ul>
+        <li>Vercel (strona i bot) i Deno Deploy (API i log sprawdzeń)</li>
+        <li>OpenRouter, przez który idą zapytania do modeli. tekst, zdjęcia i większość nagrań czyta Mistral w UE, filmy i inne formaty nagrań Google Gemini</li>
+        <li>Google Fact Check Tools dostaje treść twierdzenia jako zapytanie. jeśli wkleisz link, pobieramy tę stronę</li>
+        <li>Discord i Meta (Messenger), gdy piszesz do bota. wiadomości zostają u nich na ich zasadach i tego nie usuniemy</li>
+        <li>Vercel, OpenRouter, Google, Discord i Meta to firmy z USA, więc dane mogą trafić poza EOG</li>
+      </ul>
+
+      <p><strong>twoje prawa</strong>: dostęp, usunięcie, sprzeciw i skarga do Prezesa UODO</p>
     </main>
   </body>
 </html>

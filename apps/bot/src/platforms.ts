@@ -9,7 +9,6 @@
  *   - a payload-free logger; memory state until Redis lands in M1b.
  */
 import type { Adapter, Chat, Message, SlashCommandEvent, Thread } from "chat";
-import type { WhatsAppRawMessage } from "@chat-adapter/whatsapp";
 import type { MessengerRawMessage } from "@chat-adapter/messenger";
 import { type BotConfig, LIMITS, type Platform } from "./config.js";
 import type { PrawdowidClient } from "./client.js";
@@ -34,10 +33,6 @@ async function createAdapter(platform: Platform): Promise<Adapter> {
       // The adapter's type only names Ephemeral; Discord accepts any message-flag bitfield here, and
       // the follow-up PATCH ORs the same flags in (prototype findings).
       return createDiscordAdapter({ logger, interactionFlags: () => DISCORD_FLAGS as 64 });
-    }
-    case "whatsapp": {
-      const { createWhatsAppAdapter } = await import("@chat-adapter/whatsapp");
-      return createWhatsAppAdapter({ logger });
     }
     case "messenger": {
       const { createMessengerAdapter } = await import("@chat-adapter/messenger");
@@ -77,22 +72,12 @@ export function discordSlashToMessage(raw: unknown): IncomingMessage {
 /** Messenger's sticker / thumbs-up fields, not in the adapter's types. */
 type MessengerStickerFields = { message?: { sticker_id?: number; attachments?: { payload?: { sticker_id?: number } }[] } };
 
-/** WhatsApp / Messenger message → IncomingMessage. */
+/** Messenger message → IncomingMessage. */
 export function sdkMessageToIncoming(platform: Platform, message: Message): IncomingMessage {
   const image = message.attachments.find((a) => a.type === "image");
   const imageSource = image
     ? { kind: "sdk" as const, size: image.size, fetchData: image.fetchData as (() => Promise<ArrayBuffer | Uint8Array>) | undefined }
     : undefined;
-
-  if (platform === "whatsapp") {
-    // The adapter turns media into placeholder text ("[Image]", "[Sticker]"), so read the raw type.
-    const inbound = (message.raw as WhatsAppRawMessage | undefined)?.message;
-    const type = inbound?.type;
-    if (type === "sticker" || type === "reaction") return { text: "", ignore: true };
-    if (type === "image") return { text: inbound?.image?.caption ?? "", image: imageSource };
-    if (type !== "text") return { text: "", unsupported: true };
-    return { text: message.text };
-  }
 
   // Messenger: stickers and the thumbs-up are attachments with a sticker_id.
   const raw = message.raw as (MessengerRawMessage & MessengerStickerFields) | undefined;
@@ -128,7 +113,7 @@ async function respond(
 }
 
 export function registerHandlers(chat: Chat, platform: Platform, deps: PlatformDeps) {
-  // WhatsApp and Messenger: every message is a direct message.
+  // Messenger: every message is a direct message.
   chat.onDirectMessage(async (thread: Thread, message: Message) => {
     if (message.author.isMe || message.author.isBot === true) return;
     if (platform === "discord") return; // Discord DMs need the Gateway: out of scope (decision 007)

@@ -13,7 +13,6 @@ How to bring up the bot designed in [messaging-bot.md](messaging-bot.md) and kee
 | `BOT_PRIVACY_CONTACT` | no | M1 | the data controller and contact e-mail shown in `/pomoc` (blocks the invite gate until set) |
 | `DISCORD_GUILD_ID` | no | M1 | the demo server; used only by `bun run bot:discord:commands` |
 | `DISCORD_BOT_TOKEN`, `DISCORD_PUBLIC_KEY`, `DISCORD_APPLICATION_ID` | yes / no / no | M1 | Discord app (the adapter requires the token, and command registration uses it) |
-| `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN` | yes / yes / no / yes | M2 | WhatsApp Cloud API |
 | `FACEBOOK_APP_SECRET`, `FACEBOOK_PAGE_ACCESS_TOKEN`, `FACEBOOK_VERIFY_TOKEN` | yes | M3 | Messenger |
 
 On the API (Deno Deploy): `CLIENT_KEYS=bot:<key>`, `PRAWDOWID_MODE` (the web's mode, goes live independently) and `MOCK_CLIENTS=bot` (holds the bot in mock until its live gate). Only placeholders go in `.env.example` (hard constraint 11).
@@ -43,15 +42,6 @@ On the API (Deno Deploy): `CLIENT_KEYS=bot:<key>`, `PRAWDOWID_MODE` (the web's m
    - `/usun-dane`.
 5. Make a public invite link. It goes into the README at the invite gate: M1 passes in mock mode and the privacy contact is filled in.
 
-**WhatsApp (M2, time-box 1 h; only after Redis exists, M1b):**
-1. Create a Meta app with the WhatsApp product and a business portfolio. Use the test number.
-2. Set the webhook URL to `https://<prod>/webhooks/whatsapp` and the verify token to `WHATSAPP_VERIFY_TOKEN`. Subscribe the `messages` and `user_id_update` fields.
-3. Add up to 5 test recipients (team phones).
-4. Get a **permanent token** to replace the 24 h one: Business Settings → System Users.
-   - Create an admin system user.
-   - Assign it the app and the WhatsApp Business Account.
-   - Generate a token with `whatsapp_business_messaging` and `whatsapp_business_management`, and set expiry to "never".
-
 **Messenger (M3, stretch):**
 1. Create a Facebook Page and add the Messenger product to the Meta app. Generate the Page access token.
 2. Set the webhook URL to `https://<prod>/webhooks/messenger` and the verify token to `FACEBOOK_VERIFY_TOKEN`. Subscribe the Page to `messages` and `messaging_postbacks`.
@@ -73,7 +63,7 @@ Run against the production deployment with real accounts. Offline equivalents of
 | A2 | Discord `/sprawdz` with `tresc` **and** `obraz` together; then an image over 5 MB; then a non-image renamed to `.png` | the text has no attachment id in it; the big file is refused before the full download; the fake image is refused by its first bytes |
 | A3 | Wrong API URL in env, then an API that hangs for 60 s; run `/sprawdz` | a system message within about 50 s, never "thinking…" forever |
 | A4 | Two users run `/sprawdz` in the same channel at once | both get their own answer |
-| A5 | WhatsApp text, link, a screenshot **with a caption**, and a screenshot without one | each answered once; the caption arrives as `user_message` |
+| A5 | Messenger text, link and a screenshot | each answered once |
 | A6 | Replay the same signed Meta webhook twice | answered once (Redis dedupe) |
 | A7 | `demo:false` (and ` DEMO:false`) while the API is live | a local reply, no synthetic answer |
 | A8 | The consistency script, **fresh run** (`no-cache`); record the mode it ran in | same `status`, verdict labels and `source_id`s between the web path and the bot. In mock mode it is 100 % by construction, so only a live result counts as the metric. Report a live result below 100 % honestly, with the differing cases |
@@ -83,14 +73,14 @@ Run against the production deployment with real accounts. Offline equivalents of
 
 ## Demo day (Sunday)
 - **09:30:** check the uptime monitor history. Run A1 and A5. Open a Vercel log tail.
-- **10:00:** check the WhatsApp system-user token works. Confirm the WhatsApp and Messenger clips are in the video and the deck.
-- **Pitch:** the senior-citizen story on WhatsApp (video), then Discord live.
+- **10:00:** confirm the Messenger clip is in the video and the deck.
+- **Pitch:** the senior-citizen story on Messenger (video), then Discord live.
 - **Jury testing (Stage I, unattended):** the uptime monitor alerts the team. The Redis outcome counters (48 h) are the durable record of what the jury ran. The API's check log is volatile until Supabase lands.
 - **If a webhook fails:** the user still gets a system message (A3). Switch to the video and the console channel.
 
 ## Shutdown after the event (hard constraint 14)
 Do this by Sun 22.11 evening, unless the pilot path continues:
-1. Revoke the WhatsApp system-user token and the Messenger Page token. Reset the Discord bot token.
+1. Revoke the Messenger Page token. Reset the Discord bot token.
 2. Remove `bot:<key>` from the API's `CLIENT_KEYS`.
 3. Delete the Upstash database.
 4. Delete the API's bot sessions, or wait for the 30-day retention.

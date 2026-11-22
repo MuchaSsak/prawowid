@@ -24,7 +24,7 @@ Assessment of a teammate's draft "PRAWOWID - propozycja architektury, kolejnych 
 | Re-rank by recency | scope matching: evidence must match the claim's time and place; older sources become context, not proof ([verification-pipeline](verification-pipeline.md)) | rank by fit to the claim's date window, not by newness |
 | Demagog "may be unstable behind Cloudflare" | measured: 3,812 of 3,828 pages with an honest UA; 3,545 records (3 years) in the Data repo | outdated, no action |
 | `chunks[]` inside the document | Pavel's own pgvector schema keeps `chunks` as a table | keep the table |
-| WWW + Discord as two channels | web + one bot for Discord, WhatsApp, Messenger ([messaging-bot](messaging-bot.md)) | already covered |
+| WWW + Discord as two channels | web + one bot for Discord and Messenger ([messaging-bot](messaging-bot.md)) | already covered |
 
 ## Not covered by the proposal
 EUvsDisinfo known-narrative matching is already live via MCP; Sejm ELI, NBP, Eurostat and GUS are live routes; PII masking, the check log, retention and session deletion exist ([codebase](codebase.md)). The proposal reads as a plan from scratch, so its step list should be mapped onto these pieces instead of rebuilt.

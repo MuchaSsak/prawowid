@@ -5,7 +5,7 @@
  *   - NFKC normalization,
  *   - zero-width, bidi and control characters stripped,
  *   - markdown and links removed (a link becomes its defanged host),
- *   - bare domains defanged (`example[.]com`) so WhatsApp doesn't auto-link them,
+ *   - bare domains defanged (`example[.]com`) so chat apps don't auto-link them,
  *   - mentions neutralized (`@everyone`, `@here`, `<@…>`, `<#…>`, `<@&…>`).
  * The only links the bot ever posts are https citation URLs and the web app URL (see safeUrl).
  */

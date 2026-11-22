@@ -149,7 +149,7 @@ export const INPUT_TYPES = ["text", "url", "image", "video", "audio"] as const;
 export type InputType = (typeof INPUT_TYPES)[number];
 export type Channel = "web" | "api" | "messaging";
 /** Which chat app a "messaging" check came from (admin analytics split). Optional, additive in v1. */
-export const MESSAGING_PLATFORMS = ["discord", "messenger", "whatsapp"] as const;
+export const MESSAGING_PLATFORMS = ["discord", "messenger"] as const;
 export type MessagingPlatform = (typeof MESSAGING_PLATFORMS)[number];
 
 /** Bumped only for breaking changes; v1 changes are additive (new optional fields, new enum values). */

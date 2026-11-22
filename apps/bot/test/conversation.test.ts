@@ -44,17 +44,17 @@ function fakeApi(opts: { mode?: "live" | "mock"; hang?: boolean; body?: string }
 function deps(fetchImpl: typeof fetch, extra: Partial<{ deadlineMs: number; client: PrawdowidClient }> = {}) {
   return { config, client: extra.client ?? createClient(config, fetchImpl), idSecret: SECRET, fetchImpl, deadlineMs: extra.deadlineMs };
 }
-const turn = (text: string, surface: Turn["surface"] = "whatsapp", userId = "48500100200"): Turn => ({ surface, userId, message: { text } });
+const turn = (text: string, surface: Turn["surface"] = "messenger", userId = "48500100200"): Turn => ({ surface, userId, message: { text } });
 
 describe("conversation", () => {
   test("same input on two platforms → same verdict; only the HMAC pseudonym leaves the bot", async () => {
     const api = fakeApi();
-    const a = await converse(turn("demo:false", "whatsapp"), deps(api.fetchImpl));
+    const a = await converse(turn("demo:false", "messenger"), deps(api.fetchImpl));
     const b = await converse(turn("demo:false", "messenger", "998877"), deps(api.fetchImpl));
     expect(a.text).toContain("FAŁSZYWE");
     expect(b.text).toContain("FAŁSZYWE");
     const check = api.calls.find((c) => c.url.endsWith("/api/v1/check"))!;
-    const expected = await pseudonym(SECRET, "whatsapp", "48500100200");
+    const expected = await pseudonym(SECRET, "messenger", "48500100200");
     expect(check.headers["X-End-User"]).toBe(expected);
     expect(check.body?.session_id).toBe(expected);
     expect(check.headers["X-Client-Key"]).toBe("k");
@@ -286,14 +286,9 @@ describe("platform payloads", () => {
     expect(m).toEqual({ text: "czy to prawda?", image: { kind: "discord", url: "https://cdn.discordapp.com/x.png", size: 10 }, fromSlashCommand: true });
   });
 
-  test("WhatsApp: caption kept, '[Image]' placeholder dropped, stickers ignored, other media unsupported", () => {
+  test("Messenger: stickers ignored, text kept", () => {
     const msg = (raw: unknown, text: string, attachments: unknown[] = []) =>
       ({ raw, text, attachments } as unknown as Parameters<typeof sdkMessageToIncoming>[1]);
-    const img = { type: "image", fetchData: async () => JPEG };
-    expect(sdkMessageToIncoming("whatsapp", msg({ message: { type: "image", image: { caption: "prawda?" } } }, "prawda?", [img])).text).toBe("prawda?");
-    expect(sdkMessageToIncoming("whatsapp", msg({ message: { type: "image", image: {} } }, "[Image]", [img])).text).toBe("");
-    expect(sdkMessageToIncoming("whatsapp", msg({ message: { type: "sticker" } }, "[Sticker]")).ignore).toBe(true);
-    expect(sdkMessageToIncoming("whatsapp", msg({ message: { type: "video" } }, "[Video]")).unsupported).toBe(true);
     expect(sdkMessageToIncoming("messenger", msg({ message: { sticker_id: 369239263222822 } }, "")).ignore).toBe(true);
     expect(sdkMessageToIncoming("messenger", msg({ message: { text: "hej" } }, "hej")).text).toBe("hej");
   });

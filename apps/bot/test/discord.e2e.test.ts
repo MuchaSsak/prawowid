@@ -131,7 +131,7 @@ describe("Discord over the real SDK", () => {
   });
 
   test("unknown platform → 404, health shows no secrets", async () => {
-    expect((await app.fetch(new Request("https://bot.test/webhooks/whatsapp", { method: "POST" }))).status).toBe(404);
+    expect((await app.fetch(new Request("https://bot.test/webhooks/telegram", { method: "POST" }))).status).toBe(404);
     const health = await (await app.fetch(new Request("https://bot.test/health"))).text();
     expect(health).toContain('"platforms":["discord"]');
     expect(health).not.toContain("test-token");

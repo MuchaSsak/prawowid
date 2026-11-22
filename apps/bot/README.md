@@ -1,6 +1,6 @@
 # Prawdomat bot
 
-One bot for Discord (slash commands), WhatsApp and Messenger on the [Vercel Chat SDK](https://chat-sdk.dev/docs). It is a channel adapter over the Prawdomat HTTP API (`POST /api/v1/check`) and never imports the verification core. The API decides mock vs live. Design: `.agents/project-info/architecture/messaging-bot.md`. Setup, env vars and acceptance tests: `.agents/project-info/architecture/messaging-bot-runbook.md`.
+One bot for Discord (slash commands) and Messenger on the [Vercel Chat SDK](https://chat-sdk.dev/docs). It is a channel adapter over the Prawdomat HTTP API (`POST /api/v1/check`) and never imports the verification core. The API decides mock vs live. Design: `.agents/project-info/architecture/messaging-bot.md`. Setup, env vars and acceptance tests: `.agents/project-info/architecture/messaging-bot-runbook.md`.
 
 ## Try it without any platform account (console channel)
 From the repo root:
@@ -22,7 +22,7 @@ PRAWDOWID_API_URL=http://localhost:8787 bun run bot:console "demo:false"   # ter
 - `bun run bot:dev`: a Bun server on `http://localhost:8788` (`BOT_PORT`). Put it behind a tunnel to test with real platforms.
 - Vercel: Root Directory `apps/bot`, entry `src/index.ts` (zero-config Hono; the entry must import `hono` itself), region `fra1`, `maxDuration` 300 s (`vercel.json`). Register **only the production URL** on the platforms.
 
-Routes: `GET /health`, `POST /webhooks/discord`, `GET|POST /webhooks/whatsapp`, `GET|POST /webhooks/messenger`. A platform is enabled only when all its env vars are set (see `.env.example`).
+Routes: `GET /health`, `POST /webhooks/discord`, `GET|POST /webhooks/messenger`. A platform is enabled only when all its env vars are set (see `.env.example`).
 
 Discord commands are registered per server: `bun run bot:discord:commands` (needs `DISCORD_APPLICATION_ID`, `DISCORD_BOT_TOKEN`, `DISCORD_GUILD_ID`).
 
@@ -41,6 +41,6 @@ On the API (Deno Deploy): `CLIENT_KEYS=bot:<key>` and `MOCK_CLIENTS=bot`. On the
 | `src/console.ts` | the console channel |
 | `src/log.ts`, `src/pseudonym.ts` | content-free log lines and SDK logger; HMAC pseudonyms |
 
-Tests: `bun run bot:test` (no network: renders every mock scenario on every platform, sanitizer, intake and image limits, timeouts, and signed Discord and WhatsApp webhooks through the real SDK).
+Tests: `bun run bot:test` (no network: renders every mock scenario on every platform, sanitizer, intake and image limits, timeouts, and signed Discord webhooks through the real SDK).
 
 Not built yet (milestone M1b): Upstash Redis (cross-instance dedupe, the 30/day quota, outcome counters), `/health?deep=1` with a token, the consistency script.

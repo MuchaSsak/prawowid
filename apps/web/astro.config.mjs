@@ -1,7 +1,7 @@
 import { defineConfig } from "astro/config";
 
 // Public origin of the web app, needed for absolute og:image / og:url (link previews on Discord,
-// Messenger, WhatsApp). Set PUBLIC_SITE_URL at build time; Vercel / Netlify / Cloudflare Pages
+// Messenger). Set PUBLIC_SITE_URL at build time; Vercel / Netlify / Cloudflare Pages
 // provide their own variable as a fallback. Without it the tags fall back to relative paths and
 // most chat apps show no banner.
 const env = process.env;

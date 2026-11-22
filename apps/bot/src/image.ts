@@ -2,7 +2,7 @@
  * One capped image fetch for every platform (messaging-bot.md, "Message flow", step 4):
  *   - Discord: our own download, only from Discord's CDN hosts, no redirects, a Content-Length
  *     check, and a streamed read that aborts at 5 MB, all under the request deadline.
- *   - WhatsApp / Messenger: the SDK's `fetchData` (it handles Meta's auth and domain allowlist and
+ *   - Messenger: the SDK's `fetchData` (it handles Meta's auth and domain allowlist and
  *     stops at 25 MB), so the size is re-checked after the download.
  *   - Every platform: the type is verified from the first bytes, never from the declared MIME type.
  */
@@ -92,7 +92,7 @@ export async function fetchDiscordImage(
   }
 }
 
-/** WhatsApp / Messenger: the SDK's authenticated `fetchData`, raced against the request deadline. */
+/** Messenger: the SDK's authenticated `fetchData`, raced against the request deadline. */
 export async function fetchSdkImage(
   att: { size?: number; fetchData?: () => Promise<ArrayBuffer | Uint8Array> },
   signal: AbortSignal,

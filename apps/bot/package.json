@@ -15,7 +15,6 @@
     "@chat-adapter/discord": "4.44.0",
     "@chat-adapter/messenger": "4.44.0",
     "@chat-adapter/state-memory": "4.44.0",
-    "@chat-adapter/whatsapp": "4.44.0",
     "@prawdowid/core": "workspace:*",
     "@vercel/functions": "3.11.0",
     "chat": "4.44.0",

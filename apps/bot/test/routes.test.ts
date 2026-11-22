@@ -9,10 +9,9 @@ import { createClient } from "../src/client.js";
 import { loadConfig } from "../src/config.js";
 
 const env: Record<string, string> = {
-  WHATSAPP_ACCESS_TOKEN: "wa-token",
-  WHATSAPP_APP_SECRET: "wa-secret",
-  WHATSAPP_PHONE_NUMBER_ID: "1000",
-  WHATSAPP_VERIFY_TOKEN: "verify-me",
+  FACEBOOK_APP_SECRET: "fb-secret",
+  FACEBOOK_PAGE_ACCESS_TOKEN: "fb-token",
+  FACEBOOK_VERIFY_TOKEN: "verify-me",
   PRAWDOWID_API_URL: "https://api.test",
 };
 
@@ -47,11 +46,11 @@ describe("without BOT_ID_SECRET", () => {
     const body = await res.json() as Record<string, unknown>;
     expect(body.ok).toBe(false);
     expect(body.missing).toEqual(["BOT_ID_SECRET"]);
-    expect(JSON.stringify(body)).not.toContain("wa-secret");
+    expect(JSON.stringify(body)).not.toContain("fb-secret");
   });
 
   test("webhooks refuse with 503 instead of using a random key", async () => {
-    const res = await get(app(null), "/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=verify-me&hub.challenge=42");
+    const res = await get(app(null), "/webhooks/messenger?hub.mode=subscribe&hub.verify_token=verify-me&hub.challenge=42");
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ error: "bot not configured", missing: ["BOT_ID_SECRET"] });
   });

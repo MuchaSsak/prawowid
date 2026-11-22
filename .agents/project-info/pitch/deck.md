@@ -17,9 +17,9 @@ The jury deck: where it lives, the one message it carries, the slide outline wit
 | 4 | Pytasz tam, gdzie już piszesz | users, channels | channel consistency 3 of 3 ([benchmark](../evaluation/benchmark.md), run 3) |
 | 5 | „Dług publiczny Polski wynosi 276 proc. PKB.” → fałszywe | demo | real response, case R01 of the organizer-style set, 7,8 s, Eurostat 59,6% (2025) + Demagog 57,3% quotes (`eval/results/organizer-2026-11-21T19-17-44.json`) |
 | 6 | Model czyta, kod decyduje | architecture | none |
-| 7 | Cztery progi MSZ przekroczone | test results | 27/27, 7/8, 4/4, 6,4 s; gap stated: macro-F1 0,71 vs 0,75 ([benchmark](../evaluation/benchmark.md), run 3) |
+| 7 | Cztery progi MSZ przekroczone | test results | 27/27, 7/8, 4/4, 6,4 s; gap stated: macro-F1 0,71 vs 0,75 ([benchmark](../evaluation/benchmark.md), run 3). **Stale:** the 2026-11-22 run has macro-F1 0,79 (target met), abstention 89%, median 8,3 s; slide 7 and its notes still need rewriting |
 | 8 | Najgroźniejsze ryzyka blokuje kod | risks | 4/4 injection; full risk list points to the README |
-| 9 | Gotowi na pilotaż z MSZ | next steps, deployment | 4,78 zł per 1000 ([cost sheet](../rules/cost-sheet.md)); Mistral pinned to `mistral/eu` (`packages/core/src/config.ts`); pilot path from task sec. 9 |
+| 9 | Gotowi na pilotaż z MSZ | next steps, deployment | 10,23 zł per 1000 (10,97 zł with an image, measured on the screenshot cases; slide-10 notes fixed 2026-11-22; deck and notes updated 2026-11-22 from the 58-case run) ([cost sheet](../rules/cost-sheet.md)); Mistral pinned to `mistral/eu` (`packages/core/src/config.ts`); pilot path from task sec. 9 |
 | 10 | Nie mówimy, co myśleć. Pokazujemy dowody. (navy) | close, links | none |
 
 Choices: 10 slides, not 12, because the design system caps a 5-minute pitch at 8–10. Macro-F1 is disclosed on slide 7 rather than headlined, since hiding it would contradict the README (hard constraint 17). No "all data in the EEA" claim: OpenRouter is a US gateway and video goes to Gemini ([model-selection](../architecture/model-selection.md)).

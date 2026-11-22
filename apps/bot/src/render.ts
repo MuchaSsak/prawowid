@@ -11,7 +11,7 @@
  *
  * Every string from the response goes through sanitizeText; the only links are https citation URLs
  * and the web app URL. Output is the platform's native text, posted raw (the SDK's markdown
- * conversion wraps WhatsApp links in <>, see the prototype findings).
+ * conversion rewrites links, see the prototype findings).
  */
 import type { CheckResponse, ClaimResult } from "@prawdowid/core/types";
 import { LIMITS, MAX_REPLY_CHARS, type Surface } from "./config.js";
@@ -54,14 +54,12 @@ interface Fmt {
 const FORMATS: Record<Surface, Fmt> = {
   // Links as <url> are never previewed on Discord.
   discord: { bold: (s) => `**${s}**`, link: (u) => `<${u}>` },
-  whatsapp: { bold: (s) => `*${s}*`, link: (u) => u },
   messenger: { bold: (s) => s, link: (u) => u },
   console: { bold: (s) => s, link: (u) => u },
 };
 
 const PRIVACY_POINTER: Record<Surface, string> = {
   discord: "Prywatność: /pomoc",
-  whatsapp: "Prywatność: napisz pomoc",
   messenger: "Prywatność: napisz pomoc",
   console: "Prywatność: napisz pomoc",
 };

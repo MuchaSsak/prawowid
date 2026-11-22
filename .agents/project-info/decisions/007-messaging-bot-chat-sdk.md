@@ -1,4 +1,6 @@
-# 007: The messaging bot uses the Vercel Chat SDK for Discord, WhatsApp and Messenger, over the HTTP API
+# 007: The messaging bot uses the Vercel Chat SDK for Discord and Messenger, over the HTTP API
+
+> WhatsApp was part of this decision and was removed on 2026-11-22: we have no WhatsApp operator ([decision 015](015-no-whatsapp.md)).
 Date: 2026-11-21 · Status: decided (user)
 
 Context: the user asked for a bot API on the Vercel Chat SDK covering Discord, WhatsApp and Messenger, using the mock API for now. [Decision 004](004-first-build-stack.md) named "a messaging bot (WhatsApp or similar)" as the second channel without choosing a library or platforms.

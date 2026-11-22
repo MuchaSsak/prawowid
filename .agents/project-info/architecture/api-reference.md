@@ -31,7 +31,7 @@ Request body (JSON, max 8 MB):
   "user_message": "what the user wants checked (with url/image)",  // optional, ≤ 2000 chars
   "session_id": "opaque id",   // optional: stored only as a SHA-256 hash; DELETE /session/:id removes its data
   "channel": "web" | "api" | "messaging",   // optional; defaults to "messaging" for keyed clients, else "web"
-  "platform": "discord" | "messenger" | "whatsapp",  // optional, messaging only: the chat app, for the admin channel split (added 2026-11-22, additive); unknown values are ignored
+  "platform": "discord" | "messenger",  // optional, messaging only: the chat app, for the admin channel split (added 2026-11-22, additive); unknown values are ignored
   "mock": true | "<scenario>"  // optional: return mock data (see below)
 }
 ```

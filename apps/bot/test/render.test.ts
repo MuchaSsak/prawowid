@@ -28,7 +28,7 @@ describe("render: every mock scenario on every surface", () => {
           for (const l of VERDICT_LABELS) expect(out).not.toContain(l);
         }
         // Native formatting.
-        if (surface === "whatsapp") expect(out).not.toContain("**");
+        if (surface === "messenger") expect(out).not.toContain("**");
         if (surface === "messenger" || surface === "console") expect(out).not.toMatch(/\*[^*\s]/);
         if (surface === "discord") {
           expect(out).toContain("Prywatność: /pomoc");
@@ -49,7 +49,7 @@ describe("render: every mock scenario on every surface", () => {
 
   test("a screenshot gets the deepfake limitation", () => {
     const res = mockResponse({ input: { type: "image", value: "data:image/png;base64,AA==" } });
-    expect(renderResponse(res, { surface: "whatsapp", webUrl: null })).toContain("nie wykrywamy deepfake'ów");
+    expect(renderResponse(res, { surface: "messenger", webUrl: null })).toContain("nie wykrywamy deepfake'ów");
   });
 
   test("a verdict claim shows its label and up to 3 source links", () => {

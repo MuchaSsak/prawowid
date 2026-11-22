@@ -19,7 +19,6 @@
         "@chat-adapter/discord": "4.44.0",
         "@chat-adapter/messenger": "4.44.0",
         "@chat-adapter/state-memory": "4.44.0",
-        "@chat-adapter/whatsapp": "4.44.0",
         "@prawdowid/core": "workspace:*",
         "@vercel/functions": "3.11.0",
         "chat": "4.44.0",
@@ -139,8 +138,6 @@
     "@chat-adapter/shared": ["@chat-adapter/shared@4.44.0", "", { "dependencies": { "chat": "4.44.0" } }, "sha512-g6MmtkFLVE3Fn19Ly8e+3bZTAw5Kzh/2oP3qKRaVW0IPwVLDa2GRq/Q5fpGS+Xmzn2oqzpaHJrRuQRdWjLboqg=="],
 
     "@chat-adapter/state-memory": ["@chat-adapter/state-memory@4.44.0", "", { "dependencies": { "chat": "4.44.0" } }, "sha512-Z1grqxdp+jYQffWZQJaJ2e2N9zxuX3GbX67D9Xrl7c3xZCi/9Ltvcb0ufvv0UnmgMnGWYFCC8kGATpwcWtmKvg=="],
-
-    "@chat-adapter/whatsapp": ["@chat-adapter/whatsapp@4.44.0", "", { "dependencies": { "@chat-adapter/shared": "4.44.0", "chat": "4.44.0" } }, "sha512-gxrZ5z5FQt2efEF4/kPguz+coLP5U23pLiZdEsWmoXC6J1WVoaEBi5I7LSAeZhoGLkDHFUUN2ERpvvSN85bNAQ=="],
 
     "@clack/core": ["@clack/core@1.6.0", "", { "dependencies": { "fast-string-width": "^3.0.2", "fast-wrap-ansi": "^0.2.0", "sisteransi": "^2.0.0" } }, "sha512-4GZynIB2IIe431odxesswvWTCP6orvqd6e2b07b3VFWBQRqUqIHc/EPIZwFoKS692QBp+ooPuXKaJV8g4kXuYA=="],
 

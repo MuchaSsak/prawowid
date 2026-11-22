@@ -18,7 +18,7 @@ export type TopicKey = ClaimType | "other";
 export interface AnalyticsCheck {
   created_at: string;
   channel: string;
-  /** Channel "messaging": the chat app (discord, messenger, whatsapp). */
+  /** Channel "messaging": the chat app (discord, messenger). */
   platform?: string;
   status: string;
   latency_ms: number;

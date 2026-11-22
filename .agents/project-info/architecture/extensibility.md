@@ -5,7 +5,7 @@ How to add a channel, swap a model or plug in a source, and which tests prove it
 ```mermaid
 flowchart LR
   W["Web app"] --> API
-  B["Messaging bot<br/>Discord · WhatsApp · Messenger"] --> API
+  B["Messaging bot<br/>Discord · Messenger"] --> API
   X["Any new channel"] --> API
   API["HTTP API v1<br/>POST /api/v1/check"] --> CORE["runCheck (packages/core)"]
   CORE --> M["Models via config<br/>MODEL_&lt;STEP&gt;"]
@@ -17,7 +17,7 @@ Every seam is a typed interface; the verification rules in between (quote check,
 ## A new channel
 - A channel is an adapter that sends `POST /api/v1/check` (or calls `runCheck` in-process) and renders the [contract v1](../product/response-contract.md) response. It never decides anything itself (hard constraint 18).
 - `channel` is `web`, `api` or `messaging`; any chat platform is `messaging`, so a new platform needs **no contract change**. Server clients authenticate with `X-Client-Key` and get per-end-user rate limits (`CLIENT_KEYS`, [api-reference](api-reference.md)).
-- Examples in the repo: `apps/web` (browser), `apps/bot` (one bot for Discord, WhatsApp and Messenger, plus a console channel), `eval/run.ts` (in-process and over HTTP).
+- Examples in the repo: `apps/web` (browser), `apps/bot` (one bot for Discord and Messenger, plus a console channel), `eval/run.ts` (in-process and over HTTP).
 - Proof: the channel-consistency cases (`G` in `eval/cases.json`, and `pipeline_test.ts` "G: the same input twice…") show web and messaging get the same verdicts and citations.
 
 ## A new or different model

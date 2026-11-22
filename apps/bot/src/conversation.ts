@@ -16,7 +16,7 @@ export type Outcome = "ok" | "system_state" | "technical_error" | "timeout" | "q
 
 export interface Turn {
   surface: Surface;
-  /** Platform user id (Discord id, WhatsApp wa_id, Messenger PSID). Only its HMAC leaves the bot. */
+  /** Platform user id (Discord id, Messenger PSID). Only its HMAC leaves the bot. */
   userId: string;
   message: IncomingMessage;
   /** `help` and `delete_data` come straight from Discord's /pomoc and /usun-dane. */

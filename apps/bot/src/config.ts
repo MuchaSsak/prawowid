@@ -1,29 +1,27 @@
 /**
  * Bot configuration. Secrets come from env; everything else is a code default
  * (decisions/003-config-in-code.md). A platform is enabled only when all of its env vars are set,
- * so the bot runs with any subset of Discord / WhatsApp / Messenger.
+ * so the bot runs with any subset of Discord / Messenger.
  *
  * There is deliberately no "mock" switch here: the API decides mock vs live (PRAWDOWID_MODE, or
  * MOCK_CLIENTS=bot for this bot's key), so the web app and the bot always agree (decision 007).
  */
 
-export type Platform = "discord" | "whatsapp" | "messenger";
+export type Platform = "discord" | "messenger";
 /** Where a reply is rendered. `console` is the terminal channel (src/console.ts). */
 export type Surface = Platform | "console";
 
-export const PLATFORMS: Platform[] = ["discord", "whatsapp", "messenger"];
+export const PLATFORMS: Platform[] = ["discord", "messenger"];
 
 /** Env vars each Chat SDK adapter reads by itself. */
 export const PLATFORM_ENV: Record<Platform, string[]> = {
   discord: ["DISCORD_BOT_TOKEN", "DISCORD_PUBLIC_KEY", "DISCORD_APPLICATION_ID"],
-  whatsapp: ["WHATSAPP_ACCESS_TOKEN", "WHATSAPP_APP_SECRET", "WHATSAPP_PHONE_NUMBER_ID", "WHATSAPP_VERIFY_TOKEN"],
   messenger: ["FACEBOOK_APP_SECRET", "FACEBOOK_PAGE_ACCESS_TOKEN", "FACEBOOK_VERIFY_TOKEN"],
 };
 
 /** Longest single message we send (the platform limit minus a margin). */
 export const MAX_REPLY_CHARS: Record<Surface, number> = {
   discord: 1900, // hard limit 2000
-  whatsapp: 3900, // 4096
   messenger: 1900, // 2000
   console: 4000,
 };

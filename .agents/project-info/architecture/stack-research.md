@@ -3,6 +3,8 @@ Platform-level research (limits, prices, gotchas) for the intended Prawdomat sta
 
 All facts checked on **2026-11-21** unless marked otherwise. Anything not confirmed in an official source is marked **Assumption**. Every recommendation is an **Idea**: nothing here is decided.
 
+> 2026-11-22: WhatsApp is out of scope, we have no operator ([decision 015](../decisions/015-no-whatsapp.md)). WhatsApp notes below are research history.
+
 ---
 
 ## 0. Headline gotcha: Deno Deploy is being shut down

@@ -2,6 +2,8 @@
 
 Scope: research-backed options and **Idea**-level recommendations (nothing decided yet) for building the Prawdomat fact-checking MVP in 24 h at HackNation 2026 (written 2026-11-21).
 
+> 2026-11-22: WhatsApp is out of scope, we have no operator ([decision 015](../decisions/015-no-whatsapp.md)). WhatsApp notes below are research history.
+
 > Status: everything below is a **proposal**. Decisions go to `../decisions/` once the team agrees. Prices were checked on 2026-11-21 where a source is given; re-check before quoting them in the pitch.
 > Task source: [msz-pelna-tresc-zadania.pdf](../sources/2026-11-21-msz-pelna-tresc-zadania.pdf), [msz-regulamin-zadania.pdf](../sources/2026-11-21-msz-regulamin-zadania.pdf), [euvsdisinfo-mcp-how-to.pdf](../sources/2026-11-21-euvsdisinfo-mcp-how-to.pdf).
 
