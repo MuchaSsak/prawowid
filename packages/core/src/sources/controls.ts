@@ -184,10 +184,11 @@ export function applySourceControls(
   };
   // The corpus route switched off hides the corpus everywhere it is read (evidence and date lookup).
   const corpusOff = off.has(sourceKey("route", CORPUS_ROUTE_ID));
-  const exclude = corpusOff ? () => true : (r: SourceRecord) => !allows(r);
-  const corpus: CorpusStore = base.corpus.view
-    ? base.corpus.view(exclude)
-    : filteredCorpus(base.corpus, (r) => !exclude(r));
+  const corpus: CorpusStore = corpusOff
+    ? EMPTY_CORPUS
+    : base.corpus.view
+    ? base.corpus.view((r) => !allows(r))
+    : filteredCorpus(base.corpus, allows);
   const connectors = base.connectors.map((c): Connector => {
     if (off.has(sourceKey("route", c.id))) {
       return { ...c, unavailableReason: () => SOURCE_DISABLED_DETAIL, search: () => Promise.resolve([]) };
@@ -195,11 +196,15 @@ export function applySourceControls(
     return {
       ...c,
       search: async (claim, ctx) => {
-        const found = await c.search(claim, ctx);
+        // The full catalog, so a connector that filters by the allowlist itself (Google Fact Check)
+        // still hands back records from switched-off publishers, and `allows` alone decides.
+        const found = await c.search(claim, { ...ctx, config: { ...ctx.config, trustedSources: base.trustedSources } });
         const kept = found.filter(allows);
-        // Everything the route found is from switched-off sources: that is not "nothing found".
-        // Reported as unavailable, so a required route gives a system state, never a verdict.
-        if (found.length > 0 && kept.length === 0) throw new ConnectorError("unavailable", SOURCE_DISABLED_DETAIL);
+        // A required route whose every record is from switched-off publishers has not found
+        // "nothing": it is unavailable, so the claim gets a system state, never a verdict.
+        if (c.required && found.length > 0 && kept.length === 0) {
+          throw new ConnectorError("unavailable", SOURCE_DISABLED_DETAIL);
+        }
         return kept;
       },
     };
@@ -211,6 +216,13 @@ export function applySourceControls(
     allows,
   };
 }
+
+/** The corpus with the corpus route switched off: nothing to search, for any reader. */
+const EMPTY_CORPUS: CorpusStore = {
+  size: () => 0,
+  upsert: () => Promise.resolve(),
+  search: () => Promise.resolve([]),
+};
 
 /** Fallback for a corpus store without a cheap filtered view: over-fetch, then filter. */
 function filteredCorpus(corpus: CorpusStore, allows: (r: SourceRecord) => boolean): CorpusStore {

@@ -188,3 +188,38 @@ Deno.test("applySourceControls: corpus route off hides the corpus for every read
   const live = applySourceControls({ connectors: [], corpus: store, trustedSources: TRUSTED_SOURCES }, ["route:corpus"]);
   assertEquals(await live.corpus.search(["SMS paczka"], 5), []);
 });
+
+Deno.test("applySourceControls: a connector that filters by the allowlist itself (Google Fact Check) still yields a system state", async () => {
+  const demagogId = TRUSTED_SOURCES.find((s) => s.domains.includes("demagog.org.pl"))?.id;
+  assert(demagogId, "demagog.org.pl must be on the allowlist");
+  const review = rec("x", 1, "https://demagog.org.pl/wypowiedzi/x", "Fałsz: SMS o paczce nie pochodzi od Poczty Polskiej.", "factcheck");
+  // Like google-factcheck.ts: drops URLs not on ctx.config.trustedSources.
+  const gfc = (required: boolean): Connector => ({
+    id: required ? "google_factcheck" : "optional_aggregator",
+    label: "GFC",
+    required,
+    appliesTo: () => true,
+    unavailableReason: () => null,
+    search: (_q, ctx) =>
+      Promise.resolve(
+        [{ ...review, route: "google_factcheck" }].filter((r) => ctx.config.trustedSources.some((s) => r.url.includes(s.domains[0]))),
+      ),
+  });
+  const base = loadConfig({ get: () => undefined });
+  const live = applySourceControls(
+    { connectors: [gfc(true), gfc(false)], corpus: new IndexedCorpusStore([]), trustedSources: TRUSTED_SOURCES },
+    [`publisher:${demagogId}`],
+  );
+  // The API passes the shrunk allowlist in config, exactly as main.ts does.
+  const ctx: ConnectorContext = {
+    config: { ...base, trustedSources: live.trustedSources },
+    signal: new AbortController().signal,
+    corpus: live.corpus,
+  };
+  const r = await retrieve(claim, live.connectors, ctx);
+  assertEquals(r.routes.find((x) => x.route === "google_factcheck")?.status, "unavailable");
+  assertEquals(r.requiredFailure?.route, "google_factcheck");
+  // An optional route whose records were all filtered is not a failure: it simply found nothing usable.
+  assertEquals(r.routes.find((x) => x.route === "optional_aggregator")?.status, "no_hits");
+  assertEquals(r.records, []);
+});

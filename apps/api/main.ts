@@ -41,6 +41,7 @@ import {
   applySourceControls,
   collectionOf,
   listSources,
+  type SourceControlState,
   buildAnalytics,
   LoggingCheckStore,
   mediaInputError,
@@ -67,21 +68,22 @@ const corpus = new IndexedCorpusStore();
 await corpus.loadIndex(new URL("../../data/corpus/alert-corpus-index.json", import.meta.url));
 /** Operator on/off switches for evidence sources (admin page /admin/zrodla). */
 const sourceControls = await openSourceControlStore();
-/** Routes, corpus and allowlist with the switched-off sources removed, read once per request. */
-/** Reads the switches; a store that hangs must not hang every check (fail closed after 2 s). */
-async function readControls() {
+/** A switch store that hangs must not hang every check or admin call: fail closed after 2 s. */
+async function withDeadline<T>(work: Promise<T>): Promise<T> {
   let timer: number | undefined;
   try {
     return await Promise.race([
-      sourceControls.read(),
+      work,
       new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new Error("source controls read timeout")), 2000);
+        timer = setTimeout(() => reject(new Error("source controls timeout")), 2000);
       }),
     ]);
   } finally {
     clearTimeout(timer);
   }
 }
+const readControls = () => withDeadline(sourceControls.read());
+/** Routes, corpus and allowlist with the switched-off sources removed, read once per request. */
 async function liveSources() {
   const state = await readControls();
   return {
@@ -372,8 +374,8 @@ app.get("/api/v1/admin/analytics", async (c) => {
 });
 
 // Source controls (admin page /admin/zrodla): switch evidence sources off and on without a deploy.
-async function sourcesReport() {
-  const state = await readControls();
+async function sourcesReport(given?: SourceControlState) {
+  const state = given ?? await readControls();
   return {
     persistence: sourceControls.persistence,
     revision: state.revision,
@@ -399,13 +401,13 @@ app.post("/api/v1/admin/sources", async (c) => {
   if (!body || typeof body.key !== "string" || typeof body.enabled !== "boolean") {
     return c.json({ error: 'expected { "key": "<kind>:<id>", "enabled": true|false }' }, 400);
   }
-  const report = await sourcesReport();
+  const state = await readControls();
   // A switched-off key whose source has since gone (e.g. a rebuilt corpus) can still be switched back on.
-  const known = report.sources.some((s) => s.key === body.key) ||
-    (body.enabled && (await readControls()).disabled.includes(body.key));
+  const known = (await sourcesReport(state)).sources.some((s) => s.key === body.key) ||
+    (body.enabled && state.disabled.includes(body.key));
   if (!known) return c.json({ error: `unknown source key: ${body.key.slice(0, 80)}` }, 400);
-  await sourceControls.set(body.key, body.enabled);
-  return c.json(await sourcesReport());
+  // Answer from the state the save returned: a second read could time out after the change persisted.
+  return c.json(await sourcesReport(await withDeadline(sourceControls.set(body.key, body.enabled))));
 });
 
 app.get("/api/v1/admin/sources/search", async (c) => {

@@ -181,11 +181,18 @@ export function initSources() {
     return await res.json() as T;
   }
 
+  // Server snapshots (refresh GET, save POST) can arrive out of order: never go back a revision.
+  let serverState: SourcesState | null = null;
+  function newest(s: SourcesState): SourcesState {
+    if (!serverState || s.revision >= serverState.revision) serverState = s;
+    return serverState;
+  }
+
   async function load() {
     syncControls();
     const id = ++request;
     notice.hidden = true;
-    pending.clear();
+    // In-flight saves stay pending across a refresh, so a second click can't send a second POST.
     rowErrors.clear();
     if (sample) {
       sampleState ??= sampleSources();
@@ -202,7 +209,7 @@ export function initSources() {
       const s = await call<SourcesState>("/api/v1/admin/sources");
       if (id !== request) return;
       lock(false);
-      render(s, true);
+      render(newest(s), true);
     } catch (e) {
       if (id !== request) return;
       if (e instanceof HttpError) {
@@ -319,8 +326,7 @@ export function initSources() {
     try {
       const next = sample ? await sampleToggle(key, want) : await call<SourcesState>("/api/v1/admin/sources", { method: "POST", body: JSON.stringify({ key, enabled: want }) });
       pending.delete(key);
-      // Two switches saved at once can answer out of order: never render an older revision.
-      render(state && next.revision < state.revision ? state : next);
+      render(sample ? next : newest(next));
       if (lastQuery) runSearch(lastQuery, true);
     } catch (e) {
       pending.delete(key);
